@@ -1,0 +1,10 @@
+node_modules/
+.env
+logs/
+*.log
+data/*.json
+!data/config.example.json
+*.tmp
+
+data/mp-actions/
+data/solo-actions/

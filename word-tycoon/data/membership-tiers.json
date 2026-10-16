@@ -1,0 +1,43 @@
+{
+  "tiers": [
+    {
+      "id": "free",
+      "displayName": "Free Tier",
+      "priceUsd": 0,
+      "monthlyGiftCoins": 0,
+      "premiumPassUnlocked": false,
+      "vipLevel": 0,
+      "theme": {
+        "primary": "#3b82f6",
+        "secondary": "#60a5fa",
+        "gradient": "linear-gradient(135deg, #1d4ed8, #60a5fa)"
+      }
+    },
+    {
+      "id": "donor_class",
+      "displayName": "Donor Class",
+      "priceUsd": 2,
+      "monthlyGiftCoins": 0,
+      "premiumPassUnlocked": true,
+      "vipLevel": 1,
+      "theme": {
+        "primary": "#60a5fa",
+        "secondary": "#8b5cf6",
+        "gradient": "linear-gradient(135deg, #3b82f6, #8b5cf6)"
+      }
+    },
+    {
+      "id": "pookie_pass",
+      "displayName": "Pookie Pass",
+      "priceUsd": 10,
+      "monthlyGiftCoins": 0,
+      "premiumPassUnlocked": true,
+      "vipLevel": 2,
+      "theme": {
+        "primary": "#facc15",
+        "secondary": "#a855f7",
+        "gradient": "linear-gradient(135deg, #facc15, #a855f7)"
+      }
+    }
+  ]
+}

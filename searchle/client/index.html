@@ -1,0 +1,1706 @@
+<!DOCTYPE html>
+<!-- v30g -->
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-18066640610"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'AW-18066640610');
+</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#12071f">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Searchle">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="description" content="Searchle is a free word guessing game like Contexto with a live multiplayer twist. Guess the secret word using semantic similarity clues. Play solo or compete live — a fresh Contexto alternative with real-time rounds, XP rewards, and unlimited daily puzzles.">
+  <meta name="keywords" content="contexto, contexto game, contexto alternative, word guessing game, semantic word game, searchle, word game like contexto, guess the word, daily word puzzle, multiplayer word game, free word game online">
+  <title>Searchle — Free Word Guessing Game | Contexto Alternative</title>
+  <link rel="canonical" href="https://subtextle.com/">
+  <!-- Open Graph -->
+  <meta property="og:title" content="Searchle — Word Guessing Game Like Contexto">
+  <meta property="og:description" content="A free Contexto-style word guessing game with live multiplayer. Guess the secret word using semantic similarity — play solo or compete in real-time rounds.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://subtextle.com/">
+  <meta property="og:image" content="https://subtextle.com/icon-512.png">
+  <meta property="og:site_name" content="Searchle">
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Searchle — Word Guessing Game Like Contexto">
+  <meta name="twitter:description" content="Free Contexto alternative with live multiplayer. Guess the secret word using semantic clues. Solo and real-time modes.">
+  <meta name="twitter:image" content="https://subtextle.com/icon-512.png">
+  <!-- JSON-LD -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "VideoGame",
+    "name": "Searchle",
+    "alternateName": ["Searchle Game", "Contexto Alternative", "Searchle Word Game"],
+    "description": "Searchle is a free word guessing game similar to Contexto. Players guess the secret word using semantic similarity clues — words are ranked by how closely related they are to the answer. Features live multiplayer rounds, unlimited solo play, XP rewards, and cosmetic unlocks.",
+    "url": "https://subtextle.com/",
+    "genre": ["Word Game", "Puzzle", "Multiplayer", "Trivia", "Semantic Word Game"],
+    "gamePlatform": "Web Browser",
+    "applicationCategory": "Game",
+    "operatingSystem": "Any",
+    "inLanguage": "en",
+    "isAccessibleForFree": true,
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "CAD" },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.8",
+      "ratingCount": "150",
+      "bestRating": "5"
+    }
+  }
+  </script>
+  <!-- Mobile: force desktop-like viewport (980px) to avoid extreme CSS3D downscaling.
+       At device-width (375px), the 1800px base gets scaled 4.8x causing precision issues.
+       At 980px, it's only 1.8x — same as "Request Desktop Site" which runs great. -->
+  <script>
+  (function(){
+    var ua = navigator.userAgent || '';
+    var coarsePointer = false;
+    try { coarsePointer = !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches); } catch(e) {}
+    var touchPoints = navigator.maxTouchPoints || navigator.msMaxTouchPoints || 0;
+    var hasTouch = touchPoints > 0 || ('ontouchstart' in window);
+    var screenShortSide = Math.min(screen.width || 0, screen.height || 0);
+    var viewportShortSide = Math.min(window.innerWidth || 0, window.innerHeight || 0);
+    var shortSide = screenShortSide && viewportShortSide
+      ? Math.min(screenShortSide, viewportShortSide)
+      : (screenShortSide || viewportShortSide);
+    var mobileUA = /Mobi|Android|iPhone|iPad|iPod/i.test(ua);
+    var touchPhone = (hasTouch || coarsePointer) && shortSide > 0 && shortSide <= 1024;
+    var roomMobile = new URLSearchParams(location.search).get('mobile') === '1';
+    window.__searchleTouchMobile = !/OBS/i.test(ua) && (roomMobile || mobileUA || touchPhone);
+    if (window.__searchleTouchMobile) {
+      // width=980: force desktop-like viewport to avoid extreme CSS3D downscaling
+      document.querySelector('meta[name="viewport"]').content = 'width=980,maximum-scale=1,user-scalable=no';
+    }
+  })();
+  </script>
+  <script>(function(){var t=localStorage.getItem('wordtycoon_theme');if(t!=='light'&&t!=='dark')t=localStorage.getItem('searchle-theme');if(t==='light')document.documentElement.dataset.theme='light';})()</script>
+  <link rel="manifest" href="/manifest.webmanifest?v=3">
+  <link rel="icon" type="image/png" href="/favicon-32-v3.png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon-v3.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>.mp-login-screen,.sp-login-screen,#login-bar,.guess-login-prompt{display:none!important;}</style>
+<script src="https://wordtycoon.live/login-prompt.js?v=3" defer></script>
+  <link rel="stylesheet" href="/neon-ui.css?v=20261002-5">
+  <script src="/neon-ui.js?v=20261002-5" defer></script>
+  <link rel="stylesheet" href="/surface-ui.css?v=20261003-2">
+  <link rel="stylesheet" href="/refined-guesses.css?v=20261004-4">
+  <link rel="stylesheet" href="/prompt-ui.css?v=20261004-1">
+  <script src="/prompt-ui.js?v=20261004-1"></script>
+  <link rel="stylesheet" href="/game-status.css">
+  <script>if(/OBS/i.test(navigator.userAgent)||new URLSearchParams(location.search).has("obs"))document.documentElement.dataset.subtextleOverlay="true";</script>
+  <script src="/game-loading.js" defer></script>
+</head>
+<body>
+  <div id="subtextle-game-loading" role="status" aria-live="polite">Loading...</div>
+  <!-- Three.js renderer containers are created dynamically by SceneManager -->
+
+  <style>
+    /* Lock body — all scrolling happens inside #scroll-wrap */
+    html,body{margin:0;padding:0;overflow:hidden;height:100%;width:100%;touch-action:manipulation;}
+
+    /* ─── Scroll wrapper: sits above renderers, scrolls independently ─── */
+    #scroll-wrap{
+      position:fixed;top:0;left:0;width:100%;height:100%;
+      z-index:2;
+      overflow-y:auto;overflow-x:hidden;
+      -webkit-overflow-scrolling:touch;
+      pointer-events:none;
+    }
+    #scroll-wrap.kb-open{overflow:hidden!important;}
+
+    /* ─── Spacer: transparent area over the fixed 3D game ─── */
+    #game-spacer{height:100vh;pointer-events:none;}
+
+    /* Hide Previous Guesses section — 3D game handles all scrolling */
+    #scroll-wrap{overflow:hidden !important;}
+    #guesses-section{display:none;}
+
+    /* ─── Previous Guesses Section ─── */
+    #guesses-section{
+      position:relative;z-index:10;
+      min-height:50vh;
+      pointer-events:auto;
+      background:linear-gradient(180deg,rgba(8,2,18,0.98) 0%,rgba(5,1,12,1) 100%);
+      border-top:3px solid;border-image:linear-gradient(90deg,#ff2d95,#22d3ee,#a855f7) 1;
+      padding:24px 20px 100px;
+      font-family:Inter,sans-serif;
+    }
+    #guesses-section h2{
+      text-align:center;margin:0 0 20px;font-size:18px;font-weight:700;letter-spacing:2px;text-transform:uppercase;
+      background:linear-gradient(90deg,#ff2d95,#22d3ee,#a855f7);
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+    }
+    #guesses-count{font-size:13px;color:#94a3b8;text-align:center;margin:-14px 0 20px;font-weight:400;}
+    .guess-card{
+      display:flex;align-items:center;gap:12px;
+      padding:12px 16px;margin-bottom:8px;
+      background:rgba(255,255,255,0.03);border:1px solid rgba(34,211,238,0.1);border-radius:10px;
+      transition:border-color 0.2s;
+    }
+    .guess-card:hover{border-color:rgba(34,211,238,0.3);}
+    .guess-rank-badge{
+      min-width:56px;padding:4px 8px;text-align:center;
+      font-size:12px;font-weight:800;border-radius:6px;
+      color:#fff;
+    }
+    .rank-hot{background:linear-gradient(135deg,#ff2d95,#ff6b6b);}
+    .rank-warm{background:linear-gradient(135deg,#a855f7,#6366f1);}
+    .rank-cool{background:linear-gradient(135deg,#22d3ee,#3b82f6);}
+    .rank-cold{background:rgba(148,163,184,0.2);color:#94a3b8;}
+    .rank-unknown{background:rgba(100,100,100,0.2);color:#666;}
+    .guess-word-text{flex:1;font-size:15px;font-weight:700;color:#f1f5f9;letter-spacing:0.5px;}
+    .guess-user-info{display:flex;align-items:center;gap:6px;max-width:140px;}
+    .guess-user-pic{width:22px;height:22px;border-radius:50%;border:1px solid rgba(34,211,238,0.2);}
+    .guess-user-name{font-size:11px;color:#94a3b8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    .guess-platform{font-size:10px;color:rgba(148,163,184,0.5);text-transform:uppercase;letter-spacing:1px;}
+    #no-guesses{text-align:center;color:#64748b;padding:40px;font-size:14px;}
+
+    /* ─── Multiplayer login ─── */
+    .mp-login-screen{
+      position:fixed;inset:0;z-index:900;
+      display:flex;align-items:center;justify-content:center;
+      padding:24px;
+      background:transparent;
+      pointer-events:none;
+    }
+    .mp-login-screen.hidden{display:none;}
+    html.obs-mode .mp-login-screen{display:none !important;}
+    .mp-login-card{
+      position:relative;
+      width:min(100%,360px);
+      padding:32px 28px;
+      border-radius:20px;
+      background:rgba(18,18,19,0.68);
+      border:1px solid rgba(58,58,60,0.7);
+      box-shadow:0 8px 32px rgba(0,0,0,0.45);
+      backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+      text-align:center;
+      font-family:Inter,sans-serif;
+      color:#ffffff;
+      pointer-events:auto;
+    }
+    .mp-login-close{
+      position:absolute;
+      top:12px;right:12px;
+      width:34px;height:34px;
+      border:none;border-radius:999px;
+      background:rgba(255,255,255,0.08);
+      color:#b9bcc4;
+      font-size:20px;line-height:1;
+      cursor:pointer;
+      transition:background 0.16s ease,color 0.16s ease,transform 0.16s ease;
+    }
+    .mp-login-close:hover{background:rgba(255,255,255,0.14);color:#fff;transform:scale(1.02);}
+    .mp-login-card h1{
+      margin:0 0 8px;
+      font-size:1.6rem;font-weight:800;letter-spacing:0.15em;
+    }
+    .mp-login-card p{
+      color:#818384;
+      font-size:0.85rem;
+      line-height:1.45;
+      margin:0 0 4px;
+    }
+    .mp-guest-section{margin:20px 0 0;}
+    .mp-guest-row{
+      display:flex;align-items:center;gap:8px;
+      background:rgba(255,255,255,0.05);
+      border-radius:10px;
+      padding:4px;
+    }
+    .mp-guest-input{
+      flex:1;min-width:0;
+      padding:12px 14px;
+      border-radius:8px;
+      border:none;
+      background:transparent;
+      color:#ffffff;
+      font-size:0.95rem;font-family:Inter,sans-serif;
+      outline:none;
+    }
+    .mp-guest-input::placeholder{color:#818384;}
+    .mp-guest-input:focus{
+      box-shadow:none;
+    }
+    .mp-guest-btn,
+    .mp-discord-btn,
+    .mp-github-btn{
+      display:inline-flex;align-items:center;justify-content:center;gap:10px;
+      width:100%;
+      border:none;border-radius:10px;
+      font-family:Inter,sans-serif;
+      font-size:0.95rem;font-weight:700;
+      text-decoration:none;
+      transition:transform 0.16s ease,opacity 0.16s ease,background 0.16s ease;
+      box-sizing:border-box;
+    }
+    .mp-guest-btn{
+      width:auto;flex-shrink:0;
+      padding:12px 18px;
+      background:#39ff14;
+      color:#1a1a2e;
+      cursor:pointer;
+    }
+    .mp-discord-btn{
+      padding:14px 18px;
+      background:#5865F2;
+      color:#fff;
+    }
+    .mp-github-btn{
+      padding:14px 18px;
+      background:#333;
+      color:#fff;
+    }
+    .mp-guest-btn:hover,
+    .mp-discord-btn:hover,
+    .mp-github-btn:hover{transform:translateY(-1px);opacity:0.96;}
+    .mp-login-divider{
+      display:flex;align-items:center;gap:12px;
+      margin:16px 0;
+      color:#818384;
+      font-size:0.75rem;
+    }
+    .mp-login-divider::before,
+    .mp-login-divider::after{
+      content:'';
+      flex:1;height:1px;
+      background:rgba(255,255,255,0.1);
+    }
+    .mp-back-link{
+      display:block;
+      margin-top:16px;
+      color:#818384;
+      font-size:0.8rem;
+      font-weight:400;
+      text-decoration:none;
+    }
+    .mp-back-link:hover{color:#ffffff;}
+
+    /* ─── Disabled session ─── */
+    body.stream-disabled #guess-bar { display: none !important; }
+    body.stream-disabled .stream-disabled-pill {
+      position: fixed; left: 50%; bottom: max(16px, env(safe-area-inset-bottom));
+      transform: translateX(-50%); z-index: 9999;
+      padding: 10px 18px; background: rgba(20,24,36,0.92);
+      color: #facc15; border: 1px solid rgba(250,204,21,0.4);
+      border-radius: 999px; font-weight: 600; font-size: 14px;
+      letter-spacing: 0.5px; box-shadow: 0 4px 18px rgba(0,0,0,0.45);
+      backdrop-filter: blur(8px); pointer-events: none; white-space: nowrap;
+    }
+
+    /* ─── Bottom bars ─── */
+    #guess-bar{
+      position:fixed;bottom:0;left:0;right:0;z-index:520;
+      display:flex;justify-content:center;align-items:center;
+      padding:12px 12px;padding-bottom:max(12px,env(safe-area-inset-bottom));
+      background:transparent;pointer-events:none;
+    }
+    #guess-bar.touch-keyboard-mode{padding-bottom:0;}
+    #guess-bar.touch-keyboard-mode #guess-bar-inner{max-width:900px;}
+    #guess-bar-inner{
+      position:relative;
+      display:flex;align-items:center;gap:8px;
+      width:100%;max-width:620px;
+      padding:8px;
+      background:rgba(220,225,232,0.95);
+      border-radius:20px;
+      box-shadow:0 4px 24px rgba(0,0,0,0.12),0 1px 4px rgba(0,0,0,0.08);
+      backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+      pointer-events:auto;
+    }
+    #guess-bar-inner.proxy-focused{
+      box-shadow:0 0 0 2px rgba(34,211,238,0.35),0 4px 24px rgba(0,0,0,0.12),0 1px 4px rgba(0,0,0,0.08);
+    }
+    #touch-keyboard{
+      position:fixed;left:0;right:0;bottom:0;z-index:510;
+      display:none;justify-content:center;
+      padding:0;
+      pointer-events:none;
+      touch-action:manipulation;
+    }
+    #touch-keyboard.touch-kb-visible{display:flex;}
+    .touch-kb-shell{
+      width:100vw;max-width:100vw;
+      display:flex;flex-direction:column;gap:8px;
+      padding:10px 8px max(2px,env(safe-area-inset-bottom));
+      background:rgba(15,23,42,0.84);
+      border-top:1px solid rgba(148,163,184,0.18);
+      border-left:none;border-right:none;border-bottom:none;
+      border-radius:22px 22px 0 0;
+      box-shadow:0 -10px 30px rgba(2,8,23,0.45);
+      backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+      pointer-events:auto;
+      touch-action:manipulation;
+    }
+    .touch-kb-row{
+      display:flex;justify-content:center;gap:6px;
+      touch-action:manipulation;
+    }
+    .touch-kb-key{
+      flex:1;
+      min-width:0;max-width:none;min-height:48px;
+      border:none;border-radius:13px;
+      background:rgba(226,232,240,0.12);
+      color:#e2e8f0;
+      font-family:Inter,sans-serif;
+      font-size:16px;font-weight:800;
+      letter-spacing:0.04em;
+      cursor:pointer;
+      box-shadow:inset 0 -2px 0 rgba(15,23,42,0.22);
+      transition:transform 0.08s ease,background 0.12s ease,opacity 0.12s ease;
+      touch-action:manipulation;
+      user-select:none;
+      -webkit-user-select:none;
+      -webkit-tap-highlight-color:transparent;
+    }
+    .touch-kb-key:hover{background:rgba(226,232,240,0.18);}
+    .touch-kb-key:active{transform:translateY(1px) scale(0.98);}
+    .touch-kb-key.wide{flex:1.55;max-width:none;}
+    .touch-kb-key.enter{
+      background:rgba(79,70,229,0.9);
+      color:#fff;
+    }
+    .touch-kb-key.backspace{
+      background:rgba(56,189,248,0.2);
+      color:#dbeafe;
+    }
+    .touch-kb-key.space{
+      flex:5;
+      background:rgba(148,163,184,0.18);
+      color:#e2e8f0;
+    }
+    #me-link{
+      display:flex;align-items:center;justify-content:center;
+      width:40px;height:40px;border-radius:12px;flex-shrink:0;
+      background:rgba(130,170,210,0.4);
+      border:none;color:#3b5574;text-decoration:none;
+      transition:background 0.2s;overflow:hidden;
+    }
+    #me-link:hover{background:rgba(130,170,210,0.6);}
+    #me-link svg{width:18px;height:18px;}
+    #me-link img{width:100%;height:100%;object-fit:cover;}
+    .guess-input-wrap{
+      flex:1;display:flex;align-items:center;
+      background:#fff;border-radius:14px;
+      padding:0 12px 0 0;min-width:0;
+    }
+    /* Invalid-guess feedback: shake + red ring on the input, transient
+       message pill floating above the bar. Rejected input used to clear
+       silently — the player couldn't tell if "don't" was submitted. */
+    .guess-input-wrap.guess-invalid{
+      animation:guess-shake 0.36s ease;
+      box-shadow:0 0 0 2px #ef4444 inset;
+    }
+    @keyframes guess-shake{
+      0%,100%{transform:translateX(0);}
+      20%{transform:translateX(-7px);}
+      40%{transform:translateX(6px);}
+      60%{transform:translateX(-4px);}
+      80%{transform:translateX(3px);}
+    }
+    #guess-invalid-msg{
+      position:absolute;bottom:calc(100% + 10px);left:50%;
+      transform:translateX(-50%) translateY(4px);
+      padding:7px 14px;border-radius:12px;
+      background:rgba(30,41,59,0.92);color:#fff;
+      font-size:13px;font-weight:600;font-family:Inter,sans-serif;white-space:nowrap;
+      opacity:0;pointer-events:none;
+      transition:opacity 0.18s ease,transform 0.18s ease;
+    }
+    #guess-invalid-msg.visible{opacity:1;transform:translateX(-50%) translateY(0);}
+    #guess-input{
+      flex:1;min-width:0;
+      padding:12px 8px 12px 16px;
+      background:transparent;border:none;
+      color:#1e293b;font-size:15px;font-family:Inter,sans-serif;font-weight:500;
+      outline:none;
+    }
+    #guess-input::placeholder{color:#9ca3af;font-weight:400;}
+    #guess-bar.touch-keyboard-mode #guess-input{
+      caret-color:transparent;
+      user-select:none;
+      -webkit-user-select:none;
+    }
+    #guess-bar.touch-keyboard-mode #guess-input[readonly]{cursor:default;}
+    #guess-input::-webkit-search-decoration,
+    #guess-input::-webkit-search-cancel-button,
+    #guess-input::-webkit-search-results-button,
+    #guess-input::-webkit-search-results-decoration{display:none;}
+    #keyboard-focus-proxy{
+      position:fixed;
+      top:max(8px, env(safe-area-inset-top));
+      left:8px;
+      width:2px;height:2px;
+      padding:0;margin:0;border:0;
+      opacity:0.01;
+      background:transparent;
+      color:transparent;
+      caret-color:transparent;
+      pointer-events:none;
+      z-index:1;
+      font-size:16px;
+    }
+    .guess-search-icon{flex-shrink:0;width:20px;height:20px;color:#9ca3af;}
+    #guess-btn{
+      padding:12px 20px;
+      background:#4f46e5;border:none;border-radius:14px;
+      color:#fff;font-size:13px;font-weight:800;font-family:Inter,sans-serif;
+      letter-spacing:0.5px;text-transform:uppercase;white-space:nowrap;
+      cursor:pointer;transition:background 0.2s;flex-shrink:0;
+    }
+    #guess-btn:hover{background:#4338ca;}
+    #guess-btn.keyboard-toggle{
+      min-width:112px;
+      padding-left:16px;
+      padding-right:16px;
+      font-size:12px;
+      letter-spacing:0.35px;
+    }
+    #guess-btn.keyboard-toggle-native{
+      background:#0f766e;
+    }
+    #guess-btn.keyboard-toggle-native:hover{
+      background:#0b5e59;
+    }
+
+    /* ─── Typing bubble ─── */
+    #type-bubble{
+      position:fixed;top:30%;left:50%;transform:translate(-50%,-50%);z-index:501;
+      pointer-events:none;
+      transition:opacity 0.2s ease;
+    }
+    .type-bubble-hidden{opacity:0;}
+    .type-bubble-visible{opacity:1;}
+    #type-bubble-inner{
+      display:inline-flex;align-items:center;
+      padding:0;
+      background:rgba(220,225,232,0.95);
+      border-radius:20px;
+      position:relative;
+      box-shadow:0 4px 24px rgba(0,0,0,0.12),0 1px 4px rgba(0,0,0,0.08);
+    }
+    #type-bubble-content{
+      display:inline-flex;align-items:center;gap:4px;
+      padding:12px 24px;
+      background:#fff;
+      border-radius:16px;
+      margin:6px;
+    }
+    #type-bubble-text{
+      font-family:'Inter',sans-serif;font-size:18px;font-weight:600;
+      letter-spacing:1px;text-transform:lowercase;
+      color:#1e293b;
+    }
+    #type-bubble-cursor{
+      font-family:'Inter',sans-serif;font-size:20px;font-weight:300;
+      color:#9ca3af;animation:cursorBlink 0.8s step-end infinite;
+    }
+    @keyframes cursorBlink{0%,100%{opacity:1;}50%{opacity:0;}}
+    #type-bubble{display:none!important;}
+
+    /* ─── Touch device overrides ─── */
+    @media (pointer: coarse) {
+      .mp-login-screen{padding:40px;}
+      .mp-login-card{width:min(100%,760px);padding:52px 44px;border-radius:36px;}
+      .mp-login-close{top:20px;right:20px;width:52px;height:52px;font-size:32px;}
+      .mp-login-card h1{font-size:56px;margin-bottom:16px;}
+      .mp-login-card p{font-size:26px;margin-bottom:6px;}
+      .mp-guest-section{margin-top:30px;}
+      .mp-guest-row{gap:18px;border-radius:22px;padding:8px;}
+      .mp-guest-input{padding:24px 28px;border-radius:18px;font-size:28px;}
+      .mp-guest-btn,
+      .mp-discord-btn,
+      .mp-github-btn{border-radius:24px;font-size:28px;gap:16px;}
+      .mp-guest-btn{padding:24px 34px;}
+      .mp-discord-btn,
+      .mp-github-btn{padding:24px 28px;}
+      .mp-login-divider{margin:24px 0;font-size:20px;}
+      .mp-back-link{margin-top:24px;font-size:24px;}
+      #guess-bar{padding:20px 16px;padding-bottom:max(20px,env(safe-area-inset-bottom));}
+      #guess-bar-inner{gap:14px;padding:14px;border-radius:36px;max-width:860px;}
+      #touch-keyboard{padding:0;}
+      .touch-kb-shell{gap:12px;padding:16px 10px max(4px,env(safe-area-inset-bottom));border-radius:28px 28px 0 0;}
+      .touch-kb-row{gap:8px;}
+      .touch-kb-key{min-height:92px;max-width:none;border-radius:20px;font-size:32px;}
+      .touch-kb-key.wide{flex:1.7;}
+      #me-link{width:80px;height:80px;border-radius:24px;}
+      #me-link svg{width:40px;height:40px;}
+      .guess-input-wrap{border-radius:26px;padding:0 24px 0 0;}
+      #guess-input{font-size:38px;padding:24px 12px 24px 30px;}
+      #guess-input::placeholder{font-size:38px;}
+      .guess-search-icon{width:40px;height:40px;}
+      #guess-btn{font-size:30px;padding:26px 40px;border-radius:26px;letter-spacing:1px;}
+      #guess-btn.keyboard-toggle{min-width:232px;font-size:23px;padding:26px 28px;letter-spacing:0.5px;}
+      #type-bubble-inner{padding:0;border-radius:36px;box-shadow:0 6px 32px rgba(0,0,0,0.15),0 2px 6px rgba(0,0,0,0.1);}
+      #type-bubble-content{padding:24px 48px;border-radius:30px;margin:10px;gap:6px;}
+      #type-bubble-text{font-size:44px;letter-spacing:3px;}
+      #type-bubble-cursor{font-size:48px;}
+      /* Guesses section scaled for touch */
+      #guesses-section{padding:60px 50px 240px;}
+      #guesses-section h2{font-size:44px;margin-bottom:40px;letter-spacing:4px;}
+      #guesses-count{font-size:30px;margin:-30px 0 40px;}
+      .guess-card{padding:28px 36px;margin-bottom:16px;border-radius:20px;gap:24px;border-width:2px;}
+      .guess-rank-badge{min-width:130px;padding:10px 16px;font-size:28px;border-radius:12px;}
+      .guess-word-text{font-size:36px;}
+      .guess-user-info{gap:12px;max-width:320px;}
+      .guess-user-pic{width:48px;height:48px;}
+      .guess-user-name{font-size:24px;}
+      .guess-platform{font-size:20px;}
+      #no-guesses{font-size:32px;padding:80px;}
+    }
+    [data-theme="light"] .touch-kb-shell{
+      background:rgba(248,250,252,0.94);
+      border-color:rgba(148,163,184,0.28);
+      box-shadow:0 -10px 30px rgba(148,163,184,0.24);
+    }
+    [data-theme="light"] .touch-kb-key{
+      background:rgba(255,255,255,0.94);
+      color:#334155;
+      box-shadow:inset 0 -2px 0 rgba(148,163,184,0.22);
+    }
+    [data-theme="light"] .touch-kb-key:hover{background:#fff;}
+    [data-theme="light"] .touch-kb-key.enter{background:#4f46e5;color:#fff;}
+    [data-theme="light"] .touch-kb-key.backspace{
+      background:rgba(14,165,233,0.16);
+      color:#0f172a;
+    }
+  </style>
+
+  <!-- Synthwave typing bubble (mobile only) -->
+  <div id="type-bubble" class="type-bubble-hidden">
+    <div id="type-bubble-inner">
+      <div id="type-bubble-content">
+        <span id="type-bubble-text"></span>
+        <span id="type-bubble-cursor">|</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scroll wrapper: explicit scrollable layer above fixed 3D renderers -->
+  <div id="scroll-wrap">
+    <!-- Spacer: transparent area that lets the fixed 3D game show through -->
+    <div id="game-spacer"></div>
+
+    <!-- Previous Guesses Section (scrollable below 3D game) -->
+    <div id="guesses-section">
+      <h2>Previous Guesses</h2>
+      <div id="guesses-count"></div>
+      <div id="guesses-list">
+        <div id="no-guesses">No guesses yet — be the first!</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="login-screen" class="mp-login-screen">
+    <div class="mp-login-card">
+      <button id="login-close-btn" class="mp-login-close" type="button" aria-label="Continue as guest">&times;</button>
+      <h1>SEARCHLE</h1>
+      <p>Multiplayer mode — compete with other players in real-time!</p>
+      <a id="discord-login-link" href="#" class="mp-discord-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c.126-.094.252-.192.372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
+        Login with Discord
+      </a>
+      <div class="mp-login-divider"><span>or</span></div>
+      <a id="github-login-link" href="#" class="mp-github-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+        Login with GitHub
+      </a>
+      <a href="https://wordtycoon.live" class="mp-back-link">← Back to Word Tycoon</a>
+    </div>
+  </div>
+
+  <!-- Guess Bar -->
+  <div id="guess-bar" style="display:none;">
+    <form id="guess-form" autocomplete="off" novalidate onsubmit="return false;">
+    <div id="guess-bar-inner">
+      <div id="guess-invalid-msg" role="status" aria-live="polite" role="status" aria-live="polite"></div>
+      <a id="me-link" href="https://wordtycoon.live" title="My Profile">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </a>
+      <div class="guess-input-wrap">
+        <input id="guess-input" type="text" inputmode="search" placeholder="(Guess a word...)" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="send" data-lpignore="true" data-1p-ignore="true">
+        <svg class="guess-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </div>
+      <button id="guess-btn" type="button">ENTER</button>
+    </div>
+    </form>
+  </div>
+  <div id="touch-keyboard" aria-hidden="true">
+    <div class="touch-kb-shell"></div>
+  </div>
+
+  <!-- Absolute path — relative './socket.io/...' breaks when index.html is
+       served under a sub-path like /stream/index.html, because it resolves to
+       /stream/socket.io/socket.io.js which 404s. The script failure leaves
+       the `io` global undefined, and the next inline script throws a
+       ReferenceError that halts execution BEFORE the obsMode branch runs,
+       leaving the login screen visible. Always use absolute paths here. -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+  (function() {
+    var RELAY_URL = location.port ? 'http://' + location.hostname + ':3000' : location.origin;
+    var user = null;
+    try { user = JSON.parse(localStorage.getItem('searchle_user')); } catch(e){}
+    var GUEST_KEY = 'searchle_guest_profile';
+
+    var loginScreen = document.getElementById('login-screen');
+    var loginCloseBtn = document.getElementById('login-close-btn');
+    var guestNameInput = document.getElementById('guest-name-input');
+    var guestPlayBtn = document.getElementById('guest-play-btn');
+    var guessBar = document.getElementById('guess-bar');
+    var guessForm = document.getElementById('guess-form');
+    var guessBarInner = document.getElementById('guess-bar-inner');
+    var guessInput = document.getElementById('guess-input');
+    var guessInputWrap = guessBar ? guessBar.querySelector('.guess-input-wrap') : null;
+    var guessBtn = document.getElementById('guess-btn');
+    var touchKeyboard = document.getElementById('touch-keyboard');
+    var touchKeyboardShell = touchKeyboard ? touchKeyboard.querySelector('.touch-kb-shell') : null;
+    var meLink = document.getElementById('me-link');
+    var guessesList = document.getElementById('guesses-list');
+    var guessesCount = document.getElementById('guesses-count');
+    // Socket.IO path is ALWAYS /socket.io on this server, regardless of which
+    // HTML page loaded it. The previous code computed a basePath from
+    // location.pathname to support hypothetical sub-path deployments, but
+    // subtextle.com always serves Socket.IO at root. When the page is
+    // /stream/index.html or /stream/, the relative basePath would wrongly
+    // produce /stream/socket.io which 404s and breaks realtime updates.
+    // Streamer-private session: ?session=<handle> means we landed via
+    // /<handle> or /overlay/<handle> redirect. Pass auth.session so the
+    // server joins this socket to the streamer's session room. (The Vite
+    // bundle's SocketClient does the same in src/network/SocketClient.js;
+    // this inline socket is a separate connection that also needs the
+    // session signal to avoid landing on the public game.)
+    var _sessionHandle = (function(){ try { var h = new URLSearchParams(location.search).get("session"); return h && /^[a-z0-9_-]{1,32}$/i.test(h) ? h.toLowerCase() : null; } catch(_) { return null; } })();
+    var _sockOpts = { path: "/socket.io", reconnection: true, reconnectionDelay: 2000, reconnectionDelayMax: 10000, reconnectionAttempts: Infinity, transports: ["polling", "websocket"] };
+    if (_sessionHandle) _sockOpts.auth = { session: _sessionHandle };
+    var sock = io(_sockOpts);
+    var totalRankedWords = 0;
+    var guestProfile = loadGuestProfile();
+    var _ua = navigator.userAgent || '';
+    var isMobileViewport = !!window.__searchleTouchMobile || (/Mobi|Android|iPhone|iPad|iPod/i.test(_ua) && !/OBS/i.test(_ua));
+    var useTouchKeyboard = false;
+    var touchKeyboardCapable = false;
+    var baseViewportHeight = window.innerHeight;
+    var baseLayoutHeight = window.innerHeight;
+    var _touchKeyboardSetupDone = false;
+    var TOUCH_KB_ROWS = [
+      ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
+      ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
+      ['Z', 'X', 'C', 'V', 'B', 'N', 'M'],
+      ['BACK', 'SPACE', 'ENTER']
+    ];
+
+    function safeFocus(el) {
+      if (!el) return;
+      try { el.focus({ preventScroll: true }); }
+      catch (e) { try { el.focus(); } catch (err) {} }
+    }
+
+    function setGuessValue(value) {
+      if (guessInput.value !== value) {
+        guessInput.value = value;
+        guessInput.dispatchEvent(new Event('input'));
+      }
+    }
+
+    function getGuessValue() {
+      return guessInput.value;
+    }
+
+    function focusGuessField() {
+      if (useTouchKeyboard) {
+        if (guessBarInner) guessBarInner.classList.add('proxy-focused');
+        updateTouchKeyboardLayout();
+        return;
+      }
+      safeFocus(guessInput);
+    }
+
+    function holdGuessFocus() {
+      if (useTouchKeyboard) {
+        focusGuessField();
+        return;
+      }
+      focusGuessField();
+      if (!isMobileViewport) return;
+      [0, 40, 120, 240].forEach(function(delay) {
+        setTimeout(function() {
+          safeFocus(guessInput);
+          applyViewportShift();
+        }, delay);
+      });
+    }
+
+    function isTextEntryTarget(target) {
+      if (!target) return false;
+      if (target === guessInput) return false;
+      if (target === guestNameInput) return true;
+      if (target.isContentEditable) return true;
+      var tag = target.tagName;
+      return tag === 'TEXTAREA' || (tag === 'INPUT' && !target.readOnly);
+    }
+
+    function renderTouchKeyboard() {
+      if (!touchKeyboardShell) return;
+      touchKeyboardShell.innerHTML = '';
+      TOUCH_KB_ROWS.forEach(function(row) {
+        var rowEl = document.createElement('div');
+        rowEl.className = 'touch-kb-row';
+        row.forEach(function(key) {
+          var btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'touch-kb-key';
+          var label = key;
+          if (key === 'ENTER') {
+            btn.classList.add('wide', 'enter');
+            label = 'GO';
+          } else if (key === 'BACK') {
+            btn.classList.add('wide', 'backspace');
+            label = '\u232B';
+          } else if (key === 'SPACE') {
+            btn.classList.add('wide', 'space');
+            label = '\u23B5';
+          }
+          btn.textContent = label;
+          btn.setAttribute('data-key', key);
+          btn.addEventListener('pointerdown', function(e) {
+            if (!useTouchKeyboard) return;
+            if (e.pointerType && e.pointerType === 'mouse') return;
+            e.preventDefault();
+            btn._touchHandledAt = Date.now();
+            handleTouchKeyPress(key);
+          });
+          btn.addEventListener('click', function(e) {
+            if (btn._touchHandledAt && Date.now() - btn._touchHandledAt < 500) {
+              e.preventDefault();
+              return;
+            }
+            handleTouchKeyPress(key);
+          });
+          rowEl.appendChild(btn);
+        });
+        touchKeyboardShell.appendChild(rowEl);
+      });
+    }
+
+    function updateTouchKeyboardLayout() {
+      if (!touchKeyboard || !guessBar) return;
+      var visible = !!(useTouchKeyboard && guessBar.style.display !== 'none');
+      touchKeyboard.classList.toggle('touch-kb-visible', visible);
+      guessBar.classList.toggle('touch-keyboard-mode', visible);
+      if (!visible) {
+        if (guessBarInner) guessBarInner.classList.remove('proxy-focused');
+        guessBar.style.bottom = '';
+        return;
+      }
+      if (guessBarInner) guessBarInner.classList.add('proxy-focused');
+      var apply = function() {
+        var keyboardHeight = touchKeyboard.offsetHeight || 0;
+        guessBar.style.bottom = keyboardHeight > 0 ? (keyboardHeight + 8) + 'px' : '';
+      };
+      requestAnimationFrame(apply);
+      setTimeout(apply, 80);
+    }
+
+    function updateGuessButtonMode() {
+      if (!guessBtn) return;
+      guessBtn.classList.toggle('keyboard-toggle', !!touchKeyboardCapable);
+      guessBtn.classList.toggle('keyboard-toggle-native', !!(touchKeyboardCapable && !useTouchKeyboard));
+      if (!touchKeyboardCapable) {
+        guessBtn.textContent = 'ENTER';
+        guessBtn.title = 'Submit guess';
+        guessBtn.setAttribute('aria-label', 'Submit guess');
+        return;
+      }
+      if (useTouchKeyboard) {
+        guessBtn.textContent = 'PHONE KB';
+        guessBtn.title = 'Switch to your phone keyboard';
+        guessBtn.setAttribute('aria-label', 'Switch to your phone keyboard');
+      } else {
+        guessBtn.textContent = 'SEARCHLE KB';
+        guessBtn.title = 'Switch back to the Searchle keyboard';
+        guessBtn.setAttribute('aria-label', 'Switch back to the Searchle keyboard');
+      }
+    }
+
+    function syncGuessInputMode() {
+      if (!guessInput) return;
+      guessInput.setAttribute('enterkeyhint', 'send');
+      if (useTouchKeyboard) {
+        guessInput.readOnly = true;
+        guessInput.setAttribute('readonly', 'readonly');
+        guessInput.setAttribute('inputmode', 'none');
+      } else {
+        guessInput.readOnly = false;
+        guessInput.removeAttribute('readonly');
+        guessInput.setAttribute('inputmode', 'search');
+      }
+    }
+
+    function setTouchKeyboardMode(enabled) {
+      var next = !!(touchKeyboardCapable && enabled);
+      useTouchKeyboard = next;
+      if (useTouchKeyboard && touchKeyboardShell && !touchKeyboardShell.children.length) renderTouchKeyboard();
+      syncGuessInputMode();
+      updateGuessButtonMode();
+      updateTouchKeyboardLayout();
+      if (useTouchKeyboard) cancelNativeKeyboardFallback();
+    }
+
+    function clearNativeKeyboardViewport() {
+      cancelNativeKeyboardFallback();
+      if (scrollWrap) scrollWrap.classList.remove('kb-open');
+      stopKbPoll();
+      resetViewport();
+      setTimeout(captureViewportBase, 400);
+    }
+
+    function enableNativeKeyboardSwap(e) {
+      if (e) {
+        if (e.preventDefault) e.preventDefault();
+        if (e.stopPropagation) e.stopPropagation();
+      }
+      if (!touchKeyboardCapable) {
+        submit();
+        return;
+      }
+      if (useTouchKeyboard) {
+        setTouchKeyboardMode(false);
+        if (guessBarInner) guessBarInner.classList.remove('proxy-focused');
+        safeFocus(guessInput);
+        scheduleViewportShift();
+        if (isMobileViewport) startKbPoll();
+        scheduleNativeKeyboardFallback();
+        return;
+      }
+      setTouchKeyboardMode(true);
+      clearNativeKeyboardViewport();
+      try { guessInput.blur(); } catch (err) {}
+      if (guessBarInner) guessBarInner.classList.add('proxy-focused');
+      updateTouchKeyboardLayout();
+    }
+
+    function activateTouchKeyboard(e) {
+      if (!useTouchKeyboard) return;
+      if (e && e.preventDefault) e.preventDefault();
+      if (guessInput && document.activeElement === guessInput) {
+        try { guessInput.blur(); } catch (err) {}
+      }
+      if (guessBarInner) guessBarInner.classList.add('proxy-focused');
+      updateTouchKeyboardLayout();
+    }
+
+    function handleTouchKeyPress(key) {
+      if (!useTouchKeyboard) return;
+      if (key === 'ENTER') {
+        submit();
+        return;
+      }
+      if (key === 'BACK') {
+        if (getGuessValue().length > 0) setGuessValue(getGuessValue().slice(0, -1));
+        return;
+      }
+      if (key === 'SPACE') {
+        var cur = getGuessValue();
+        // No leading space, no double spaces, max 3 spaces (4 words)
+        if (cur.length > 0 && !cur.endsWith(' ') && (cur.match(/ /g) || []).length < 3) {
+          setGuessValue(cur + ' ');
+        }
+        return;
+      }
+      if (/^[A-Z]$/.test(key)) {
+        setGuessValue(getGuessValue() + key.toLowerCase());
+      }
+    }
+
+    function handleHardwareGuessKey(e) {
+      if (!useTouchKeyboard) return;
+      if (!e || e.defaultPrevented || e.isComposing) return;
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      if (isTextEntryTarget(e.target)) return;
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        handleTouchKeyPress('ENTER');
+      } else if (e.key === 'Backspace') {
+        e.preventDefault();
+        handleTouchKeyPress('BACK');
+      } else if (/^[a-zA-Z]$/.test(e.key)) {
+        e.preventDefault();
+        handleTouchKeyPress(e.key.toUpperCase());
+      } else if (e.key === ' ') {
+        e.preventDefault();
+        handleTouchKeyPress('SPACE');
+      }
+    }
+
+    function setupTouchKeyboardMode() {
+      if (!touchKeyboardCapable) {
+        useTouchKeyboard = false;
+        syncGuessInputMode();
+        updateGuessButtonMode();
+        updateTouchKeyboardLayout();
+        return;
+      }
+      if (_touchKeyboardSetupDone) {
+        syncGuessInputMode();
+        updateGuessButtonMode();
+        updateTouchKeyboardLayout();
+        return;
+      }
+      _touchKeyboardSetupDone = true;
+      renderTouchKeyboard();
+      if (guessInput) {
+        guessInput.addEventListener('focus', activateTouchKeyboard);
+        guessInput.addEventListener('mousedown', activateTouchKeyboard);
+        guessInput.addEventListener('touchstart', activateTouchKeyboard, { passive: false });
+        guessInput.addEventListener('click', activateTouchKeyboard);
+      }
+      if (guessInputWrap) {
+        guessInputWrap.addEventListener('mousedown', function(e) {
+          if (guessBtn && (e.target === guessBtn || guessBtn.contains(e.target))) return;
+          activateTouchKeyboard(e);
+        });
+        guessInputWrap.addEventListener('touchstart', function(e) {
+          if (guessBtn && (e.target === guessBtn || guessBtn.contains(e.target))) return;
+          activateTouchKeyboard(e);
+        }, { passive: false });
+      }
+      document.addEventListener('keydown', handleHardwareGuessKey);
+      if (touchKeyboard) {
+        touchKeyboard.addEventListener('dblclick', function(e) { e.preventDefault(); });
+      }
+      var lastTouchEndAt = 0;
+      document.addEventListener('touchend', function(e) {
+        if (!useTouchKeyboard) return;
+        var now = Date.now();
+        if (now - lastTouchEndAt < 320) {
+          e.preventDefault();
+        }
+        lastTouchEndAt = now;
+      }, { passive: false });
+      document.addEventListener('dblclick', function(e) {
+        if (!useTouchKeyboard) return;
+        e.preventDefault();
+      }, { passive: false });
+      window.addEventListener('resize', updateTouchKeyboardLayout);
+      window.addEventListener('orientationchange', function() { setTimeout(updateTouchKeyboardLayout, 120); });
+      syncGuessInputMode();
+      updateGuessButtonMode();
+      updateTouchKeyboardLayout();
+    }
+
+    // Set login link
+    var loginLink = document.getElementById('discord-login-link');
+    var githubLoginLink = document.getElementById('github-login-link');
+    loginLink.href = RELAY_URL + '/auth/discord?returnTo=' + encodeURIComponent(location.href);
+    githubLoginLink.href = RELAY_URL + '/auth/github?returnTo=' + encodeURIComponent(location.href);
+
+    function createGuestId() {
+      return 'web_guest_' + Math.random().toString(36).slice(2, 10);
+    }
+
+    function sanitizeGuestName(value, allowBlank) {
+      var clean = String(value || '').replace(/\s+/g, ' ').trim();
+      clean = clean.replace(/[^a-zA-Z0-9 _.-]/g, '');
+      if (!clean) return allowBlank ? '' : 'Guest';
+      if (clean.length > 18) clean = clean.slice(0, 18).trim();
+      return clean || (allowBlank ? '' : 'Guest');
+    }
+
+    function saveGuestProfile(profile) {
+      guestProfile = {
+        id: profile && profile.id ? profile.id : createGuestId(),
+        displayName: sanitizeGuestName(profile && profile.displayName, !(profile && profile.requireName))
+      };
+      localStorage.setItem(GUEST_KEY, JSON.stringify(guestProfile));
+      return guestProfile;
+    }
+
+    function loadGuestProfile() {
+      try {
+        var stored = JSON.parse(localStorage.getItem(GUEST_KEY) || 'null');
+        if (stored && stored.id) {
+          return {
+            id: stored.id,
+            displayName: sanitizeGuestName(stored.displayName, true)
+          };
+        }
+      } catch (e) {}
+      return saveGuestProfile({ id: createGuestId(), displayName: '', requireName: false });
+    }
+
+    function getViewerId() {
+      return user && user.id ? user.id : guestProfile.id;
+    }
+
+    function updateGuessPlaceholder() {
+      if (!guessInput) return;
+      if (user && user.id) {
+        guessInput.placeholder = '(Guess a word...)';
+      } else {
+        guessInput.placeholder = '(' + getGuestDisplayName() + ', guess a word...)';
+      }
+    }
+
+    function getGuestDisplayName() {
+      return sanitizeGuestName(guestProfile && guestProfile.displayName, true) || 'Anonymous';
+    }
+
+    function showLoginScreen() {
+      if (document.documentElement.classList.contains('obs-mode')) return;
+      user = null;
+      guessBar.style.display = 'none';
+      loginScreen.classList.remove('hidden');
+      updateTouchKeyboardLayout();
+      if (guestNameInput) {
+        guestNameInput.value = sanitizeGuestName(guestProfile.displayName, true);
+        setTimeout(function(){ try { guestNameInput.focus(); guestNameInput.select(); } catch (e) {} }, 0);
+      }
+    }
+
+    function showGameUI() {
+      loginScreen.classList.add('hidden');
+      guessBar.style.display = 'flex';
+      updateGuessPlaceholder();
+      updateTouchKeyboardLayout();
+      setTimeout(function(){ focusGuessField(); }, 0);
+    }
+
+    function startGuestPlay() {
+      var rawName = guestNameInput ? guestNameInput.value : '';
+      var chosenName = sanitizeGuestName(rawName, true);
+      saveGuestProfile({ id: guestProfile.id, displayName: chosenName, requireName: !!chosenName });
+      showGameUI();
+    }
+
+    function continueAsAnonymousGuest() {
+      saveGuestProfile({ id: guestProfile.id, displayName: '', requireName: false });
+      showGameUI();
+    }
+    // Exposed for the wordtycoon.live login-prompt modal (trailing script at
+    // the end of this file). Dismissing the sign-in modal must route through
+    // the SAME guest flow as the native login screen: a raw
+    // guessBar.style.display flip never calls updateTouchKeyboardLayout(),
+    // so on phones the touch keyboard stays hidden while the input is
+    // readonly + inputmode=none — i.e. NO keyboard at all.
+    window.__searchleContinueAsGuest = continueAsAnonymousGuest;
+
+    // Handle auth token from OAuth redirect
+    var params = new URLSearchParams(location.search);
+    var obsMode = params.has('obs');
+    touchKeyboardCapable = isMobileViewport && !obsMode;
+    useTouchKeyboard = touchKeyboardCapable;
+    setupTouchKeyboardMode();
+
+    // OBS overlay mode — skip login entirely, hide guess bar, show game board read-only
+    if (obsMode) {
+      loginScreen.classList.add('hidden');
+      guessBar.style.display = 'none';
+      if (meLink) meLink.style.display = 'none';
+      updateTouchKeyboardLayout();
+      // Still connect socket to receive live game events
+    } else {
+
+    // Accept both ?auth=TOKEN (legacy Searchle OAuth redirect) and
+    // ?auth_token=TOKEN (SSO bridge redirect from wordtycoon.live/api/auth/sso-check).
+    // The bridge uses auth_token; the old flow used auth. Supporting both keeps
+    // existing links working.
+    var authToken = params.get('auth_token') || params.get('auth');
+    var handledAuthToken = false;
+    if (authToken) {
+      handledAuthToken = true;
+      params.delete('auth');
+      params.delete('auth_token');
+      params.delete('sso_checked');
+      var remaining = params.toString();
+      history.replaceState({}, '', location.pathname + (remaining ? '?' + remaining : ''));
+      // credentials:'include' matches sp.html and ensures the exchange response
+      // can set first-party cookies on subtextle.com if the relay wants to.
+      fetch(RELAY_URL + '/api/auth/exchange?token=' + encodeURIComponent(authToken), { credentials: 'include' })
+        .then(function(r){ return r.json(); })
+        .then(function(data){
+          if (data.ok && data.user) {
+            user = data.user;
+            localStorage.setItem('searchle_user', JSON.stringify(user));
+            showLoggedIn();
+          } else {
+            showLoginScreen();
+          }
+        }).catch(function(){ showLoginScreen(); });
+    }
+    // Exposed for the trailing login-prompt/SSO-bridge script: when this load
+    // arrived with an auth token, the exchange above will reveal the UI —
+    // the trailing script must not redirect or prompt on top of it. Also the
+    // only loop-proof "already bridged" signal when storage is unavailable,
+    // because this IIFE strips auth_token/sso_checked from the URL before
+    // the trailing script runs.
+    window.__searchleAuthTokenHandled = handledAuthToken;
+    if (handledAuthToken) {
+      // Auth token exchange will restore state and reveal the guess bar.
+    } else if (params.get('sso_checked')) {
+      // We've already bounced through the SSO bridge once — don't redirect again
+      // (prevents infinite loops when the user genuinely isn't logged in anywhere).
+      // Clean the marker from the URL and proceed with whatever state we have.
+      params.delete('sso_checked');
+      var rest = params.toString();
+      history.replaceState({}, '', location.pathname + (rest ? '?' + rest : ''));
+      if (user && user.id) showLoggedIn();
+      else showLoginScreen();
+    } else if (user && user.id) {
+      // Already have a cached user in localStorage — trust it, skip the bridge.
+      showLoggedIn();
+    } else if (/^\/stream(?:\/(?:index\.html)?)?$/.test(location.pathname)
+               && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+      // /stream variant ONLY: cross-domain SSO bridge for streamer convenience.
+      // Full-page navigate to https://wordtycoon.live/api/auth/sso-check so
+      // wordtycoon.live cookies flow as first-party. The bridge will either:
+      //   (a) see a valid wordtycoon.live session, mint a one-time auth_token,
+      //       and 302 back to this URL with ?sso_checked=1&auth_token=...
+      //   (b) bounce through Discord OAuth with the same returnTo preserved
+      //   (c) on refusal/failure, come back with just ?sso_checked=1 so we
+      //       skip the redirect next time and show the manual login screen.
+      //
+      // This bridge is GATED TO /stream ONLY. On the default site (/) and
+      // on /play, users expect to see the login screen with the "Play as
+      // Anonymous" button — auto-redirecting them to Discord OAuth before
+      // they can even click "guest" would be a bad UX. /stream is the
+      // streaming-overlay variant where silent session bootstrap is the
+      // right default.
+      var sep = location.search ? '&' : '?';
+      var returnTo = location.origin + location.pathname + location.search + sep + 'sso_checked=1';
+      location.href = 'https://wordtycoon.live/api/auth/sso-check?returnTo=' + encodeURIComponent(returnTo);
+      // Navigation scheduled — the rest of this script will not matter after
+      // the browser starts loading the bridge URL.
+    } else {
+      // Default site (/) and everywhere else: same-origin session check. If
+      // the user has a valid subtextle.com session cookie, log them in
+      // silently. Otherwise show the manual login screen with the guest-play
+      // and Discord/GitHub OAuth buttons — DO NOT auto-redirect them to
+      // Discord OAuth, because that would block anonymous guest play which
+      // is an important entry point for new visitors.
+      fetch(RELAY_URL + '/api/me/session', { credentials: 'include' })
+        .then(function(r){ return r.json(); })
+        .then(function(data){
+          if (data.ok && data.user) {
+            user = {
+              id: data.user.id,
+              username: data.user.username,
+              globalName: data.user.displayName || data.user.username,
+              avatar: data.user.avatar || null,
+              provider: 'discord'
+            };
+            localStorage.setItem('searchle_user', JSON.stringify(user));
+            showLoggedIn();
+            return;
+          }
+          showLoginScreen();
+        }).catch(function(){ showLoginScreen(); });
+    }
+    } // end !obsMode
+
+    function showLoggedIn() {
+      loginScreen.classList.add('hidden');
+      guessBar.style.display = 'flex';
+      meLink.title = 'My Profile';
+      meLink.href = 'https://wordtycoon.live';
+      if (user && user.avatar && meLink) {
+        meLink.innerHTML = '<img src="' + user.avatar + '" alt="">';
+      } else if (meLink) {
+        meLink.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
+      }
+      updateGuessPlaceholder();
+      updateTouchKeyboardLayout();
+      setTimeout(function(){ focusGuessField(); }, 0);
+    }
+
+    // Legacy DOM "Previous Guesses" renderer intentionally disabled.
+    // The live Three.js / DOMRenderer stack already renders and virtualizes guesses.
+    // Re-sorting and rebuilding a hidden DOM list on every multiplayer update causes
+    // large unnecessary desktop work with no visible payoff.
+    guessesList.innerHTML = '';
+    guessesCount.textContent = '';
+
+    // ─── Premium gate (Donor-only public MP, 2026-07-17) ───
+    sock.on('premium-required', function(info) {
+      showPremiumWall(!!(info && info.loggedIn));
+    });
+    function showPremiumWall(loggedIn) {
+      if (document.body.classList.contains('obs-mode')) return;
+      var existing = document.getElementById('premium-wall');
+      if (existing) { existing.style.display = 'flex'; return; }
+      var el = document.createElement('div');
+      el.id = 'premium-wall';
+      el.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(4,6,14,0.88);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);padding:20px;';
+      var signinBtn = loggedIn ? '' :
+        '<button id="premium-wall-signin" style="display:block;width:100%;padding:13px 16px;border-radius:11px;background:rgba(255,255,255,0.06);border:1.5px solid rgba(120,140,190,0.35);color:#e8ecf4;font-weight:900;cursor:pointer;font-size:1rem;">Sign in</button>';
+      el.innerHTML =
+        '<div style="max-width:460px;width:100%;text-align:center;padding:36px 28px;background:linear-gradient(160deg,rgba(14,18,30,0.98),rgba(22,28,46,0.98));border:1px solid rgba(120,140,190,0.2);border-radius:18px;position:relative;color:#e8ecf4;">' +
+          '<button id="premium-wall-close" aria-label="Close" style="position:absolute;top:10px;right:12px;background:rgba(255,255,255,0.08);border:none;border-radius:50%;width:30px;height:30px;color:#b4c0d8;font-size:16px;cursor:pointer;">&times;</button>' +
+          '<div style="font-size:11px;font-weight:900;letter-spacing:0.2em;text-transform:uppercase;color:rgba(74,158,255,0.75);margin-bottom:8px;">Word Tycoon Premium</div>' +
+          '<h2 style="margin:0 0 10px;font-size:1.35rem;font-weight:900;">Multiplayer is Donor-only</h2>' +
+          '<p style="margin:0 0 22px;font-size:0.9rem;line-height:1.55;color:rgba(180,192,216,0.75);">The daily and weekly games are free for everyone, forever. Online multiplayer needs <strong style="color:#e8ecf4;">Donor Class</strong> &mdash; $2/month. TikTok Super Fans get it free.</p>' +
+          '<div style="display:flex;flex-direction:column;gap:10px;">' +
+            '<a href="sp.html?mode=weekly" style="display:block;padding:13px 16px;border-radius:11px;background:rgba(74,158,255,0.1);border:1.5px solid rgba(74,158,255,0.4);color:#7db8ff;font-weight:900;text-decoration:none;">Play the free weekly</a>' +
+            '<a href="https://wordtycoon.live/me?tab=pass" style="display:block;padding:13px 16px;border-radius:11px;background:rgba(196,102,255,0.1);border:1.5px solid rgba(196,102,255,0.4);color:#c98aff;font-weight:900;text-decoration:none;">Become a Donor &mdash; $2/mo</a>' +
+            signinBtn +
+          '</div>' +
+          '<p style="margin:18px 0 0;font-size:0.72rem;color:rgba(140,155,185,0.55);">You can keep watching the game behind this message.</p>' +
+        '</div>';
+      document.body.appendChild(el);
+      document.getElementById('premium-wall-close').onclick = function() { el.style.display = 'none'; };
+      var sb = document.getElementById('premium-wall-signin');
+      // The legacy .mp-login-screen this used to open is hidden with
+      // display:none!important by the unified-login graft, so showLoginScreen()
+      // rendered nothing here and hid the guess bar on the way out. Open the
+      // same /me LoginPrompt every other surface uses. authBase MUST be
+      // wordtycoon.live — subtextle.com's own vhost proxies /auth/discord only.
+      if (sb) sb.onclick = function() {
+        var WT = 'https://wordtycoon.live';
+        el.style.display = 'none';
+        if (window.LoginPrompt && window.LoginPrompt.showModal) {
+          window.LoginPrompt.showModal({
+            headline: 'Sign in to play',
+            authBase: WT,
+            returnTo: location.href,
+            onDismiss: function() { el.style.display = 'flex'; }
+          });
+        } else {
+          location.href = WT + '/auth/discord?returnTo=' + encodeURIComponent(location.href);
+        }
+      };
+    }
+
+    // ─── Library Word Toast ───
+    sock.on('library-word-new', function(data) {
+      if (!data || !data.word) return;
+      if (data.userId !== getViewerId()) return;
+      showLibraryToast(data.word, data.displayName);
+    });
+    function escapeToastText(value) {
+      var span = document.createElement('span'); span.textContent = String(value || ''); return span.innerHTML;
+    }
+    function showLibraryToast(word, displayName) {
+      if (document.body.classList.contains('obs-mode')) return;
+      if (!document.getElementById('library-toast-style')) {
+        var s = document.createElement('style');
+        s.id = 'library-toast-style';
+        s.textContent = '.library-toast{position:fixed;top:24px;right:24px;display:flex;align-items:center;gap:16px;background:linear-gradient(135deg,#1a0f00,#2d1f0a);border:3px solid #8b6914;border-radius:20px;padding:16px 28px 16px 12px;color:#f5deb3;z-index:10000;opacity:0;transform:translateX(50px);transition:opacity .3s,transform .3s;pointer-events:none;box-shadow:0 8px 30px rgba(139,105,20,.4);overflow:visible}.library-toast.show{opacity:1;transform:translateX(0)}.library-toast .toast-logo{width:100px;height:100px;border-radius:50%;flex-shrink:0;margin:-14px -8px -14px -12px;filter:drop-shadow(0 4px 12px rgba(0,0,0,.6))}.library-toast .toast-text{display:flex;flex-direction:column}.library-toast .toast-header{font-size:18px;font-weight:700;color:#f5deb3;line-height:1.2}.library-toast .toast-word{font-size:36px;font-weight:800;color:#ffd700;letter-spacing:2px;line-height:1.2}.library-toast .toast-player{font-size:16px;color:#c0a050;margin-top:4px;font-weight:600}[data-theme="light"] .library-toast{background:linear-gradient(135deg,#fff8e1,#fff3cd);border-color:#d4a017;box-shadow:0 8px 30px rgba(212,160,23,.3)}[data-theme="light"] .library-toast .toast-header{color:#5d4200}[data-theme="light"] .library-toast .toast-word{color:#b8860b}[data-theme="light"] .library-toast .toast-player{color:#8b7030}@media(pointer:coarse){.library-toast{top:40px;right:40px;gap:20px;border-width:3px;border-radius:24px;padding:24px 40px 24px 16px;box-shadow:0 8px 30px rgba(139,105,20,.4)}.library-toast .toast-logo{width:160px;height:160px;margin:-30px -12px -30px -20px;filter:drop-shadow(0 5px 16px rgba(0,0,0,.6))}.library-toast .toast-header{font-size:28px}.library-toast .toast-word{font-size:54px;letter-spacing:3px}.library-toast .toast-player{font-size:22px}}';
+        document.head.appendChild(s);
+      }
+      var t = document.createElement('div');
+      t.className = 'library-toast';
+      var html = '<img class="toast-logo" src="img/wt-logo.png" alt="">' +
+        '<div class="toast-text"><div class="toast-header">Word Found!</div>' +
+        '<div class="toast-word">' + escapeToastText(word.toUpperCase()) + '</div>';
+      if (displayName) html += '<div class="toast-player">' + escapeToastText(displayName) + '</div>';
+      html += '</div>';
+      t.innerHTML = html;
+      document.body.appendChild(t);
+      setTimeout(function() { t.classList.add('show'); }, 10);
+      setTimeout(function() {
+        t.classList.remove('show');
+        setTimeout(function() { t.remove(); }, 300);
+      }, 3000);
+    }
+
+    var DEFAULT_AVATAR = 'https://wordtycoon.live/portal/img/logo.png';
+
+    var _recentSubmitAt = 0;
+
+    // Submit guess (supports up to 4 space-separated words)
+    // Invalid-guess feedback — shake the input + show a transient message
+    // instead of silently swallowing rejected input.
+    var _invalidMsgTimer = null;
+    function showInvalidGuess(msg) {
+      var wrap = document.querySelector('.guess-input-wrap');
+      var el = document.getElementById('guess-invalid-msg');
+      if (el) {
+        el.textContent = msg;
+        el.classList.add('visible');
+      }
+      if (wrap) {
+        wrap.classList.remove('guess-invalid');
+        void wrap.offsetWidth; // restart the shake animation
+        wrap.classList.add('guess-invalid');
+      }
+      clearTimeout(_invalidMsgTimer);
+      _invalidMsgTimer = setTimeout(function() {
+        if (el) el.classList.remove('visible');
+        if (wrap) wrap.classList.remove('guess-invalid');
+      }, 1800);
+    }
+
+    var _guessSubmissionPending = false;
+    // Guesses typed while one is still in flight wait here instead of being
+    // dropped, so fast typists never see their word stuck in the box.
+    var _guessQueue = [];
+    var GUESS_QUEUE_MAX = 6;
+    var _guessButtonLabel = guessBtn ? guessBtn.textContent : 'ENTER';
+    function setGuessPending(pending) {
+      if (!guessBtn) return;
+      guessBtn.textContent = pending ? 'Checking…' : _guessButtonLabel;
+      guessBtn.setAttribute('aria-busy', String(pending));
+    }
+function submit() {
+      if (!sock.connected) { showInvalidGuess("Disconnected — please retry"); return; }
+      if (window.__STREAM_DISABLED) return; // disable-player-page gate (see top inline script)
+      var w = getGuessValue().trim().normalize('NFC').toLowerCase();
+      if (!w) return;
+      if (!/^[\p{L}]+( [\p{L}]+){0,3}$/u.test(w)) {
+        showInvalidGuess(w.split(/\s+/).length > 4
+          ? 'Up to 4 words at a time'
+          : 'Letters only — no punctuation');
+        return;
+      }
+      if (_guessQueue.length >= GUESS_QUEUE_MAX) { showInvalidGuess('Slow down — still sending guesses'); return; }
+      _recentSubmitAt = Date.now();
+      // Clear right away; a failed send puts the word back (see sendNextGuess).
+      setGuessValue('');
+      _guessQueue.push(w);
+      sendNextGuess();
+      holdGuessFocus();
+    }
+    function sendNextGuess() {
+      if (_guessSubmissionPending || !_guessQueue.length) return;
+      var w = _guessQueue.shift();
+      var u = user
+        ? { id: user.id, platformUserId: user.id, username: user.username, displayName: user.globalName || user.username, profilePic: user.avatar || DEFAULT_AVATAR, customColor: null }
+        : { id: guestProfile.id, platformUserId: guestProfile.id, username: getGuestDisplayName(), displayName: getGuestDisplayName(), profilePic: DEFAULT_AVATAR, customColor: null };
+      _guessSubmissionPending = true;
+      setGuessPending(true);
+      sock.timeout(10000).emit('test-guess', {
+        message: w,
+        user: u,
+        platform: user ? 'discord' : 'web'
+      }, function(error, result) {
+        _guessSubmissionPending = false;
+        if (error || !result || result.valid !== true) {
+          var messages = { watch_only: 'This page is watch-only', premium_required: 'Sign in with play access',
+            round_changed: 'The round changed — please retry', rate_limited: 'Please wait before retrying', bad_request: 'Check your guess and retry' };
+          showInvalidGuess(messages[result && result.result] || 'Guess not saved — please retry');
+          // Hand the word back for a retry, but never overwrite newer typing.
+          if (!getGuessValue().trim()) setGuessValue(w);
+        }
+        if (_guessQueue.length) sendNextGuess();
+        else setGuessPending(false);
+      });
+    }
+    var _lastKeyboardSubmitAt = 0;
+    function maybeSubmitFromKeyboard(e) {
+      if (!e || e.isComposing) return false;
+      var key = e.key || e.code || '';
+      var inputType = e.inputType || '';
+      var rawValue = getGuessValue();
+      var hasLineBreak = /[\r\n]/.test(rawValue);
+      var isSubmitEvent =
+        key === 'Enter' || key === 'Go' || key === 'Done' || key === 'Send' || key === 'Search' ||
+        e.keyCode === 13 || inputType === 'insertLineBreak' || inputType === 'insertParagraph' ||
+        e.data === '\n' || e.data === '\r' || hasLineBreak;
+      if (!isSubmitEvent) return false;
+      if (e.preventDefault) e.preventDefault();
+      if (e.stopPropagation) e.stopPropagation();
+      if (hasLineBreak) {
+        guessInput.value = rawValue.replace(/[\r\n]+/g, '');
+      }
+      var now = Date.now();
+      if (now - _lastKeyboardSubmitAt < 250) return true;
+      _lastKeyboardSubmitAt = now;
+      submit();
+      return true;
+    }
+
+    if (guessBtn) {
+      guessBtn.addEventListener('click', enableNativeKeyboardSwap);
+    }
+    if (guessForm) {
+      guessForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var now = Date.now();
+        if (now - _lastKeyboardSubmitAt < 250) return;
+        submit();
+      });
+    }
+    guessInput.addEventListener('keydown', maybeSubmitFromKeyboard);
+    guessInput.addEventListener('keypress', maybeSubmitFromKeyboard);
+    guessInput.addEventListener('keyup', maybeSubmitFromKeyboard);
+    guessInput.addEventListener('beforeinput', maybeSubmitFromKeyboard);
+    guessInput.addEventListener('input', maybeSubmitFromKeyboard);
+    guessInput.addEventListener('search', maybeSubmitFromKeyboard);
+    if (guestPlayBtn) guestPlayBtn.onclick = startGuestPlay;
+    if (guestNameInput) guestNameInput.onkeydown = function(e){ if(e.key==='Enter') startGuestPlay(); };
+    if (loginCloseBtn) loginCloseBtn.onclick = continueAsAnonymousGuest;
+
+    var scrollWrap = document.getElementById('scroll-wrap');
+    var baseOffsetTop = 0;
+    var _mpShiftNodes = '#webgl-canvas, #dom-ui-container, #scroll-wrap, .banner-overlay, .banner-profile-overlay, .drawer-theme-btn, .login-overlay-btn, #login-screen';
+
+    function captureViewportBase() {
+      var vv = window.visualViewport;
+      var offsetTop = vv ? (vv.offsetTop || 0) : 0;
+      var visibleHeight = vv ? vv.height : window.innerHeight;
+      baseViewportHeight = visibleHeight + offsetTop;
+      baseLayoutHeight = window.innerHeight;
+      baseOffsetTop = offsetTop;
+    }
+
+    function resetViewport() {
+      guessBar.style.bottom = '';
+      guessBar.style.transform = '';
+      document.querySelectorAll(_mpShiftNodes).forEach(function(n) {
+        if (n) n.style.transform = '';
+      });
+      window.scrollTo(0, 0);
+      scrollWrap.scrollTop = 0;
+    }
+
+    function applyViewportShift() {
+      if (!isMobileViewport) return;
+      if (useTouchKeyboard) {
+        resetViewport();
+        updateTouchKeyboardLayout();
+        return;
+      }
+      var vv = window.visualViewport;
+      var offsetTop = vv ? (vv.offsetTop || 0) : 0;
+      var offsetLeft = vv ? (vv.offsetLeft || 0) : 0;
+      var visibleHeight = vv ? vv.height : window.innerHeight;
+      if (!guessInput.matches(':focus')) {
+        captureViewportBase();
+        return; // not focused — nothing to adjust
+      }
+      // Keyboard-caused shift only (subtract browser chrome baseline)
+      var kbShift = Math.max(0, offsetTop - baseOffsetTop);
+      var keyboardInset = Math.max(0, baseViewportHeight - (visibleHeight + offsetTop));
+      var transform = (kbShift || offsetLeft)
+        ? 'translate(' + (-offsetLeft) + 'px,' + (-kbShift) + 'px)'
+        : '';
+      guessBar.style.transform = transform;
+      document.querySelectorAll(_mpShiftNodes).forEach(function(n) {
+        if (n) n.style.transform = transform;
+      });
+      var layoutResized = window.innerHeight + 40 < baseLayoutHeight;
+      if (kbShift > 0) {
+        guessBar.style.bottom = keyboardInset > 0 ? keyboardInset + 'px' : '';
+      } else if (layoutResized) {
+        guessBar.style.bottom = '';
+      } else {
+        guessBar.style.bottom = keyboardInset > 0 ? keyboardInset + 'px' : '';
+      }
+      // Pin page to top regardless of browser
+      window.scrollTo(0, 0);
+      scrollWrap.scrollTop = 0;
+    }
+
+    function scheduleViewportShift() {
+      if (!isMobileViewport) return;
+      requestAnimationFrame(applyViewportShift);
+      setTimeout(applyViewportShift, 80);
+      setTimeout(applyViewportShift, 220);
+      setTimeout(applyViewportShift, 500);
+    }
+
+    // Poll viewport during focus to catch all browsers' keyboard animations
+    var _kbPollId = null;
+    var _nativeKeyboardFallbackTimer = null;
+
+    function cancelNativeKeyboardFallback() {
+      if (_nativeKeyboardFallbackTimer) {
+        clearTimeout(_nativeKeyboardFallbackTimer);
+        _nativeKeyboardFallbackTimer = null;
+      }
+    }
+
+    function nativeKeyboardViewportIsOpen() {
+      var vv = window.visualViewport;
+      var offsetTop = vv ? (vv.offsetTop || 0) : 0;
+      var visibleHeight = vv ? vv.height : window.innerHeight;
+      var keyboardInset = Math.max(0, baseViewportHeight - (visibleHeight + offsetTop));
+      var layoutResized = window.innerHeight + 40 < baseLayoutHeight;
+      return keyboardInset > 80 || offsetTop > baseOffsetTop + 40 || layoutResized;
+    }
+
+    function scheduleNativeKeyboardFallback() {
+      if (!touchKeyboardCapable || useTouchKeyboard || !isMobileViewport) return;
+      cancelNativeKeyboardFallback();
+      _nativeKeyboardFallbackTimer = setTimeout(function() {
+        _nativeKeyboardFallbackTimer = null;
+        if (!touchKeyboardCapable || useTouchKeyboard || document.activeElement !== guessInput) return;
+        if (nativeKeyboardViewportIsOpen()) return;
+        setTouchKeyboardMode(true);
+        if (scrollWrap) scrollWrap.classList.remove('kb-open');
+        try { guessInput.blur(); } catch (err) {}
+        if (guessBarInner) guessBarInner.classList.add('proxy-focused');
+        updateTouchKeyboardLayout();
+      }, 1200);
+    }
+
+    function startKbPoll() {
+      stopKbPoll();
+      applyViewportShift();
+      var count = 0;
+      _kbPollId = setInterval(function() {
+        applyViewportShift();
+        if (++count > 30) stopKbPoll(); // stop after ~3s
+      }, 100);
+    }
+    function stopKbPoll() {
+      if (_kbPollId) { clearInterval(_kbPollId); _kbPollId = null; }
+    }
+
+    guessInput.addEventListener('focus', function() {
+      if (useTouchKeyboard) {
+        activateTouchKeyboard();
+        return;
+      }
+      captureViewportBase();
+      scrollWrap.classList.add('kb-open');
+      if (guessBarInner) guessBarInner.classList.add('proxy-focused');
+      scheduleViewportShift();
+      if (isMobileViewport) startKbPoll();
+      scheduleNativeKeyboardFallback();
+    });
+    guessInput.addEventListener('blur', function() {
+      cancelNativeKeyboardFallback();
+      if (useTouchKeyboard) {
+        if (guessBarInner) guessBarInner.classList.add('proxy-focused');
+        updateTouchKeyboardLayout();
+        return;
+      }
+      if (Date.now() - _recentSubmitAt < 350) {
+        holdGuessFocus();
+        return;
+      }
+      scrollWrap.classList.remove('kb-open');
+      if (guessBarInner) guessBarInner.classList.remove('proxy-focused');
+      stopKbPoll();
+      // Clean reset — don't recalculate during keyboard-close transition
+      if (isMobileViewport) resetViewport();
+      // Recapture baseline after keyboard fully closes
+      setTimeout(function() {
+        captureViewportBase();
+      }, 400);
+    });
+    guessInput.addEventListener('input', cancelNativeKeyboardFallback);
+
+    if (isMobileViewport) {
+      // visualViewport events — primary path (Chrome)
+      if (window.visualViewport) {
+        window.visualViewport.addEventListener('scroll', applyViewportShift);
+        window.visualViewport.addEventListener('resize', applyViewportShift);
+      }
+      // Fallback: window resize catches browsers that resize instead of offset
+      window.addEventListener('resize', applyViewportShift);
+      window.addEventListener('orientationchange', function() {
+        captureViewportBase();
+        setTimeout(applyViewportShift, 120);
+      });
+    }
+
+    // ─── Portal iframe auth: accept user data via postMessage ───
+    window.addEventListener('message', function(e) {
+      if (e.data && e.data.type === 'searchle-auth' && e.data.user && e.data.user.id) {
+        user = e.data.user;
+        localStorage.setItem('searchle_user', JSON.stringify(user));
+        showLoggedIn();
+      }
+    });
+    // If embedded in an iframe, notify parent we're ready
+    if (window.parent !== window) {
+      try { window.parent.postMessage({ type: 'searchle-ready' }, '*'); } catch(e){}
+    }
+  })();
+  </script>
+
+  <!-- Audio synth pack (Vapor) — exposes window.SearchleAudio. Loaded
+       before main.js so the AudioBridge wrapper can find it on import. -->
+  <script src="/audio.js"></script>
+  <script type="module" src="/src/main.js"></script>
+  <script src="/pwa-install.js?v=3"></script>
+
+<script>
+// Disabled-session frontend gate. Hides the guess input + shows a pill.
+(function(){
+  try {
+    var q = new URLSearchParams(location.search);
+    if (q.get('disabled') !== '1') return;
+    // Streamer-self bypass — match the shared gate behavior so View-as-me
+    // shows the real game UI even when disable-player-page is on.
+    if (q.get('streamer_self') === '1') return;
+    try {
+      var _h = (q.get('session') || (location.pathname.match(/^\/([a-z0-9_-]{1,32})\/?$/) || [])[1] || '').toLowerCase();
+      if (_h && localStorage.getItem('wt_streamer_self_' + _h) === '1') return;
+    } catch (_) {}
+    document.documentElement.classList.add('session-disabled');
+    document.body && document.body.classList.add('stream-disabled');
+    // Defer until DOM ready so body class lands; class on documentElement is enough for CSS.
+    function addPill() {
+      if (document.body.querySelector('.stream-disabled-pill')) return;
+      var pill = document.createElement('div');
+      pill.className = 'stream-disabled-pill';
+      pill.textContent = 'Watch on stream — playing disabled';
+      document.body.appendChild(pill);
+      document.body.classList.add('stream-disabled');
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', addPill);
+    } else {
+      addPill();
+    }
+    // Marker that emit-gates can check before sending guess events.
+    window.__STREAM_DISABLED = true;
+  } catch (_) {}
+})();
+</script>
+<script src="https://wordtycoon.live/portal/js/session-disable-gate.js?v=3"></script>
+  <footer class="wt-legal-footer">
+    <a href="https://wordtycoon.live/privacy" target="_blank" rel="noopener">Privacy</a> &middot; <a href="https://wordtycoon.live/terms" target="_blank" rel="noopener">Terms</a> &middot; <a href="https://discord.gg/C8Nm2jEZFC" target="_blank" rel="noopener">Discord</a> &middot; <a href="https://www.jorry.live" target="_blank" rel="noopener">jorry.live</a> &middot; <a href="https://wordtycoon.live/portal">&copy; 2026 Word Tycoon</a>
+  </footer>
+  <style>
+    .wt-legal-footer{padding:14px 16px 18px;text-align:center;font:12px/1.4 "Segoe UI",Tahoma,sans-serif;color:#7a8a9b;opacity:.75}
+    .wt-legal-footer a{color:inherit;text-decoration:none;margin:0 2px}
+    .wt-legal-footer a:hover{text-decoration:underline;opacity:1}
+  </style>
+<script>(function(){var H="https://wordtycoon.live";
+// Never prompt or navigate on OBS overlays, and never interfere with an
+// in-flight auth_token exchange (the page IIFE strips the token from the
+// URL before this runs, so the window flag is the only reliable signal).
+if(new URLSearchParams(location.search).has("obs"))return;
+if(window.__searchleAuthTokenHandled)return;
+function dismiss(){if(window.__searchleContinueAsGuest){window.__searchleContinueAsGuest();return;}var btn=document.querySelector("#wt-auth-close");if(btn){btn.click();return;}var gb=document.getElementById("guess-bar");if(gb)gb.style.display="flex";}
+var _lpTries=0;
+function show(){if(!window.LoginPrompt||!window.LoginPrompt.showModal){if(++_lpTries>100)return dismiss();return setTimeout(show,60);}window.LoginPrompt.showModal({authBase:H,returnTo:location.href,onDismiss:dismiss});}
+function cachedUser(){try{var u=JSON.parse(localStorage.getItem("searchle_user"));return!!(u&&u.id);}catch(e){return false;}}
+// A user signed in on wordtycoon.live but NOT on subtextle.com used to get
+// NOTHING: the WT session suppressed the sign-in modal, while the page's own
+// session check failed and left the guess bar (and on phones the touch
+// keyboard) hidden forever. Bridge that state silently through sso-check —
+// it 302s straight back with an auth_token because the WT session was just
+// verified. sessionStorage guard stops repeat bounces within a tab; the
+// __searchleAuthTokenHandled check above stops loops even without storage.
+fetch(location.origin+"/api/me/session",{credentials:"include"}).then(function(r){return r.json();}).catch(function(){return null;}).then(function(loc){
+if(loc&&loc.ok&&loc.user)return;
+if(cachedUser())return;
+fetch(H+"/api/me/session",{credentials:"include"}).then(function(r){return r.json();}).then(function(d){
+if(d&&d.ok&&d.user){
+var tried=null;try{tried=sessionStorage.getItem("wt_sso_bridge_tried");sessionStorage.setItem("wt_sso_bridge_tried","1");}catch(e){}
+if(tried==="1")return show();
+var sep=location.search?"&":"?";
+location.href=H+"/api/auth/sso-check?returnTo="+encodeURIComponent(location.origin+location.pathname+location.search+sep+"sso_checked=1");
+return;}
+show();
+}).catch(show);
+});})();</script>
+</body>
+</html>

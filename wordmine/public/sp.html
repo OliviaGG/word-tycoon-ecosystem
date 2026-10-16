@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-18066640610"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag("js", new Date());
+  gtag("config", "AW-18066640610");
+</script>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="Play Word Mine solo and explore daily, weekly, and random letter mines packed with hidden words.">
+  <meta property="og:title" content="Word Mine Solo | Daily and Weekly Letter Mines">
+  <meta property="og:description" content="Play solo Word Mine puzzles and dig through daily, weekly, and random letter mines.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Word Mine Solo | Daily and Weekly Letter Mines">
+  <meta name="twitter:description" content="Solo word-mine puzzles with daily, weekly, and random boards.">
+  <title>Word Mine Solo | Daily and Weekly Letter Mines</title>
+  <link rel="manifest" href="/game/wordmine/manifest.webmanifest">
+  <link rel="icon" href="/game/wordmine/app-icon.png">
+  <link rel="apple-touch-icon" href="/game/wordmine/app-icon.png">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "VideoGame",
+    "name": "Word Mine Solo",
+    "description": "Word Mine Solo lets players explore daily, weekly, and random letter mines full of hidden words.",
+    "genre": ["Word Game", "Puzzle", "Daily Game"],
+    "gamePlatform": "Web Browser",
+    "applicationCategory": "Game",
+    "operatingSystem": "Any",
+    "inLanguage": "en"
+  }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/wordmine.css"/>
+  <script>try{var t=localStorage.getItem('wordtycoon_theme');if(t!=='light'&&t!=='dark')t=localStorage.getItem('wordmine-theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
+</head>
+<body>
+  <!-- Mine Selector Screen -->
+  <div id="mine-selector" class="mine-selector">
+    <div class="selector-header">
+      <a href="/me" class="back-link" title="Portal">&#127968;</a>
+      <h1><span class="pick-icon">&#9935;</span> Word Mine</h1>
+      <p class="tagline">Dig deeper. Find rarer.</p>
+      <button id="theme-toggle-selector" class="theme-toggle" title="Toggle light/dark mode" style="position:absolute;right:4px;top:2px;">
+        <svg class="theme-icon-dark" width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="8" r="3.5"/><path d="M8 0v2M8 14v2M0 8h2M14 8h2M2.3 2.3l1.4 1.4M12.3 12.3l1.4 1.4M2.3 13.7l1.4-1.4M12.3 3.7l1.4-1.4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <svg class="theme-icon-light" width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M6 .278a.77.77 0 0 1 .08.858 7.2 7.2 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277q.792 0 1.533-.16a.79.79 0 0 1 .81.316.73.73 0 0 1-.031.893A8.35 8.35 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.75.75 0 0 1 6 .278Z"/></svg>
+      </button>
+    </div>
+    <button id="random-mine-btn" class="random-mine-btn">&#127922; Random Mine</button>
+    <div id="mine-grid" class="mine-grid"></div>
+  </div>
+
+  <!-- Game Screen -->
+  <div id="game-screen" class="game-screen" style="display:none;">
+    <div class="game-header">
+      <button id="back-btn" class="back-btn" title="Back to mines">&#9664;</button>
+      <div class="mine-info">
+        <span id="mine-name" class="mine-name">Mine</span>
+        <span id="daily-badge" class="daily-badge hidden">DAILY</span>
+      </div>
+      <div id="xp-total" class="xp-total"><span class="xp-icon">&#10022;</span> <span id="xp-count">0</span></div>
+      <button id="theme-toggle-game" class="theme-toggle" title="Toggle light/dark mode">
+        <svg class="theme-icon-dark" width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="8" r="3.5"/><path d="M8 0v2M8 14v2M0 8h2M14 8h2M2.3 2.3l1.4 1.4M12.3 12.3l1.4 1.4M2.3 13.7l1.4-1.4M12.3 3.7l1.4-1.4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <svg class="theme-icon-light" width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M6 .278a.77.77 0 0 1 .08.858 7.2 7.2 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277q.792 0 1.533-.16a.79.79 0 0 1 .81.316.73.73 0 0 1-.031.893A8.35 8.35 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.75.75 0 0 1 6 .278Z"/></svg>
+      </button>
+    </div>
+
+    <!-- Letters -->
+    <div id="letter-area" class="letter-area">
+      <div id="letter-row-1" class="letter-row"></div>
+      <div id="letter-row-2" class="letter-row"></div>
+      <div id="letter-row-3" class="letter-row"></div>
+    </div>
+
+    <!-- Current Word -->
+    <div class="input-area">
+      <div id="current-word" class="current-word"></div>
+      <div class="input-buttons">
+        <button id="btn-delete" class="action-btn delete-btn">&#9003;</button>
+        <button id="btn-shuffle" class="action-btn shuffle-btn">&#128260;</button>
+        <button id="btn-dig" class="action-btn dig-btn">&#9935; DIG</button>
+      </div>
+    </div>
+
+    <!-- Feedback Toast -->
+    <div id="feedback" class="feedback hidden"></div>
+
+    <!-- Depth Meter -->
+    <div id="depth-meter" class="depth-meter">
+      <div class="depth-title">&#9935; DEPTH</div>
+      <div id="depth-tiers" class="depth-tiers"></div>
+    </div>
+
+    <!-- Found Words -->
+    <div id="found-words" class="found-words">
+      <div class="found-header">
+        <span>Words Found: <strong id="found-count">0</strong></span>
+        <span>Total: <strong id="words-total">0</strong></span>
+      </div>
+      <div id="found-list" class="found-list"></div>
+    </div>
+
+  </div>
+
+  <script src="https://wordtycoon.live/js/win-card.js"></script>
+  <script src="js/sp-engine.js"></script>
+  <!-- Auth pill: shows Sign In when session is missing -->
+  <!-- Unified login modal: shows when session check returns "logged out" -->
+  <script src="https://wordtycoon.live/login-prompt.js?v=3" defer></script>
+  <script>(function(){var H='https://wordtycoon.live';function show(){if(!window.LoginPrompt||!window.LoginPrompt.showModal)return setTimeout(show,60);window.LoginPrompt.showModal({authBase:H,returnTo:location.href});}fetch(H+'/api/me/session',{credentials:'include'}).then(function(r){return r.json();}).then(function(d){if(!d||!d.ok||!d.user)show();}).catch(show);})();</script>
+</body>
+</html>

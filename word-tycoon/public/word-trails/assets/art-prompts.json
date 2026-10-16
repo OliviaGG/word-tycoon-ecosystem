@@ -1,0 +1,18 @@
+{
+  "tool": "Built-in image_gen",
+  "encoding": "JPEG quality 0.86, original dimensions preserved",
+  "prompts": [
+    {
+      "key": "alpine",
+      "prompt": "Use case: stylized-concept. Create one background artwork for a colorful but calm letter-wheel crossword browser game called Word Trails. Landscape 2048x1152. A charming alpine meadow with rounded jade and mint-green hills, softly sculpted toy-like snowy mountain peaks in the distance, chunky rounded evergreen trees, little pink/yellow meadow flowers, a winding sandy footpath and a tiny crystal-blue stream. Soft cartoon 3D clay render, matte tactile materials, gentle ambient occlusion, warm morning sunshine, powder blue sky, fluffy puffy clouds. Sophisticated pastel colors with slightly stronger saturation than a flat illustration. Composition: environmental detail frames the outside edges and lower foreground; leave broad quiet pale sky and distant hills across the top and center, since the real game UI overlays most of the middle. Wide scenic vista, no people, no text, no letters, no logos, no UI, no crossword, no border, no watermark. This is scene artwork only."
+    },
+    {
+      "key": "desert",
+      "prompt": "Use case: stylized-concept. Create one background artwork for a colorful but calm letter-wheel crossword browser game. Landscape 2048x1152. A charming desert canyon oasis with rounded peach and apricot sandstone mesas, smooth soft rock formations, little rounded jade-green cacti, pink desert blossoms, a sandy winding footpath, and a small turquoise oasis. Soft cartoon 3D clay render, matte tactile materials, gentle ambient occlusion, golden afternoon sunshine, pale powder-blue sky, fluffy puffy clouds. Sophisticated pastel colors with slightly stronger saturation than a flat illustration. Composition: environmental detail frames the outside edges and lower foreground; leave broad quiet pale sky and distant terrain across the top and center, since the real game UI overlays most of the middle. Wide scenic vista, no people, no text, no letters, no logos, no UI, no crossword, no border, no watermark. This is scene artwork only."
+    },
+    {
+      "key": "coast",
+      "prompt": "Use case: stylized-concept. Create one background artwork for a colorful but calm letter-wheel crossword browser game. Landscape 2048x1152. A charming coastal cove with a soft turquoise sea, rounded sea-green grassy cliff islands, smooth cream-colored beaches, small rounded coral and peach shells, a winding sandy coastal footpath, and a tiny rounded white lighthouse at the distant outside edge. Soft cartoon 3D clay render, matte tactile materials, gentle ambient occlusion, warm sunny coastal light, pale powder-blue sky, fluffy puffy clouds. Sophisticated pastel colors with slightly stronger saturation than a flat illustration. Composition: environmental detail frames the outside edges and lower foreground; leave broad quiet pale sky and distant terrain across the top and center, since the real game UI overlays most of the middle. Wide scenic vista, no people, no text, no letters, no logos, no UI, no crossword, no border, no watermark. This is scene artwork only."
+    }
+  ]
+}

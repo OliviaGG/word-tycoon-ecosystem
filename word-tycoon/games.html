@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Word Tycoon Games | Daily, Live, Beta, and Upcoming Word Games</title>
+  <meta name="description" content="Explore the full Word Tycoon game lineup, including Subtextle, recTangled, erecTangled, Word5000, Color500, Wordle, Betwixt, PixeLetters, Spelling Bee, Figural, UnWordle, Triangled, WikiContexto, WikirecTangled, Junk Drawer, Synapse, and upcoming games.">
+  <link rel="canonical" href="https://wordtycoon.live/games">
+  <meta name="theme-color" content="#0d1320">
+  <link rel="manifest" href="/portal/manifest.webmanifest">
+  <link rel="icon" href="/portal/img/logo.png">
+  <link rel="apple-touch-icon" href="/portal/img/logo.png">
+  <meta property="og:title" content="Word Tycoon Games">
+  <meta property="og:description" content="Browse the full Word Tycoon lineup of live, beta, and upcoming word games.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://wordtycoon.live/games">
+  <meta property="og:site_name" content="Word Tycoon">
+  <style>
+    :root {
+      color-scheme: dark light;
+      --bg: #06080e;
+      --surface: rgba(14, 18, 28, 0.78);
+      --surface2: rgba(20, 26, 38, 0.72);
+      --border: rgba(255, 255, 255, 0.08);
+      --glass-border: rgba(255, 255, 255, 0.12);
+      --text: #edf0f7;
+      --text-dim: #94a0b8;
+      --accent: #a5e1ff;
+      --success: #86efac;
+      --warning: #fde68a;
+      --danger: #fda4af;
+      --radius-lg: 16px;
+    }
+    :root[data-theme="light"] {
+      --bg: #eef6ff;
+      --surface: rgba(255, 255, 255, 0.94);
+      --surface2: rgba(235, 244, 255, 0.92);
+      --border: rgba(148, 163, 184, 0.26);
+      --glass-border: rgba(148, 163, 184, 0.24);
+      --text: #0f172a;
+      --text-dim: #52627a;
+      --accent: #2563eb;
+      --success: #15803d;
+      --warning: #b45309;
+      --danger: #dc2626;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      color: var(--text);
+      min-height: 100vh;
+      background:
+        radial-gradient(ellipse at 10% 0%, rgba(165, 225, 255, 0.10) 0%, transparent 40%),
+        radial-gradient(ellipse at 90% 5%, rgba(240, 171, 252, 0.08) 0%, transparent 35%),
+        radial-gradient(ellipse at 20% 55%, rgba(134, 239, 172, 0.07) 0%, transparent 35%),
+        linear-gradient(180deg, #05070c 0%, var(--bg) 52%, #060a11 100%);
+      background-attachment: fixed;
+    }
+    :root[data-theme="light"] body {
+      background:
+        radial-gradient(circle at top left, rgba(96, 165, 250, 0.18), transparent 28%),
+        radial-gradient(circle at top right, rgba(236, 72, 153, 0.10), transparent 24%),
+        radial-gradient(circle at bottom left, rgba(16, 185, 129, 0.10), transparent 24%),
+        linear-gradient(180deg, #f8fbff 0%, #edf5ff 42%, #e8f2ff 100%);
+    }
+    main { width: min(1180px, calc(100% - 32px)); margin: 0 auto; padding: 28px 0 80px; }
+    .hero, .muted-panel {
+      border: 1px solid var(--glass-border);
+      background: var(--surface);
+      box-shadow: 0 22px 54px rgba(0,0,0,0.25);
+      border-radius: 28px;
+    }
+    :root[data-theme="light"] .hero, :root[data-theme="light"] .muted-panel {
+      box-shadow: 0 20px 42px rgba(88,121,154,0.12);
+    }
+    .hero { padding: 28px; margin-bottom: 24px; }
+    .hero-top, .section-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+    .hub-btn {
+      display: inline-flex; align-items: center; justify-content: center; min-height: 42px; padding: 0 16px;
+      border-radius: 999px; border: 1px solid rgba(165,225,255,0.18); background: rgba(255,255,255,0.04);
+      color: var(--text); text-decoration: none; font-size: 0.92rem; font-weight: 800; letter-spacing: 0.02em;
+    }
+    :root[data-theme="light"] .hub-btn { background: rgba(37,99,235,0.08); border-color: rgba(37,99,235,0.18); color: #1d4ed8; }
+    .eyebrow { color: var(--accent); font-size: 11px; letter-spacing: 0.18em; font-weight: 800; text-transform: uppercase; }
+    h1, h2, h3 { margin: 0; line-height: 1.08; }
+    h1 { font-size: clamp(2.6rem, 5vw, 4.4rem); letter-spacing: -0.04em; margin: 12px 0; }
+    p { margin: 0; color: var(--text-dim); line-height: 1.7; }
+    .hero-copy { max-width: 860px; font-size: 1.03rem; }
+    .hero-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: 22px; }
+    .hero-stat { padding: 16px 18px; border-radius: 18px; border: 1px solid var(--border); background: rgba(255,255,255,0.04); }
+    :root[data-theme="light"] .hero-stat { background: rgba(255,255,255,0.82); }
+    .hero-stat strong { display: block; margin-bottom: 6px; font-size: 0.98rem; color: var(--text); }
+    .hero-stat span { font-size: 0.92rem; color: var(--text-dim); line-height: 1.55; }
+    .section { margin-top: 24px; }
+    .section-title { font-size: clamp(1.5rem, 3vw, 2.1rem); letter-spacing: -0.03em; }
+    .section-sub { color: var(--text-dim); font-size: 0.95rem; }
+    .game-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+    .game-card {
+      background: rgba(14, 18, 26, 0.6); backdrop-filter: blur(8px); border: 1px solid var(--glass-border);
+      border-radius: var(--radius-lg); padding: 16px; transition: transform .2s, box-shadow .2s, border-color .2s;
+      position: relative; overflow: hidden; display: flex; flex-direction: column; min-height: 206px;
+    }
+    .game-card:hover { transform: translateY(-4px); box-shadow: 0 8px 30px color-mix(in srgb, var(--game-color) 20%, transparent); border-color: color-mix(in srgb, var(--game-color) 40%, var(--border)); }
+    .game-card::before, .game-card::after { content: ""; position: absolute; pointer-events: none; z-index: 0; }
+    .game-card::before { inset: 0; }
+    :root[data-theme="light"] .game-card {
+      background: linear-gradient(180deg, rgba(255,255,255,0.995), rgba(246,251,255,0.985));
+      box-shadow:
+        0 16px 36px rgba(37,99,235,0.08),
+        inset 0 1px 0 rgba(255,255,255,0.82);
+    }
+    :root[data-theme="light"] .game-card::before { opacity: .32; filter: saturate(.95) brightness(1.18); }
+    :root[data-theme="light"] .game-card::after { opacity: .18; filter: saturate(.9) brightness(1.12); }
+    .wg-card-top, .wg-card-meta, .gc-modes { position: relative; z-index: 1; }
+    .wg-card-top { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 12px; }
+    .wg-card-icon { width: 52px; height: 52px; flex-shrink: 0; border-radius: 14px; object-fit: cover; box-shadow: 0 8px 20px rgba(0,0,0,.22); }
+    .wg-card-info { min-width: 0; flex: 1; }
+    .wg-card-name { font-size: 20px; font-weight: 800; letter-spacing: -0.03em; color: var(--text); min-width: 0; }
+    .wg-card-desc { font-size: 13px; line-height: 1.45; color: var(--text-dim); margin-top: 4px; }
+    .wg-card-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+    .status-chip {
+      display: inline-flex; align-items: center; justify-content: center; min-height: 26px; padding: 4px 10px; border-radius: 999px;
+      font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; border: 1px solid transparent;
+    }
+    .status-chip.live { background: rgba(79,195,79,.15); color: var(--success); border-color: rgba(79,195,79,.3); }
+    .status-chip.beta { background: rgba(255,171,0,.15); color: var(--warning); border-color: rgba(255,171,0,.3); }
+    .status-chip.upcoming { background: rgba(253,164,175,.15); color: var(--danger); border-color: rgba(253,164,175,.3); }
+    .status-chip.daily { background: rgba(255,215,0,.15); color: #ffd700; border-color: rgba(255,215,0,.3); }
+    :root[data-theme="light"] .status-chip.daily { color: #b7791f; }
+    .gc-modes { display: flex; gap: 6px; margin-top: auto; }
+    .gc-mode-btn {
+      display: block; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; text-decoration: none; text-align: center; flex: 1;
+    }
+    .gc-mode-solo { background: color-mix(in srgb, var(--game-color) 8%, var(--surface2)); color: var(--text); border: 1px solid color-mix(in srgb, var(--game-color) 22%, var(--border)); }
+    .gc-mode-online { background: color-mix(in srgb, var(--game-color) 20%, var(--surface)); color: var(--game-color); border: 1px solid color-mix(in srgb, var(--game-color) 40%, transparent); }
+    :root[data-theme="light"] .gc-mode-solo { background: color-mix(in srgb, var(--game-color) 10%, rgba(255,255,255,0.96)); border-color: color-mix(in srgb, var(--game-color) 24%, rgba(148,163,184,0.24)); }
+    :root[data-theme="light"] .gc-mode-online { background: color-mix(in srgb, var(--game-color) 18%, rgba(255,255,255,0.82)); }
+    .brand { display: inline-flex; align-items: baseline; gap: 0; font-family: "Fredoka", "Trebuchet MS", "Segoe UI", Tahoma, sans-serif; font-weight: 700; letter-spacing: .7px; line-height: 1; white-space: nowrap; }
+    .brand.small { font-size: 18px; }
+    .muted-panel { padding: 24px; }
+    .muted-panel ul { margin: 0; padding-left: 18px; color: var(--text-dim); line-height: 1.65; }
+    .game-card--subtextle { --game-color:#4a9eff; } .game-card--subtextle::before { background: radial-gradient(ellipse at 75% 50%, rgba(74,158,255,.10) 0%, transparent 42%), radial-gradient(ellipse at 25% 110%, rgba(74,158,255,.14) 0%, transparent 45%), linear-gradient(155deg, #05101e 0%, #0b1e38 55%, #040c18 100%); } .game-card--subtextle::after { width:160px;height:160px;top:-60px;right:-60px;border-radius:50%;background:conic-gradient(from 220deg, rgba(74,158,255,.10) 0deg, transparent 40deg, transparent 360deg);box-shadow:0 0 0 2px rgba(74,158,255,.25),0 0 0 22px rgba(74,158,255,.12),0 0 0 46px rgba(74,158,255,.07); }
+    .game-card--rectangled { --game-color:#22d3ee; } .game-card--rectangled::before { background: repeating-linear-gradient(90deg, rgba(34,211,238,.05) 0px, rgba(34,211,238,.05) 1px, transparent 1px, transparent 20px), repeating-linear-gradient(0deg, rgba(34,211,238,.05) 0px, rgba(34,211,238,.05) 1px, transparent 1px, transparent 20px), radial-gradient(ellipse at 80% 80%, rgba(34,211,238,.10) 0%, transparent 45%), linear-gradient(135deg, #030f12 0%, #071e24 60%, #020c10 100%); } .game-card--rectangled::after { width:20px;height:20px;bottom:14px;right:14px;background:rgba(34,211,238,.22);border:1px solid rgba(34,211,238,.35);border-radius:3px;box-shadow:-26px 0 0 1px rgba(34,211,238,.35),-52px 0 0 1px rgba(34,211,238,.25),0 -26px 0 1px rgba(34,211,238,.3); }
+    .game-card--erectangled { --game-color:#ff4466; } .game-card--erectangled::before { background: radial-gradient(ellipse at 20% 85%, rgba(255,68,102,.18) 0%, transparent 45%), radial-gradient(ellipse at 75% 15%, rgba(200,30,60,.12) 0%, transparent 35%), linear-gradient(155deg, #180308 0%, #280510 55%, #110205 100%); } .game-card--erectangled::after { width:130px;height:120px;bottom:-40px;right:-30px;background:radial-gradient(ellipse at 30% 30%, rgba(255,68,102,.22) 0%, transparent 55%),radial-gradient(ellipse at 75% 70%, rgba(200,30,60,.14) 0%, transparent 45%);border-radius:62% 38% 70% 30% / 45% 60% 40% 55%; }
+    .game-card--word500 { --game-color:#a855f7; } .game-card--word500::before { background: radial-gradient(ellipse at 90% 50%, rgba(168,85,247,.12) 0%, transparent 40%), radial-gradient(ellipse at 10% 80%, rgba(120,50,200,.10) 0%, transparent 35%), linear-gradient(145deg, #0c0520 0%, #160a34 55%, #0a0418 100%); } .game-card--word500::after { inset:0;background:linear-gradient(-52deg, transparent 0%, transparent 28%, rgba(168,85,247,.10) 28%, rgba(168,85,247,.10) 30%, transparent 30%, transparent 40%, rgba(168,85,247,.14) 40%, rgba(168,85,247,.14) 43%, transparent 43%, transparent 52%, rgba(168,85,247,.08) 52%, rgba(168,85,247,.08) 55%, transparent 55%); }
+    .game-card--wordle { --game-color:#6aaa64; } .game-card--wordle::before { background: radial-gradient(ellipse at 80% 20%, rgba(106,170,100,.14) 0%, transparent 42%), radial-gradient(ellipse at 20% 85%, rgba(106,170,100,.08) 0%, transparent 35%), linear-gradient(160deg, #061208 0%, #0d2010 60%, #061208 100%); } .game-card--wordle::after { width:18px;height:18px;bottom:14px;right:14px;background:rgba(106,170,100,.22);border:1px solid rgba(106,170,100,.38);border-radius:3px;box-shadow:-22px 0 0 1px rgba(106,170,100,.30),-44px 0 0 1px rgba(200,175,40,.35),-66px 0 0 1px rgba(106,170,100,.25),0 -22px 0 1px rgba(106,170,100,.18); }
+    .game-card--betwixt { --game-color:#7b68ee; } .game-card--betwixt::before { background: radial-gradient(ellipse at 50% 110%, rgba(123,104,238,.20) 0%, transparent 50%), radial-gradient(ellipse at 80% 20%, rgba(168,85,247,.08) 0%, transparent 38%), linear-gradient(160deg, #0c0818 0%, #160d2c 60%, #0a0615 100%); } .game-card--betwixt::after { width:90%;height:70px;bottom:-35px;left:5%;background:radial-gradient(ellipse at 50% 100%, rgba(74,158,255,.18) 0%, rgba(123,104,238,.22) 35%, rgba(168,85,247,.14) 60%, transparent 75%);border-radius:50%; }
+    .game-card--pixeletters { --game-color:#ff6b9d; } .game-card--pixeletters::before { background: radial-gradient(ellipse at 70% 25%, rgba(255,107,157,.18) 0%, transparent 45%), radial-gradient(ellipse at 20% 75%, rgba(200,50,120,.10) 0%, transparent 35%), linear-gradient(155deg, #1a0414 0%, #260720 60%, #110310 100%); } .game-card--pixeletters::after { inset:0;background-image:radial-gradient(circle, rgba(255,107,157,.28) 1.5px, transparent 1.5px),radial-gradient(ellipse at 70% 25%, rgba(255,107,157,.14) 0%, transparent 45%);background-size:11px 11px,100% 100%;background-position:4px 4px,0 0; }
+    .game-card--figural { --game-color:#00e5ff; } .game-card--figural::before { background: radial-gradient(ellipse at 50% 0%, rgba(0,229,255,.16) 0%, transparent 45%), radial-gradient(ellipse at 85% 80%, rgba(0,200,255,.08) 0%, transparent 35%), linear-gradient(160deg, #010a0f 0%, #021520 60%, #010a0f 100%); } .game-card--figural::after { inset:0;background:linear-gradient(148deg, rgba(0,229,255,.16) 0%, transparent 30%),linear-gradient(132deg, rgba(0,229,255,.10) 0%, transparent 28%),linear-gradient(118deg, rgba(0,229,255,.07) 0%, transparent 25%); }
+    .game-card--spellingbee { --game-color:#ffab00; } .game-card--spellingbee::before { background: radial-gradient(ellipse at 20% 50%, rgba(255,171,0,.16) 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, rgba(200,120,0,.10) 0%, transparent 38%), linear-gradient(155deg, #180f00 0%, #281800 60%, #140c00 100%); } .game-card--spellingbee::after { width:72px;height:82px;top:50%;right:-6px;transform:translateY(-50%);background:rgba(255,171,0,.13);border:1.5px solid rgba(255,171,0,.25);clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%); }
+    .game-card--wordfall { --game-color:#10b981; } .game-card--wordfall::before { background: radial-gradient(ellipse at 20% 20%, rgba(16,185,129,.12) 0%, transparent 40%), radial-gradient(ellipse at 80% 75%, rgba(56,189,248,.10) 0%, transparent 35%), linear-gradient(160deg, #07120f 0%, #0d201b 55%, #07120f 100%); } .game-card--wordfall::after { inset:0;background:linear-gradient(180deg, transparent 0%, rgba(16,185,129,.08) 100%),repeating-linear-gradient(90deg, transparent 0 26px, rgba(255,255,255,.04) 26px 28px);opacity:.7; }
+    :root[data-theme="light"] .game-card--subtextle { background: linear-gradient(180deg, rgba(255,255,255,0.998), rgba(242,248,255,0.988)); }
+    :root[data-theme="light"] .game-card--rectangled { background: linear-gradient(180deg, rgba(255,255,255,0.998), rgba(242,253,253,0.988)); }
+    :root[data-theme="light"] .game-card--erectangled { background: linear-gradient(180deg, rgba(255,255,255,0.998), rgba(255,245,248,0.988)); }
+    :root[data-theme="light"] .game-card--word500 { background: linear-gradient(180deg, rgba(255,255,255,0.998), rgba(248,244,255,0.988)); }
+    :root[data-theme="light"] .game-card--wordle { background: linear-gradient(180deg, rgba(255,255,255,0.998), rgba(245,252,245,0.988)); }
+    :root[data-theme="light"] .game-card--betwixt { background: linear-gradient(180deg, rgba(255,255,255,0.998), rgba(247,244,255,0.988)); }
+    :root[data-theme="light"] .game-card--pixeletters { background: linear-gradient(180deg, rgba(255,255,255,0.998), rgba(255,246,250,0.988)); }
+    :root[data-theme="light"] .game-card--figural { background: linear-gradient(180deg, rgba(255,255,255,0.998), rgba(243,251,255,0.988)); }
+    :root[data-theme="light"] .game-card--spellingbee { background: linear-gradient(180deg, rgba(255,255,255,0.998), rgba(255,250,239,0.988)); }
+    :root[data-theme="light"] .game-card--wordfall { background: linear-gradient(180deg, rgba(255,255,255,0.998), rgba(244,253,248,0.988)); }
+    @media (max-width: 980px) { .game-grid { grid-template-columns: 1fr 1fr; } .hero-stats { grid-template-columns: 1fr; } }
+    @media (max-width: 640px) { main { width: min(100%, calc(100% - 24px)); padding: 20px 0 56px; } .hero, .muted-panel { border-radius: 24px; } .hero { padding: 22px; } .game-grid { grid-template-columns: 1fr; } .game-card { min-height: auto; padding: 14px; } .wg-card-icon { width: 48px; height: 48px; } .wg-card-name { font-size: 18px; } }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="hero">
+      <div class="hero-top">
+        <a class="hub-btn" href="https://wordtycoon.live/hub">Word Tycoon Hub</a>
+        <span class="eyebrow">Word Games Catalog</span>
+      </div>
+      <h1>Word Tycoon Games</h1>
+      <p class="hero-copy">Explore the Word Tycoon lineup in one place. From daily puzzle games to live multiplayer formats and in-progress experiments, this page is the easiest way to jump into the games, find your favorites, and see what is coming next.</p>
+      <div class="hero-stats">
+        <div class="hero-stat"><strong>Daily Favorites</strong><span>Start with games like <span class="brand">recTangled</span>, <span class="brand">erecTangled</span>, and Subtextle for repeatable daily play.</span></div>
+        <div class="hero-stat"><strong>Different Play Styles</strong><span>Pick from semantic guessing, word search grids, classic deduction, and other puzzle formats across the lineup.</span></div>
+        <div class="hero-stat"><strong>Live, Beta, and Upcoming</strong><span>See which games are ready to play now, which ones are still being tuned, and which releases are on the way.</span></div>
+      </div>
+    </section>
+    <section class="section">
+      <div class="section-head">
+        <h2 class="section-title">Featured Games</h2>
+        <p class="section-sub">A strong starting point if you are new to the Word Tycoon lineup.</p>
+      </div>
+      <div class="game-grid">
+        <article class="game-card game-card--rectangled">
+          <div class="wg-card-top">
+            <img src="/portal/img/game-rectangled.svg" alt="recTangled" class="wg-card-icon">
+            <div class="wg-card-info">
+              <div class="wg-card-name"><span class="brand small"><span style="color:#3EC8E8">r</span><span style="color:#F5920A">e</span><span style="color:#EFC000">c</span><span style="color:#1E52C8">T</span><span style="color:#E83020">a</span><span style="color:#42B238">n</span><span style="color:#88AAFF">g</span><span style="color:#C835B8">l</span><span style="color:#F5920A">e</span><span style="color:#1EB8A8">d</span></span></div>
+              <div class="wg-card-desc">Fixed-grid daily word search with archive play, rarity scoring, and a strong Squaredle-style loop.</div>
+            </div>
+          </div>
+          <div class="wg-card-meta"><span class="status-chip live">Live</span><span class="status-chip daily">Daily</span></div>
+          <div class="gc-modes"><a href="/games/rectangled" class="gc-mode-btn gc-mode-solo">Explore</a><a href="https://rectangled.live" class="gc-mode-btn gc-mode-online" target="_blank" rel="noopener noreferrer">Play</a></div>
+        </article>
+        <article class="game-card game-card--erectangled">
+          <div class="wg-card-top">
+            <img src="/portal/img/game-sproutle.png" alt="erecTangled" class="wg-card-icon">
+            <div class="wg-card-info">
+              <div class="wg-card-name"><span class="brand small"><span style="color:#44bb88">e</span><span style="color:#3EC8E8">r</span><span style="color:#F5920A">e</span><span style="color:#EFC000">c</span><span style="color:#1E52C8">T</span><span style="color:#E83020">a</span><span style="color:#42B238">n</span><span style="color:#88AAFF">g</span><span style="color:#C835B8">l</span><span style="color:#F5920A">e</span><span style="color:#1EB8A8">d</span></span></div>
+              <div class="wg-card-desc">Expanding-ring word search puzzle for players who want a more unusual board shape in the same genre.</div>
+            </div>
+          </div>
+          <div class="wg-card-meta"><span class="status-chip live">Live</span><span class="status-chip daily">Daily</span></div>
+          <div class="gc-modes"><a href="/games/erectangled" class="gc-mode-btn gc-mode-solo">Explore</a><a href="https://erectangled.com" class="gc-mode-btn gc-mode-online" target="_blank" rel="noopener noreferrer">Play</a></div>
+        </article>
+        <article class="game-card game-card--subtextle">
+          <div class="wg-card-top">
+            <img src="/portal/img/game-subtextle.png" alt="Subtextle" class="wg-card-icon">
+            <div class="wg-card-info"><div class="wg-card-name">Subtextle</div><div class="wg-card-desc">Semantic guessing game built for faster repeat sessions and Contexto-style word hunting.</div></div>
+          </div>
+          <div class="wg-card-meta"><span class="status-chip live">Live</span><span class="status-chip daily">Daily</span></div>
+          <div class="gc-modes"><a href="/games/subtextle" class="gc-mode-btn gc-mode-solo">Explore</a><a href="https://subtextle.com" class="gc-mode-btn gc-mode-online" target="_blank" rel="noopener noreferrer">Play</a></div>
+        </article>
+      </div>
+    </section>
+    <section class="section">
+      <div class="section-head">
+        <h2 class="section-title">More Word Tycoon Games</h2>
+        <p class="section-sub">Explore more games across the Word Tycoon collection.</p>
+      </div>
+      <div class="game-grid">
+        <article class="game-card game-card--word500"><div class="wg-card-top"><img src="/portal/img/game-word500.png" alt="Word5000" class="wg-card-icon"><div class="wg-card-info"><div class="wg-card-name">Word5000</div><div class="wg-card-desc">Live word deduction game where players race to find the target word using clue strength and proximity.</div></div></div><div class="wg-card-meta"><span class="status-chip live">Live</span></div><div class="gc-modes"><a href="/games/word5000" class="gc-mode-btn gc-mode-solo">Explore</a><a href="https://word5000.com" class="gc-mode-btn gc-mode-online" target="_blank" rel="noopener noreferrer">Play</a></div></article>
+        <article class="game-card game-card--wordle"><div class="wg-card-top"><img src="/portal/img/game-wordle.png" alt="Wordle" class="wg-card-icon"><div class="wg-card-info"><div class="wg-card-name">Wordle</div><div class="wg-card-desc">Classic short-form word guessing with solo and multiplayer entry points inside the Word Tycoon ecosystem.</div></div></div><div class="wg-card-meta"><span class="status-chip live">Live</span><span class="status-chip daily">Daily</span></div><div class="gc-modes"><a href="https://wordtycoon.live/game/wordle/sp.html" class="gc-mode-btn gc-mode-solo" target="_blank" rel="noopener noreferrer">Solo</a><a href="https://wordtycoon.live/game/wordle/mp.html" class="gc-mode-btn gc-mode-online" target="_blank" rel="noopener noreferrer">Online</a></div></article>
+        <article class="game-card game-card--betwixt"><div class="wg-card-top"><img src="/portal/img/game-betwixt.png" alt="Betwixt" class="wg-card-icon"><div class="wg-card-info"><div class="wg-card-name">Betwixt</div><div class="wg-card-desc">Word puzzle built around narrowing toward the answer with constrained clue logic and short, replayable sessions.</div></div></div><div class="wg-card-meta"><span class="status-chip live">Live</span><span class="status-chip daily">Daily</span></div><div class="gc-modes"><a href="https://wordtycoon.live/game/betwixt/play" class="gc-mode-btn gc-mode-online" target="_blank" rel="noopener noreferrer">Open Game</a></div></article>
+        <article class="game-card game-card--pixeletters"><div class="wg-card-top"><img src="/portal/img/game-pixeletters.png" alt="PixeLetters" class="wg-card-icon"><div class="wg-card-info"><div class="wg-card-name">PixeLetters</div><div class="wg-card-desc">Visual word puzzle with pixel-based clue structure and daily play potential.</div></div></div><div class="wg-card-meta"><span class="status-chip live">Live</span><span class="status-chip daily">Daily</span></div><div class="gc-modes"><a href="https://wordtycoon.live/pixeletters/solo/" class="gc-mode-btn gc-mode-online" target="_blank" rel="noopener noreferrer">Open Game</a></div></article>
+        <article class="game-card game-card--figural"><div class="wg-card-top"><img src="/portal/img/game-figural.png" alt="Figural" class="wg-card-icon"><div class="wg-card-info"><div class="wg-card-name">Figural</div><div class="wg-card-desc">Symbol-driven puzzle game in the Word Tycoon lineup for players who want a less standard word-adjacent format.</div></div></div><div class="wg-card-meta"><span class="status-chip live">Live</span></div><div class="gc-modes"><a href="https://wordtycoon.live/game/figural/sp.html" class="gc-mode-btn gc-mode-online" target="_blank" rel="noopener noreferrer">Open Game</a></div></article>
+        <article class="game-card game-card--spellingbee"><div class="wg-card-top"><img src="/portal/img/game-spellingbee.png" alt="Spelling Bee" class="wg-card-icon"><div class="wg-card-info"><div class="wg-card-name">Spelling Bee</div><div class="wg-card-desc">Letter-building word hunt built around creating as many valid words as possible from a constrained set.</div></div></div><div class="wg-card-meta"><span class="status-chip live">Live</span><span class="status-chip daily">Daily</span></div><div class="gc-modes"><a href="https://wordtycoon.live/spellingbee/solo/" class="gc-mode-btn gc-mode-online" target="_blank" rel="noopener noreferrer">Open Game</a></div></article>
+        <article class="game-card game-card--wordfall"><div class="wg-card-top"><img src="/portal/img/logo.png" alt="Wordfall" class="wg-card-icon"><div class="wg-card-info"><div class="wg-card-name">Wordfall</div><div class="wg-card-desc">Falling-letter word game where the board fills over time and players have to keep pace with the letter rain.</div></div></div><div class="wg-card-meta"><span class="status-chip upcoming">Not Released</span></div><div class="gc-modes"><a href="/games/wordfall" class="gc-mode-btn gc-mode-solo">Preview</a></div></article>
+      </div>
+    </section>
+    <section class="section muted-panel">
+      <div class="section-head"><h2 class="section-title">What To Expect</h2></div>
+      <ul>
+        <li><strong>Live</strong> games are ready to jump into right now.</li>
+        <li><strong>Beta</strong> games are playable, but still being tuned and expanded.</li>
+        <li><strong>Not Released</strong> means the game is part of the lineup, but not publicly playable yet.</li>
+      </ul>
+    </section>
+  </main>
+  <script>
+    (function () {
+      var storageKey = 'wordtycoon_theme';
+      var root = document.documentElement;
+      var params = new URLSearchParams(window.location.search);
+      function getTheme() {
+        try {
+          var viaUrl = params.get('theme');
+          if (viaUrl === 'light' || viaUrl === 'dark') { localStorage.setItem(storageKey, viaUrl); return viaUrl; }
+          var saved = localStorage.getItem(storageKey);
+          if (saved === 'light' || saved === 'dark') return saved;
+        } catch (e) {}
+        return window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+      }
+      function applyTheme(theme) { root.setAttribute('data-theme', theme); }
+      applyTheme(getTheme());
+      var currentTheme = root.getAttribute('data-theme');
+      document.querySelectorAll('a[href^="https://"]').forEach(function (link) {
+        try {
+          var url = new URL(link.href);
+          if (url.hostname !== location.hostname && (currentTheme === 'light' || currentTheme === 'dark')) {
+            url.searchParams.set('theme', currentTheme);
+            link.href = url.toString();
+          }
+        } catch (e) {}
+      });
+    })();
+  </script>
+</body>
+</html>

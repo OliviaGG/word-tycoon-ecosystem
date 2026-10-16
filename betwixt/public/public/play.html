@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>Betwixt (Test)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="play.css?v=4"/>
+</head>
+<body>
+  <div id="app">
+    <!-- Header -->
+    <header id="header">
+      <span class="title">BETWEENLY</span>
+      <span id="daily-badge" class="daily-badge" style="display:none">&#x2B50; DAILY</span>
+      <span id="frenzy-badge" class="frenzy-badge" style="display:none">
+        <span class="frenzy-label">FRENZY</span>
+        <span id="frenzy-mult">1.0x</span>
+      </span>
+      <span class="guess-counter" id="guess-counter">0</span>
+      <div class="word-size-toggle" id="word-size-toggle"></div>
+    </header>
+
+    <!-- Game Area -->
+    <main id="game-area">
+      <!-- Lower boundary (AFTER) -->
+      <div class="boundary after" id="lower-boundary">
+        <span class="bnd-label">AFTER</span>
+        <span class="bnd-arrow">&darr;</span>
+        <div class="bnd-tiles" id="lower-tiles"></div>
+        <div class="pfp-circle" id="lower-pfp"></div>
+      </div>
+
+      <!-- Confirmed letters row -->
+      <div class="confirmed-row" id="confirmed-row"></div>
+
+      <!-- Upper boundary (BEFORE) -->
+      <div class="boundary before" id="upper-boundary">
+        <span class="bnd-label">BEFORE</span>
+        <span class="bnd-arrow">&uarr;</span>
+        <div class="bnd-tiles" id="upper-tiles"></div>
+        <div class="pfp-circle" id="upper-pfp"></div>
+      </div>
+
+      <!-- Alphabet grid (moved inside game-area, right below BEFORE boundary) -->
+      <div class="alphabet" id="alphabet">
+        <div class="alpha-row" id="alpha-row-1"></div>
+        <div class="alpha-row" id="alpha-row-2"></div>
+      </div>
+    </main>
+
+    <!-- QWERTY Keyboard -->
+    <div class="keyboard" id="keyboard"></div>
+
+    <!-- Error toast -->
+    <div class="error-toast hidden" id="error-toast"></div>
+
+    <!-- Win overlay -->
+    <div class="win-overlay hidden" id="win-overlay">
+      <div class="win-modal">
+        <div class="win-pic" id="win-pic"></div>
+        <div class="win-name" id="win-name"></div>
+        <div class="win-word" id="win-word"></div>
+        <div class="win-info">Found in <strong id="win-count"></strong> guesses</div>
+        <div class="win-countdown" id="win-countdown"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="win-effects.js?v=3"></script>
+  <script src="play.js?v=4"></script>
+</body>
+</html>

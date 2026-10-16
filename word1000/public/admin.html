@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WORD 1000 — Command Center</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #0d1117;
+      --surface: #151d28;
+      --surface2: #1c2736;
+      --border: #2a3a4e;
+      --text: #e8e8f0;
+      --text-dim: #6a7a8e;
+      --red: #e74c3c;
+      --green: #4ade80;
+      --yellow: #f1c40f;
+      --purple: #b44aff;
+      --purple-dim: rgba(180, 74, 255, 0.15);
+      --purple-glow: rgba(180, 74, 255, 0.3);
+      --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+
+    h1 {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      color: var(--purple);
+    }
+
+    .status-dots {
+      display: flex;
+      gap: 16px;
+      font-size: 13px;
+    }
+
+    .status-dot {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--text-dim);
+    }
+
+    .dot.on { background: var(--green); box-shadow: 0 0 6px rgba(74, 222, 128, 0.5); }
+    .dot.off { background: var(--red); }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .card h2 {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--text-dim);
+      margin-bottom: 16px;
+    }
+
+    /* Current Game */
+    .current-word {
+      font-size: 42px;
+      font-weight: 900;
+      letter-spacing: 8px;
+      text-align: center;
+      color: var(--purple);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+
+    .word-length-indicator {
+      text-align: center;
+      margin-bottom: 12px;
+    }
+
+    .wl-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 14px;
+      border-radius: 20px;
+      background: var(--purple-dim);
+      border: 1px solid var(--purple-glow);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--purple);
+    }
+
+    .game-meta {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      font-size: 14px;
+    }
+
+    .meta-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .meta-label { color: var(--text-dim); }
+    .meta-value { font-weight: 700; }
+    .meta-value.active { color: var(--green); }
+    .meta-value.won { color: var(--yellow); }
+
+    /* Word Length Selector */
+    .wl-selector {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      justify-content: center;
+      padding: 10px 12px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+
+    .wl-selector-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-dim);
+    }
+
+    .wl-btns {
+      display: flex;
+      gap: 4px;
+    }
+
+    .wl-btn {
+      width: 36px;
+      height: 32px;
+      border: 1.5px solid var(--border);
+      border-radius: 6px;
+      background: var(--surface2);
+      color: var(--text-dim);
+      font-size: 14px;
+      font-weight: 800;
+      font-family: var(--font);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .wl-btn:hover {
+      border-color: var(--purple-glow);
+      color: var(--text);
+    }
+
+    .wl-btn.active {
+      background: var(--purple-dim);
+      color: var(--purple);
+      border-color: var(--purple);
+      box-shadow: 0 0 8px var(--purple-glow);
+    }
+
+    /* Controls */
+    .controls {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      font-family: var(--font);
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn-primary {
+      background: var(--purple);
+      color: #fff;
+      flex: 1;
+    }
+
+    .btn-primary:hover { filter: brightness(1.15); }
+
+    .btn-secondary {
+      background: var(--surface2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      flex: 1;
+    }
+
+    .btn-secondary:hover { border-color: var(--purple); }
+
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .guess-form {
+      display: flex;
+      gap: 8px;
+    }
+
+    .guess-form input {
+      flex: 1;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface2);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 14px;
+      text-transform: uppercase;
+    }
+
+    .guess-form input:focus {
+      outline: none;
+      border-color: var(--purple);
+    }
+
+    .guess-form input::placeholder {
+      color: var(--text-dim);
+      text-transform: none;
+    }
+
+    /* Toggle switch */
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+
+    .toggle-label {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .toggle-desc {
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-top: 2px;
+    }
+
+    .toggle-switch {
+      position: relative;
+      width: 44px;
+      height: 24px;
+      flex-shrink: 0;
+    }
+
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      inset: 0;
+      background: var(--border);
+      border-radius: 12px;
+      transition: 0.2s;
+    }
+
+    .toggle-slider::before {
+      content: '';
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      left: 3px;
+      bottom: 3px;
+      background: var(--text);
+      border-radius: 50%;
+      transition: 0.2s;
+    }
+
+    .toggle-switch input:checked + .toggle-slider {
+      background: var(--purple);
+    }
+
+    .toggle-switch input:checked + .toggle-slider::before {
+      transform: translateX(20px);
+    }
+
+    /* Feed */
+    .feed {
+      max-height: 320px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .feed::-webkit-scrollbar { width: 4px; }
+    .feed::-webkit-scrollbar-track { background: transparent; }
+    .feed::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    .feed-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: 6px;
+      background: var(--surface2);
+      font-size: 13px;
+      animation: slideIn 0.2s ease;
+    }
+
+    .feed-name {
+      min-width: 80px;
+      font-weight: 600;
+      color: var(--purple);
+    }
+
+    .feed-word {
+      font-weight: 800;
+      letter-spacing: 2px;
+      font-family: monospace;
+      font-size: 14px;
+    }
+
+    .feed-counts {
+      display: flex;
+      gap: 4px;
+      margin-left: auto;
+    }
+
+    .feed-c {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .fc-g { background: var(--green); color: #1a1a2e; }
+    .fc-y { background: var(--yellow); color: #1a1a2e; }
+    .fc-r { background: var(--red); color: #fff; }
+    .fc-zero { opacity: 0.3; }
+
+    .feed-empty {
+      color: var(--text-dim);
+      font-size: 13px;
+      text-align: center;
+      padding: 20px;
+    }
+
+    /* Stats */
+    .stats-summary {
+      display: flex;
+      gap: 24px;
+      margin-bottom: 16px;
+    }
+
+    .stat-box {
+      text-align: center;
+    }
+
+    .stat-num {
+      font-size: 28px;
+      font-weight: 900;
+      color: var(--purple);
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-dim);
+      margin: 16px 0 8px;
+    }
+
+    .leaderboard { list-style: none; }
+
+    .leaderboard li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 10px;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+    .leaderboard li:nth-child(odd) { background: var(--surface2); }
+
+    .lb-rank {
+      width: 24px;
+      font-weight: 800;
+      color: var(--text-dim);
+    }
+
+    .lb-rank.gold { color: var(--yellow); }
+    .lb-rank.silver { color: #c0c0c0; }
+    .lb-rank.bronze { color: #cd7f32; }
+
+    .lb-name {
+      flex: 1;
+      font-weight: 600;
+    }
+
+    .lb-wins {
+      font-weight: 800;
+      color: var(--green);
+    }
+
+    .lb-empty {
+      color: var(--text-dim);
+      font-size: 13px;
+      text-align: center;
+      padding: 16px;
+    }
+
+    /* History */
+    .history { list-style: none; }
+
+    .history li {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 10px;
+      border-radius: 6px;
+      font-size: 13px;
+    }
+
+    .history li:nth-child(odd) { background: var(--surface2); }
+
+    .hist-len {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 800;
+      background: var(--purple-dim);
+      color: var(--purple);
+      border: 1px solid var(--purple-glow);
+      flex-shrink: 0;
+    }
+
+    .hist-word {
+      font-weight: 800;
+      letter-spacing: 2px;
+      font-family: monospace;
+      color: var(--green);
+      min-width: 60px;
+    }
+
+    .hist-winner { flex: 1; font-weight: 600; }
+
+    .hist-guesses { color: var(--text-dim); }
+
+    .hist-time { color: var(--text-dim); font-size: 11px; min-width: 60px; text-align: right; }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 768px) {
+      .grid { grid-template-columns: 1fr; }
+      body { padding: 12px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>WORD 1000 COMMAND CENTER</h1>
+    <div class="status-dots">
+      <div class="status-dot">
+        <div class="dot" id="dot-displays"></div>
+        <span id="display-count">0 displays</span>
+      </div>
+      <div class="status-dot">
+        <div class="dot" id="dot-relay"></div>
+        <span id="relay-status">Broadcast relay</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="grid">
+    <!-- Current Game -->
+    <div class="card">
+      <h2>Current Game</h2>
+      <div class="current-word" id="current-word">-----</div>
+      <div class="word-length-indicator">
+        <span class="wl-badge" id="wl-badge">
+          <span id="wl-badge-num">5</span> letters
+        </span>
+      </div>
+      <div class="game-meta">
+        <div class="meta-item">
+          <span class="meta-label">Guesses:</span>
+          <span class="meta-value" id="guess-count">0</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Status:</span>
+          <span class="meta-value active" id="game-status">Active</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="card">
+      <h2>Controls</h2>
+      <div class="controls">
+        <div class="wl-selector">
+          <span class="wl-selector-label">Word length</span>
+          <div class="wl-btns" id="wl-btns">
+            <button class="wl-btn" data-len="3">3</button>
+            <button class="wl-btn" data-len="4">4</button>
+            <button class="wl-btn active" data-len="5">5</button>
+            <button class="wl-btn" data-len="6">6</button>
+            <button class="wl-btn" data-len="7">7</button>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="btn-new-game">New Game</button>
+          <button class="btn btn-secondary" id="btn-reset-jackpot">Reset Jackpot</button>
+        </div>
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">Require /slash prefix</div>
+            <div class="toggle-desc">Players must type /word to guess</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="toggle-slash">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="guess-form">
+          <input type="text" id="guess-word" placeholder="Enter word" maxlength="7">
+          <input type="text" id="guess-user" placeholder="Player name" style="max-width:120px">
+          <button class="btn btn-secondary" id="btn-guess" style="flex:0">Guess</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Live Feed -->
+    <div class="card">
+      <h2>Live Guess Feed</h2>
+      <div class="feed" id="feed">
+        <div class="feed-empty">Waiting for guesses...</div>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="card">
+      <h2>Stats</h2>
+      <div class="stats-summary">
+        <div class="stat-box">
+          <div class="stat-num" id="total-games">0</div>
+          <div class="stat-label">Games Played</div>
+        </div>
+      </div>
+      <div class="section-label">Leaderboard</div>
+      <ul class="leaderboard" id="leaderboard">
+        <li class="lb-empty">No wins yet</li>
+      </ul>
+      <div class="section-label">Recent Games</div>
+      <ul class="history" id="history">
+        <li class="lb-empty">No games yet</li>
+      </ul>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

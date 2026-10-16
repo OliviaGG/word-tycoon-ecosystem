@@ -1,0 +1,1175 @@
+/* ===== Alt page — "The Index" chip grid =====
+ * Styles for the alt-mode interface only. Scoped to .alt-page-section
+ * (added to #guesses-section in alt.html) and .alt-index-grid (the
+ * chip container that replaces #guesses-list).
+ *
+ * Recipe distilled from the design handoff "05a Avatar Dots.html".
+ * The original mockup also includes a psychedelic backdrop + glass panel
+ * frame; we omit those here because we keep the existing 3D scene
+ * behind the grid (per user spec — header/podium/pinned-guess unchanged).
+ * If you later want the psychedelic backdrop, add a .alt-panel wrapper
+ * around the grid with the gradients spec'd in the handoff.
+ */
+
+/* Hide visual scrollbars in alt mode while keeping scroll itself
+ * enabled. The active scroller here is #scroll-wrap, not html/body, so
+ * we suppress both the page-level bars and the overlay scroller's own
+ * track/thumb to match regular Searchle's chrome-free feel. */
+html, body, #scroll-wrap {
+  scrollbar-width: none;       /* Firefox */
+  -ms-overflow-style: none;    /* legacy IE / Edge */
+}
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+#scroll-wrap::-webkit-scrollbar {
+  display: none;               /* Chromium, Safari */
+  width: 0;
+  height: 0;
+}
+
+/* Register --heat as an animatable <color> so transitions on it apply
+ * smoothly to every place that derives from it (water-fill gradient,
+ * rank-pill bg/border, latest-chip glow). Without @property, --heat
+ * would just snap from one value to the next instead of fading.
+ *
+ * inherits: true — required so .cell-pill / .r / .av inherit the
+ * animated --heat from .cell during the fade. Without this they'd
+ * snap to initial-value mid-animation and the rank pill / glow would
+ * desync from the water fill. */
+@property --heat {
+  syntax: '<color>';
+  initial-value: rgba(255, 255, 255, 0.2);
+  inherits: true;
+}
+
+/* Numeric driver (0..1) for the new-guess heat fade. We animate this
+ * number instead of --heat itself so we can route the color path through
+ * OKLab via color-mix(in oklab, ...) — perceptually uniform, no muddy
+ * sRGB intermediates between distant hues (e.g. purple → green). */
+@property --heat-progress {
+  syntax: '<number>';
+  initial-value: 0;
+  inherits: false;
+}
+
+/* Heat ramp — the seven semantic color buckets. Same indices as the
+ * design handoff (1 = hot/closest, 7 = cold/farthest, x = unknown). */
+.alt-page-section {
+  --hot-1: #79ff8a;
+  --hot-2: #c1ff5a;
+  --hot-3: #ffe75a;
+  --hot-4: #ffb35a;
+  --hot-5: #ff8a4d;
+  --hot-6: #ff4d3d;
+  --hot-7: #c41a1a;
+  --hot-x: #6e6e88;
+
+  /* Bare container — no panel chrome, no backdrop-filter, no padding,
+   * no border. The chips float directly over the 3D scene. Width is
+   * matched to the pinned-guess card (~36% of viewport) and centered.
+   *
+   * !important is required to defeat the production index.html's inline
+   * <style> block that sets #guesses-section's background to a dark
+   * gradient, a gradient border-top, and pixel-thick padding (these
+   * were intended for a hidden fallback section in the original page,
+   * but alt.html inherits them when we re-show the section). */
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: none !important;
+  border-top: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 auto !important;
+  /* Locked at the size the user dialed in on their Chrome tab (~448px).
+   * Previously used clamp(280px, 36vw, 540px) which made the grid (and
+   * everything inside it via cqw) scale with viewport width. Fixed-pixel
+   * width pins the cqw container size, so every chip dimension stays
+   * constant regardless of how the viewport resizes. */
+  width: 448px !important;
+  min-height: 0 !important;
+}
+
+/* Mobile / tablet touch — desktop grid mode intentionally stays locked
+ * to the tuned 448px column above so chips keep the exact OBS/desktop
+ * proportions the user picked. On phones that same fixed width gets
+ * shrunk twice: once by the 980px desktop-style viewport in alt.html,
+ * then again by the fixed 448px section width. Give touch devices their
+ * own near-full-viewport section and uncap the cqw containers so the
+ * chip grid actually fills the handset screen. OBS keeps its separate
+ * obs-mode rule below. */
+@media (pointer: coarse) {
+  #guesses-section.alt-page-section {
+    width: 96vw !important;
+    max-width: none !important;
+    padding: 0 !important;
+  }
+  .alt-index-grid,
+  .alt-index-top-card {
+    max-width: none !important;
+  }
+}
+
+/* Header winner-slots area — reserve the COMBINED-card layout's height
+ * (the tallest config: 502px world-units vs 433px for the 4-slot and
+ * empty layouts) at all times. Without this, a fresh page load before
+ * any dual-winner round measures the SHORTER header; the first combined
+ * win then ratchets alt-main.js's sticky header height +69px and the
+ * pinned card + grid shift down mid-session ("layout sits slightly
+ * higher until someone wins"). A constant is safe here: the header
+ * lives in the fixed 1800-unit CSS3D coordinate space, not viewport
+ * units. Re-measure (.header-slots offsetHeight in is-combined mode)
+ * if the header slot design ever changes. Alt-mode only — regular
+ * Searchle doesn't load this stylesheet. */
+.header-bar .header-slots {
+  min-height: 502px;
+}
+
+/* OBS / streamer-widget context — grid renders inside the streamer's
+ * goals-overlay iframe. Section widens to match the chrome above it
+ * (HeaderBar / PodiumRow are 1800 scene-units wide; scene scale is
+ * capped at 1.0 in SceneManager so chrome maxes at 1800 device px).
+ * Section is sized to track that: 96vw on narrow OBS canvases, capped
+ * at 1800px once the iframe is wide enough that chrome stops growing.
+ * The .alt-index-grid / .alt-index-top-card cqw caps from earlier are
+ * unlocked in OBS mode below so the chip grid can fill this wider
+ * section instead of being squeezed into a 700px column. */
+body.obs-mode .alt-page-section {
+  width: 96vw !important;
+  max-width: 1800px !important;
+}
+/* Unlock the cqw-container caps in OBS so the grid can fill the wider
+ * section above. Standalone (non-OBS) stays capped at 700px from the
+ * default .alt-index-grid rule, which keeps the desktop-tab grid tight. */
+body.obs-mode .alt-index-grid,
+body.obs-mode .alt-index-top-card {
+  max-width: none !important;
+}
+
+/* View Transitions block removed — was causing perf issues even with
+ * the chip count capped. Grid does plain DOM swaps now (with a 150ms
+ * throttle in IndexGrid.js to handle chat-heavy games). */
+
+/* Hide the original (pre-alt) #guesses-list — alt.html marks it [hidden]
+ * but defend in CSS too in case markup drift removes the attribute. */
+.alt-page-section #guesses-list { display: none !important; }
+
+/* Heat color is now set per-chip inline by IndexGrid.js as an HSL value
+ * computed from the chip's rank (continuous green→red gradient). The
+ * --hot-N palette below is kept for the .latest-tag chip and any future
+ * use, but the chip-fill gradient consumes the inline --heat directly. */
+
+/* The grid itself — column-stacked rows. Each child .index-row is a
+ * CSS grid with N equal-width columns; chip size is uniform per row
+ * and shrinks tier-by-tier as rows descend.
+ *
+ * `container-type: inline-size` enables cqw units inside the grid so
+ * chip dimensions (padding, font, radii) scale proportionally with the
+ * container width. The grid is designed at a "wide" reference width
+ * (~800px); at the actual podium-matched ~432px container, every cqw
+ * dimension shrinks to ~54% — preserving the wide-view proportions in
+ * a compact footprint. */
+.alt-index-grid {
+  display: flex;
+  flex-direction: column;
+  /* Container cap: cqw resolves against the .alt-index-grid's own
+   * inline-size, so capping max-width here freezes the effective unit
+   * once the surrounding section grows past 700px. Below 700px the
+   * grid still scales naturally (mobile / portrait OBS); above 700px
+   * every cqw-driven dimension (gaps, padding, pill height, font caps,
+   * border radii, avatar size) holds steady. The per-property min()
+   * caps below are kept as a belt-and-suspenders backup for any
+   * cqw usage that escapes the container cap. */
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+  gap: min(0.75cqw, 5px);
+  container-type: inline-size;
+}
+.alt-index-grid .index-row {
+  display: grid;
+  width: 100%;
+}
+.alt-index-grid .index-row[data-cols="3"] { grid-template-columns: repeat(3, 1fr); gap: min(1cqw, 7px); }
+.alt-index-grid .index-row[data-cols="4"] { grid-template-columns: repeat(4, 1fr); gap: min(0.85cqw, 6px); }
+.alt-index-grid .index-row[data-cols="5"] { grid-template-columns: repeat(5, 1fr); gap: min(0.7cqw, 5px); }
+.alt-index-grid .index-row[data-cols="6"] { grid-template-columns: repeat(6, 1fr); gap: min(0.55cqw, 4px); }
+
+/* Base chip — compressed mirror of default Searchle's .guess-entry +
+ * .guess-chip structure:
+ *   .cell       = outer card (water-fill from rank color, no stroke)
+ *   .cell-pill  = inner dark bubble with rank-color inset stroke
+ *                 (holds rank + word, matches default's `.guess-chip`)
+ *   .av         = avatar, sibling of .cell-pill (matches default's
+ *                 .guess-pic-wrap sitting outside .guess-chip)
+ *
+ * Water-fill sits on the OUTER card (visible in the padding around the
+ * inner pill), matching the default where the SVG water-fill paints
+ * behind .guess-chip and shows in the surrounding card surface. */
+.alt-index-grid .cell {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* Cell-internal gap (between pill and avatar) and outer padding are
+   * both capped via min(cqw, px). The outer padding adds to perceived
+   * chip-to-chip spacing — without this cap, grid-gap could be locked
+   * but chips still get visibly farther apart as the container widens. */
+  gap: min(0.5cqw, 3.5px);
+  padding: min(0.5cqw, 3.5px);
+  border-radius: 1.6cqw;
+  background:
+    /* Water fill in rank color */
+    linear-gradient(to top,
+      color-mix(in oklab, var(--heat, white) 60%, transparent) 0%,
+      color-mix(in oklab, var(--heat, white) 60%, transparent) var(--fill, 0%),
+      transparent var(--fill, 0%),
+      transparent 100%),
+    /* Faint blue tint on the outer card */
+    linear-gradient(180deg, rgba(80, 140, 220, 0.10), rgba(120, 180, 255, 0.06));
+  white-space: nowrap;
+  position: relative;
+  overflow: hidden;
+  min-width: 0;
+}
+
+/* Inner pill — the actual "bubble" holding rank + word. LIQUID GLASS
+ * BLUE: translucent blue gradient with backdrop blur instead of the
+ * previous dark surface. Echoes .guess-chip's role as the inner
+ * dark/glass bubble, restyled as cool liquid glass. */
+.alt-index-grid .cell-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6cqw;
+  padding: 0.6cqw 1cqw;
+  border-radius: 1.2cqw;
+  /* Bubble height is driven by the per-tier padding overrides further
+   * down — that produces a gradual top-to-bottom shrink across the
+   * grid. Chips inside the same row share a tier so heights match within
+   * a row, but each row's tier steps down slightly from the previous. */
+  /* Liquid glass — pillowed white-tinted translucent gradient with a
+   * bright top rim and softer bottom rim. backdrop-filter is back but
+   * lighter (blur 8px vs the earlier 14px) so the GPU cost is roughly
+   * halved per chip. The chip cap in IndexGrid.js is also dropped from
+   * 120 → 90 to further bound the total filter workload. */
+  background: linear-gradient(180deg,
+    rgba(255, 255, 255, 0.22) 0%,
+    rgba(255, 255, 255, 0.04) 50%,
+    rgba(255, 255, 255, 0.12) 100%);
+  backdrop-filter: blur(8px) saturate(150%);
+  -webkit-backdrop-filter: blur(8px) saturate(150%);
+  box-shadow:
+    inset 0 0 0 0.18cqw var(--heat, rgba(255,255,255,0.20)),
+    inset 0 0.14cqw 0 rgba(255,255,255,0.55),
+    inset 0 -0.10cqw 0 rgba(255,255,255,0.08),
+    0 0.1cqw 0.3cqw rgba(0,0,0,0.18);
+  white-space: nowrap;
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+.alt-index-grid .cell .r {
+  /* Rank pill — echoes default's `.guess-rank` with color-mix tinted bg
+   * + matching rank-color inset stroke. Way more compact. */
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-weight: 700;
+  color: #fff;
+  background: color-mix(in srgb, var(--heat, rgba(255,255,255,0.3)) 28%, transparent);
+  padding: 1px 5px;
+  border-radius: 5px;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--heat, rgba(255,255,255,0.4)) 60%, transparent);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  position: relative;
+  z-index: 1;
+  flex: 0 0 auto;
+  line-height: 1.15;
+}
+.alt-index-grid .cell .w {
+  /* Word styling echoes default `.guess-word`: uppercase, white,
+   * letter-spaced. Letter-spacing is scaled down vs default (2px → ~0.5px)
+   * for the small chip sizes. */
+  color: #fff;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  text-shadow: 0 2px 6px rgba(0,0,0,0.7), 0 0 2px rgba(0,0,0,0.5);
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  flex: 1 1 auto;     /* fill remaining chip width and shrink if needed */
+  overflow: hidden;
+  text-overflow: clip;   /* never show "…" — IndexGrid.js's fit-pass + a
+                            scaleX fallback ensure the word fits visually
+                            even at extreme lengths. clip avoids ellipsis
+                            artifacts if the fit-pass lags a frame. */
+  text-align: center;
+  /* Word font auto-shrinks to fit fixed grid column, but only when
+   * needed. --fit-divisor was raised across tiers so words at typical
+   * lengths (5–10 chars) render at full --max-font; only very long
+   * words (12+ chars) trigger the shrink. 5px floor + JS fit-pass for
+   * stubborn edge cases. */
+  font-size: max(5px, min(var(--max-font, 2cqw), calc(var(--fit-divisor, 10cqw) / var(--wlen, 1))));
+}
+
+/* Row-driven size tiers. Bigger at top (tier 0), tiny at bottom (tier 9).
+ * --max-font caps the word font for that row; --fit-divisor is tuned to
+ * the chip's *text area* (chip width minus rank label + avatar + gaps),
+ * not the full chip width. For an avg lowercase char width factor ≈ 0.6,
+ * divisor ≈ available_text_width * 1.6 ensures words fit even at the
+ * upper word-length range. Short words stay at --max-font; medium-long
+ * words shrink to fit; very long words bottom out at a readable size. */
+/* Tier sizing in cqw — width still varies per-tier (3/4/5/6 cols-per-row),
+ * but heights bumped up uniformly so the bubbles feel substantial. Words
+ * shrink less aggressively (higher --fit-divisor) so they fill the bubble. */
+/* Heights are explicit per-tier (overrides padding-driven height) so the
+ * top-to-bottom gradient is strictly monotonic. Linear decrement of
+ * ~0.55cqw between adjacent tiers — every row feels distinct from its
+ * neighbor, no two tiers identical. Bottom tier (9) is ~2cqw (≈20px at
+ * 1020 container) — much shorter, as requested. */
+.alt-index-grid .cell[data-tier="0"] { --max-font: 3.5cqw; --fit-divisor: 30cqw; }
+.alt-index-grid .cell[data-tier="0"] .cell-pill { height: 7.0cqw; border-radius: 1.4cqw; padding: 0 1.4cqw; }
+.alt-index-grid .cell[data-tier="0"] .r { font-size: 2.94cqw; padding: 0.25cqw 0.85cqw; border-radius: 0.8cqw; }
+
+.alt-index-grid .cell[data-tier="1"] { --max-font: 3.1cqw; --fit-divisor: 28cqw; }
+.alt-index-grid .cell[data-tier="1"] .cell-pill { height: 6.4cqw; border-radius: 1.3cqw; padding: 0 1.25cqw; }
+.alt-index-grid .cell[data-tier="1"] .r { font-size: 2.73cqw; padding: 0.22cqw 0.75cqw; border-radius: 0.7cqw; }
+
+.alt-index-grid .cell[data-tier="2"] { --max-font: 2.7cqw; --fit-divisor: 25cqw; }
+.alt-index-grid .cell[data-tier="2"] .cell-pill { height: 5.8cqw; border-radius: 1.2cqw; padding: 0 1.1cqw; }
+.alt-index-grid .cell[data-tier="2"] .r { font-size: 2.52cqw; padding: 0.2cqw 0.7cqw; border-radius: 0.65cqw; }
+
+.alt-index-grid .cell[data-tier="3"] { --max-font: 2.3cqw; --fit-divisor: 19cqw; }
+.alt-index-grid .cell[data-tier="3"] .cell-pill { height: 5.2cqw; border-radius: 1cqw; padding: 0 0.9cqw; }
+.alt-index-grid .cell[data-tier="3"] .r { font-size: 2.2cqw; padding: 0.15cqw 0.55cqw; border-radius: 0.55cqw; }
+
+.alt-index-grid .cell[data-tier="4"] { --max-font: 2cqw; --fit-divisor: 16cqw; }
+.alt-index-grid .cell[data-tier="4"] .cell-pill { height: 4.6cqw; border-radius: 0.85cqw; padding: 0 0.75cqw; }
+.alt-index-grid .cell[data-tier="4"] .r { font-size: 2.1cqw; padding: 0.12cqw 0.5cqw; border-radius: 0.5cqw; }
+
+.alt-index-grid .cell[data-tier="5"] { --max-font: 1.7cqw; --fit-divisor: 15cqw; opacity: 0.95; }
+.alt-index-grid .cell[data-tier="5"] .cell-pill { height: 4.0cqw; border-radius: 0.75cqw; padding: 0 0.65cqw; }
+.alt-index-grid .cell[data-tier="5"] .r { font-size: 1.89cqw; padding: 0.1cqw 0.4cqw; border-radius: 0.4cqw; }
+
+.alt-index-grid .cell[data-tier="6"] { --max-font: 1.55cqw; --fit-divisor: 13cqw; opacity: 0.88; }
+.alt-index-grid .cell[data-tier="6"] .cell-pill { height: 3.5cqw; border-radius: 0.65cqw; padding: 0 0.55cqw; }
+.alt-index-grid .cell[data-tier="6"] .r { font-size: 1.78cqw; padding: 0 0.35cqw; border-radius: 0.4cqw; }
+
+.alt-index-grid .cell[data-tier="7"] { --max-font: 1.4cqw; --fit-divisor: 12cqw; opacity: 0.80; }
+.alt-index-grid .cell[data-tier="7"] .cell-pill { height: 3.0cqw; border-radius: 0.6cqw; padding: 0 0.5cqw; }
+.alt-index-grid .cell[data-tier="7"] .r { font-size: 1.64cqw; padding: 0 0.3cqw; border-radius: 0.35cqw; }
+
+.alt-index-grid .cell[data-tier="8"] { --max-font: 1.25cqw; --fit-divisor: 11cqw; opacity: 0.72; }
+.alt-index-grid .cell[data-tier="8"] .cell-pill { height: 2.5cqw; border-radius: 0.5cqw; padding: 0 0.4cqw; }
+.alt-index-grid .cell[data-tier="8"] .r { font-size: 1.51cqw; padding: 0 0.25cqw; border-radius: 0.3cqw; }
+
+.alt-index-grid .cell[data-tier="9"] { --max-font: 1.15cqw; --fit-divisor: 9cqw; opacity: 0.62; }
+.alt-index-grid .cell[data-tier="9"] .cell-pill { height: 2.0cqw; border-radius: 0.4cqw; padding: 0 0.35cqw; }
+.alt-index-grid .cell[data-tier="9"] .r { font-size: 1.3cqw; padding: 0 0.2cqw; border-radius: 0.25cqw; }
+
+/* Unknown / non-word chip — italic grey word, em-dash for rank. */
+.alt-index-grid .cell.unknown { opacity: 0.5; }
+.alt-index-grid .cell.unknown .w { color: var(--hot-x); font-style: italic; }
+
+/* Target chip — the unguessed answer at rank #1. Gold fill, pulses. */
+.alt-index-grid .cell.target {
+  --heat: #ffd95a;
+  padding: 14px 22px;
+  border-radius: 20px;
+  border: 1.5px solid rgba(255,217,90,0.65);
+  box-shadow:
+    inset 0 1.5px 0 rgba(255,255,255,0.5),
+    0 0 32px rgba(255,217,90,0.45);
+  animation: alt-v5target 2.6s ease-in-out infinite;
+}
+@keyframes alt-v5target {
+  0%, 100% { box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.5), 0 0 22px rgba(255,217,90,0.4); }
+  50%      { box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.5), 0 0 50px rgba(255,217,90,0.75); }
+}
+.alt-index-grid .cell.target .r { color: rgba(20,12,4,0.65); font-size: 14px; font-weight: 600; }
+.alt-index-grid .cell.target .w {
+  font-size: 38px;
+  font-weight: 700;
+  letter-spacing: 0.32em;
+  color: #2a1a04;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.35);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+}
+.alt-index-grid .cell.target .tag {
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(20,12,4,0.7);
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(20,12,4,0.35);
+  background: rgba(255,255,255,0.25);
+  margin-left: 4px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Latest chip — outer glow pulse. No border per user request; the
+ * pulsing rank-color halo is enough to mark the newest guess without
+ * adding a hard outline that competes with the .cell-pill rank stroke. */
+.alt-index-grid .cell.latest {
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.45),
+    0 0 28px color-mix(in oklab, var(--heat) 60%, transparent);
+  animation: alt-v5pulse 1.8s ease-in-out infinite;
+}
+
+/* New-guess heat fade — newly inserted chips (grid or top card) animate
+ * from a deep mystery-purple to their real rank-based color. We animate
+ * the numeric --heat-progress (0 → 1) and compute --heat each frame via
+ * color-mix(in oklab, ...), which gives a perceptually uniform color
+ * path. Compared to transitioning --heat directly (sRGB lerp), OKLab
+ * keeps the chip looking saturated through the whole arc instead of
+ * passing through muddy grays at the midpoint.
+ *
+ * Inline style sets --heat-end (and optionally --heat-start for
+ * carry-overs of in-progress fades); JS toggles --heat-progress 0 → 1.
+ * Duration tuned long so the perceptually smooth hue rotation reads as
+ * a deliberate reveal animation rather than a flash. */
+.alt-index-grid .cell.heat-fading,
+.alt-index-top-card .cell.heat-fading,
+.rt-chip.heat-fading {
+  --heat: color-mix(in oklab,
+    var(--heat-start, #6a1ab8),
+    var(--heat-end, var(--heat-start, #6a1ab8))
+    calc(var(--heat-progress, 0) * 100%));
+  transition: --heat-progress 4200ms cubic-bezier(0.33, 0.02, 0.27, 1);
+}
+@keyframes alt-v5pulse {
+  0%, 100% { box-shadow: inset 0 1px 0 rgba(255,255,255,0.45), 0 0 22px color-mix(in oklab, var(--heat) 55%, transparent); }
+  50%      { box-shadow: inset 0 1px 0 rgba(255,255,255,0.45), 0 0 50px color-mix(in oklab, var(--heat) 85%, transparent); }
+}
+/* .latest-tag — removed per request. The .latest class still applies the
+ * pulse animation so the newest guess is still visually distinguished. */
+
+/* Avatar disc — circular slot for the user's profile picture. When the
+ * <img> is present, it fills the disc edge-to-edge. When the PFP URL is
+ * missing or fails to load, the disc shows the player's initial as a
+ * letter fallback, tinted with the player's signature color (--c). */
+.alt-index-grid .cell .av {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.4cqw;
+  height: 3.4cqw;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--c, rgba(255,255,255,0.15));
+  color: #0a0a10;
+  font-size: 1.4cqw;
+  font-weight: 800;
+  border: 0.2cqw solid color-mix(in oklab, var(--c, white) 55%, rgba(0,0,0,0.6));
+  box-shadow:
+    0 0 0.6cqw color-mix(in oklab, var(--c, white) 40%, transparent),
+    inset 0 0.1cqw 0 rgba(255,255,255,0.30);
+  position: relative;
+  z-index: 1;
+  flex: 0 0 auto;
+  line-height: 1;
+}
+.alt-index-grid .cell .av img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: 50%;
+}
+.alt-index-grid .cell[data-tier="0"] .av { width: 4cqw; height: 4cqw; font-size: 1.7cqw; }
+.alt-index-grid .cell[data-tier="1"] .av { width: 3.6cqw; height: 3.6cqw; font-size: 1.5cqw; }
+.alt-index-grid .cell[data-tier="2"] .av { width: 3.2cqw; height: 3.2cqw; font-size: 1.3cqw; }
+.alt-index-grid .cell[data-tier="3"] .av { width: 2.6cqw; height: 2.6cqw; font-size: 1.1cqw; }
+.alt-index-grid .cell[data-tier="4"] .av { width: 2.2cqw; height: 2.2cqw; font-size: 0; }
+.alt-index-grid .cell[data-tier="5"] .av { width: 1.8cqw; height: 1.8cqw; font-size: 0; }
+.alt-index-grid .cell[data-tier="6"] .av,
+.alt-index-grid .cell[data-tier="7"] .av,
+.alt-index-grid .cell[data-tier="8"] .av,
+.alt-index-grid .cell[data-tier="9"] .av { display: none; }
+.alt-index-grid .cell.target .av { display: none; }
+
+/* ===== Perf-optimization: simplified chip styling for rows 7+ ============
+ * Below the visible horizon (rows 7, 8, 9+), chips get a cheaper render
+ * path. These tiers are tiny (≤3cqw tall) and at the bottom of the grid,
+ * so the visual difference is imperceptible while the GPU savings are
+ * significant. Each tier-7+ chip drops:
+ *   - backdrop-filter (THE biggest cost — per-chip blur+saturate is GPU
+ *     heavy and the chip is small enough that the blur barely reads)
+ *   - the secondary blue-tint gradient layer on .cell (one less paint)
+ *   - the layered multi-stop inset box-shadows on .cell-pill (just the
+ *     rank-color stroke remains)
+ *   - text-shadow on .w (negligible visual impact at <2cqw font sizes)
+ *
+ * The rank-color water-fill on the outer .cell IS preserved — it's the
+ * heat reading that gives the grid its at-a-glance hot/cold signal.
+ * Cosmetics applier writes inline styles that override these where
+ * needed (e.g. an equipped name_glow still tries to paint). */
+.alt-index-grid .cell[data-tier="7"],
+.alt-index-grid .cell[data-tier="8"],
+.alt-index-grid .cell[data-tier="9"] {
+  /* Single-layer water-fill — drop the secondary blue tint to halve the
+   * paint cost on each row of small chips. */
+  background: linear-gradient(to top,
+    color-mix(in oklab, var(--heat, white) 60%, transparent) 0%,
+    color-mix(in oklab, var(--heat, white) 60%, transparent) var(--fill, 0%),
+    transparent var(--fill, 0%),
+    transparent 100%);
+}
+.alt-index-grid .cell[data-tier="7"] .cell-pill,
+.alt-index-grid .cell[data-tier="8"] .cell-pill,
+.alt-index-grid .cell[data-tier="9"] .cell-pill {
+  /* No backdrop blur — the chip is small enough that the frosted effect
+   * doesn't read anyway, and this is the single most expensive thing in
+   * the per-chip paint loop. */
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  /* Flat translucent fill instead of the multi-stop liquid-glass gradient. */
+  background: rgba(255, 255, 255, 0.10);
+  /* Just the rank-color stroke — drop the pillowed inset highlights /
+   * inner shadow / outer drop-shadow. */
+  box-shadow: inset 0 0 0 0.14cqw var(--heat, rgba(255,255,255,0.20));
+}
+.alt-index-grid .cell[data-tier="7"] .w,
+.alt-index-grid .cell[data-tier="8"] .w,
+.alt-index-grid .cell[data-tier="9"] .w {
+  text-shadow: none;
+}
+
+/* ===== Top-rank "best guess so far" card ==============================
+ * Single prominent chip rendered ABOVE the index grid showing the lowest
+ * (closest-to-target) rank seen so far. Uses the same .cell / .cell-pill /
+ * .r / .w / .av markup as a grid chip, but the host (.alt-index-top-card)
+ * is a standalone container — its chip is full-width and sized larger
+ * than the t0 grid chip for visual prominence, echoing default Searchle's
+ * top-of-list entry. Container queries inherit the parent .alt-page-section
+ * width so cqw units stay consistent with the grid below. */
+.alt-index-top-card {
+  display: block;
+  container-type: inline-size;
+  margin-bottom: 1.1cqw;
+  /* Same 700px cqw cap as .alt-index-grid so the top-card pill / rank /
+   * word / avatar all stop scaling at the same threshold as the grid
+   * below it. Without matching caps, the top card would visibly grow
+   * faster than the grid as the iframe widens. */
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.alt-index-top-card .cell {
+  /* Full-width chip — span the container so this card visually anchors
+   * the section. Same water-fill + faint blue-tint backdrop as a grid
+   * cell, just at a bigger scale. */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1cqw;
+  padding: 0.7cqw;
+  border-radius: 2.2cqw;
+  width: 100%;
+  background:
+    linear-gradient(to top,
+      color-mix(in oklab, var(--heat, white) 60%, transparent) 0%,
+      color-mix(in oklab, var(--heat, white) 60%, transparent) var(--fill, 0%),
+      transparent var(--fill, 0%),
+      transparent 100%),
+    linear-gradient(180deg, rgba(80, 140, 220, 0.10), rgba(120, 180, 255, 0.06));
+  white-space: nowrap;
+  position: relative;
+  overflow: hidden;
+  min-width: 0;
+  /* Word font + fit-divisor bumped +50% from the original top-card sizing
+   * so the leader's word reads as the largest typography on the page. */
+  --max-font: 6.9cqw;
+  --fit-divisor: 57cqw;
+}
+.alt-index-top-card .cell-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.2cqw;
+  padding: 0 1.8cqw;
+  /* Pill height bumped to accommodate the doubled rank font without
+   * clipping the rank sub-pill against the top/bottom of the bubble. */
+  height: 11cqw;
+  border-radius: 2cqw;
+  background: linear-gradient(180deg,
+    rgba(255, 255, 255, 0.22) 0%,
+    rgba(255, 255, 255, 0.04) 50%,
+    rgba(255, 255, 255, 0.12) 100%);
+  backdrop-filter: blur(8px) saturate(150%);
+  -webkit-backdrop-filter: blur(8px) saturate(150%);
+  box-shadow:
+    inset 0 0 0 0.22cqw var(--heat, rgba(255,255,255,0.20)),
+    inset 0 0.18cqw 0 rgba(255,255,255,0.55),
+    inset 0 -0.12cqw 0 rgba(255,255,255,0.08),
+    0 0.14cqw 0.4cqw rgba(0,0,0,0.2);
+  white-space: nowrap;
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+.alt-index-top-card .cell .r {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-weight: 700;
+  color: #fff;
+  /* Doubled vs the standard top-card rank size — the leader's rank number
+   * is the single most important piece of info on the page, so it gets
+   * outsized treatment on this card only (grid chips keep their tier sizes). */
+  font-size: 7.2cqw;
+  background: color-mix(in srgb, var(--heat, rgba(255,255,255,0.3)) 28%, transparent);
+  padding: 0.55cqw 1.6cqw;
+  border-radius: 1.2cqw;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--heat, rgba(255,255,255,0.4)) 60%, transparent);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  position: relative;
+  z-index: 1;
+  flex: 0 0 auto;
+  line-height: 1.15;
+}
+.alt-index-top-card .cell .w {
+  color: #fff;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-shadow: 0 2px 6px rgba(0,0,0,0.7), 0 0 2px rgba(0,0,0,0.5);
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: clip;
+  text-align: center;
+  font-size: max(6px, min(var(--max-font, 4.6cqw), calc(var(--fit-divisor, 38cqw) / var(--wlen, 1))));
+}
+/* Avatar + username column on the right end of the top card. The column
+ * holds the avatar disc plus the guesser's display name stacked below.
+ * Sits in the flex slot where the bare avatar used to live, so layout
+ * stays aligned with the pill on its left. */
+.alt-index-top-card .cell .av-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4cqw;
+  /* Bulletproof column sizing for ZWJ-joiner emoji usernames (Millie's
+   * "🧸꧁Millie꧂🧸" + similar). Layered constraints:
+   *   - width/max-width/min-width all at 13cqw → fixed inline box
+   *   - flex: 0 0 13cqw → flex item won't grow or shrink
+   *   - contain: size → element's box is independent of descendants,
+   *     so emoji glyph min-content can't drive the column wider
+   *   - height: 11.5cqw → also pins block size so tall emoji line-boxes
+   *     can't push the av-col + top card taller
+   * Overflow stays visible so any FC badge ::after on .av (a child)
+   * can still paint outside the avatar circle. */
+  width: 13cqw;
+  max-width: 13cqw;
+  min-width: 13cqw;
+  flex: 0 0 13cqw;
+  height: 11.5cqw;
+  max-height: 11.5cqw;
+  box-sizing: border-box;
+  contain: size;
+  overflow: visible;
+  position: relative;
+  z-index: 1;
+}
+.alt-index-top-card .cell .av {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 5.4cqw;
+  height: 5.4cqw;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--c, rgba(255,255,255,0.15));
+  color: #0a0a10;
+  font-size: 2.3cqw;
+  font-weight: 800;
+  border: 0.25cqw solid color-mix(in oklab, var(--c, white) 55%, rgba(0,0,0,0.6));
+  box-shadow:
+    0 0 0.8cqw color-mix(in oklab, var(--c, white) 40%, transparent),
+    inset 0 0.12cqw 0 rgba(255,255,255,0.30);
+  position: relative;
+  z-index: 1;
+  flex: 0 0 auto;
+  line-height: 1;
+}
+.alt-index-top-card .cell .av img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: 50%;
+}
+/* Username — sits directly under the avatar disc on the top card. Sized
+ * smaller than the rank/word but large enough to read on stream. Width
+ * is capped + ellipsis-clipped so very long handles don't widen the chip. */
+.alt-index-top-card .cell .user-name {
+  font-size: 1.7cqw;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.04em;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+  /* 100% defers to av-col's hard-clamped 13cqw width — names + emoji
+   * can't push past that, the column dictates the size. */
+  max-width: 100%;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+  /* Pin height to 1× font-size so emoji glyphs (which render TALLER than
+   * their declared font-size box in most browsers) can't extend the
+   * line-box and push av-col taller. */
+  height: 1.7cqw;
+  line-height: 1.7cqw;
+  display: block;
+}
+
+/* Title cosmetic on the top-card. Default global rule has font-size:54px
+ * which dwarfs everything in the top card — scope down to read as a
+ * secondary line under the username. Pinned height stops emoji in the
+ * title from stretching the av-col. */
+.alt-index-top-card .cell .av-col .cosmetic-title {
+  display: block;
+  font-size: 2.025cqw;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  margin-top: 2px;
+  margin-left: 0;
+  opacity: 0.95;
+  text-align: center;
+  max-width: 100%;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  height: 2.025cqw;
+  line-height: 2.025cqw;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+}
+
+/* Placeholder cell — invisible filler that holds the top-card slot open
+ * between rounds (or before the first valid guess) so the grid below
+ * doesn't shift up. Inherits all sizing rules from .cell / .cell-pill
+ * but is hidden via visibility (preserves layout height). */
+.alt-index-top-card .cell.placeholder {
+  visibility: hidden;
+  pointer-events: none;
+  background: none;
+}
+
+/* The liquid-glass restyle for .pinned-guess-entry has been promoted
+ * to main.css's default .guess-entry / .guess-chip rules so the design
+ * applies across all Searchle modes (alt-mode chip view, regular mode
+ * pinned card + ranked list, sp mode).
+ *
+ * Alt-mode-only refinements below: align the pinned card's heat color
+ * and water-fill treatment to the grid chips below it (which use a
+ * different rank-color formula than ColorUtils.rankToColor + a static
+ * CSS gradient water-fill instead of the animated canvas). Without
+ * these the pinned card and grid chips read as two different visual
+ * families even though they share the liquid-glass surface.
+ *
+ * DORMANT as of the recent-guess ticker change: alt mode no longer
+ * renders a PinnedGuess at all (alt-main.js constructs RecentTicker
+ * instead), and alt.css is imported only by alt-main.js — so nothing
+ * currently matches .pinned-guess-entry on an alt page. That applies to
+ * the `body.obs-mode .guess-entry.pinned-guess-entry` override further
+ * down too. Kept rather than deleted because these rules are the entire
+ * alt-mode treatment of that card; reverting to a pinned card would
+ * otherwise silently lose the grid-locked heat color and the OBS
+ * water-fill fix. Regular Searchle's copy lives in main.css and is
+ * unaffected. */
+
+/* Swap the animated rank-bar canvas water-fill for the grid's static
+ * CSS gradient. PinnedGuess.js sets `--rc` (rank color) and `--fill`
+ * (fill percent) on the .pinned-guess-entry in alt mode; we use those
+ * here to paint a (heat-color → transparent) gradient identical to the
+ * .alt-index-grid .cell and .alt-index-top-card .cell backgrounds. */
+.pinned-guess-entry .rank-bar-svg {
+  /* Hide the canvas only when we're on an alt-mode page — the alt-css
+   * file is only loaded by alt.html, so this selector is implicitly
+   * alt-only. Display none keeps the JS-side updates harmless. */
+  display: none;
+}
+.pinned-guess-entry {
+  /* Layered: heat-color water-fill (bottom up to --fill%) + faint blue
+   * tint. The .guess-chip on top reads this as its frosted backdrop.
+   * The (water-fill + blue-tint) recipe matches .alt-index-top-card
+   * .cell exactly, so the pinned card and grid chips look like
+   * variants of the same surface. */
+  background:
+    linear-gradient(to top,
+      color-mix(in oklab, var(--rc, white) 60%, transparent) 0%,
+      color-mix(in oklab, var(--rc, white) 60%, transparent) var(--fill, 0%),
+      transparent var(--fill, 0%),
+      transparent 100%),
+    linear-gradient(180deg,
+      rgba(80, 140, 220, 0.10),
+      rgba(120, 180, 255, 0.06));
+}
+
+/* ===== Alt-mode XP float bubbles ===========================================
+ * Floating "+N XP" notification that spawns at a chip's viewport position
+ * and rises off the page, mirroring default Searchle's XpBubble. Styled as
+ * liquid-glass morphism — translucent white surface with a backdrop blur,
+ * pillowed white sheen, and warm-gold XP amount text echoing the default
+ * gold treatment. Each bubble lives on a fixed full-page overlay layer
+ * (.alt-xp-layer) so it can paint above grid + top-card chrome. */
+.alt-xp-layer { /* container is positioned/styled inline from JS */ }
+
+.alt-xp-bubble {
+  /* Single-node bubble — animation + backdrop-filter co-located so the
+   * filter actually samples the page content behind it. Previously this
+   * was split across .alt-xp-bubble (wrapper, animation) and
+   * .alt-xp-bubble-surface (glass), but the wrapper's transform created
+   * a stacking context that prevented the surface from seeing past it,
+   * so the "glass" had nothing to blur and looked like a flat panel.
+   *
+   * left/top set inline at spawn time to the chip's viewport center;
+   * the keyframe's translate(-50%, -50%) centers the bubble on that
+   * anchor.
+   *
+   * Real liquid-glass recipe:
+   *   1. Very low-opacity base tint so the page shows through.
+   *   2. Heavy backdrop blur (28px) + saturate/contrast/brightness
+   *      so what passes through reads as vividly refracted, not just
+   *      smeared. brightness >100% lifts the perceived "glow" of the
+   *      glass; contrast >100% sharpens the colors behind.
+   *   3. Thin white edge ring + bright top inset highlight = catches
+   *      light along the rim, sells the 3D slab feel.
+   *   4. Faint diagonal chromatic gradient — mimics the way real glass
+   *      refracts spectrum at its edges (cyan → neutral → amber).
+   *   5. Outer drop shadow gives floating depth.
+   */
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 28px;
+  border-radius: 22px;
+  /* isolation creates a stacking context so the badge child paints below
+   * the text + glass highlights without leaking into outer z-index. The
+   * absolute positioning already gives badge inset:0 a containing block. */
+  isolation: isolate;
+  background:
+    linear-gradient(180deg,
+      rgba(255, 255, 255, 0.22) 0%,
+      rgba(255, 255, 255, 0.04) 45%,
+      rgba(255, 255, 255, 0.10) 100%),
+    linear-gradient(135deg,
+      rgba(140, 200, 255, 0.12) 0%,
+      rgba(255, 255, 255, 0.02) 35%,
+      rgba(255, 255, 255, 0.02) 65%,
+      rgba(255, 200, 140, 0.12) 100%),
+    rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(28px) saturate(220%) contrast(118%) brightness(112%);
+  -webkit-backdrop-filter: blur(28px) saturate(220%) contrast(118%) brightness(112%);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.65),
+    inset 0 8px 16px -8px rgba(255, 255, 255, 0.35),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.22),
+    inset 0 -10px 18px -12px rgba(255, 200, 100, 0.18),
+    0 12px 32px rgba(0, 0, 0, 0.50),
+    0 2px 6px rgba(0, 0, 0, 0.30);
+  white-space: nowrap;
+  animation: alt-xp-float 3s ease-out forwards;
+}
+
+/* Hero-badge layer — translucent gradient + optional PNG overlay (e.g.
+ * fan-club fanclub-heart.png) painted as the bubble's backdrop without
+ * replacing the glass morphism. Sits z-index:0 below text (z-index:1). */
+.alt-xp-bubble-badge {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0.5;
+  z-index: 0;
+}
+
+.alt-xp-bubble-amount {
+  position: relative;
+  z-index: 1;
+  font-size: 38px;
+  font-weight: 800;
+  color: #ffd95a;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  letter-spacing: 0.5px;
+  /* No text-shadow — bubble glass already separates the text. Cosmetic
+   * shadows (word_color outline+glow) are stripped in ChipXpFloater.spawn. */
+  text-shadow: none;
+}
+
+.alt-xp-bubble-name {
+  position: relative;
+  z-index: 1;
+  font-size: 18px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-top: 4px;
+  line-height: 1;
+  /* No text-shadow — cosmetic name_color/name_glow shadows also stripped
+   * in JS, so the name reads as flat color against the glass surface. */
+  text-shadow: none;
+  /* Truncate long usernames so the bubble stays at amount-driven width. */
+  max-width: 16ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Float trajectory:
+ *   0%   tiny + invisible at anchor
+ *   10%  pops in slightly oversize (small bounce)
+ *   18%  settles to natural scale at ~44px above anchor
+ *   85%  still fully opaque
+ *   100% drifted 260px up + faded to 0
+ * Same shape as default xp-bubble-float, scaled to alt-mode chip sizes
+ * (smaller travel + shorter pop because the chips themselves are smaller
+ * than default Searchle's full-width entries). */
+@keyframes alt-xp-float {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) translateY(0) scale(0.55);
+  }
+  10% {
+    opacity: 1;
+    transform: translate(-50%, -50%) translateY(-20px) scale(1.1);
+  }
+  18% {
+    opacity: 1;
+    transform: translate(-50%, -50%) translateY(-44px) scale(1);
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) translateY(-260px) scale(0.95);
+  }
+}
+
+/* ===== OBS software-CEF fixes (2026-07-21) ==============================
+ * The server-side stream renderer (render1) runs OBS with
+ * BrowserHWAccel=false — backdrop-filter can't sample its backdrop there
+ * and composites over BLACK instead. Two visible breaks vs the desktop
+ * browser: (1) the pill's frosted blur "erased" the cell's rank-color
+ * water-fill behind it, so the color hard-stopped at the bubble edge;
+ * (2) no blur means the water-fill's hard stop at --fill% reads as a
+ * crisp line instead of a frosted fade. Additionally main.css's
+ * `body.obs-mode .guess-entry { background: ... !important }` glass
+ * override was clobbering the pinned card's alt-mode water-fill entirely.
+ * All fixes are obs-mode-only — desktop/browser rendering is untouched. */
+
+/* Pinned (current-guess) card: restore the rank-color water-fill on top
+ * of the OBS glass recipe. Higher specificity (.guess-entry.pinned-…)
+ * + !important beats main.css's (0,2,1) glass override. Fill edge is
+ * feathered to match the chips below. */
+body.obs-mode .guess-entry.pinned-guess-entry {
+  background:
+    linear-gradient(to top,
+      color-mix(in oklab, var(--rc, white) 60%, transparent) 0%,
+      color-mix(in oklab, var(--rc, white) 60%, transparent) calc(var(--fill, 0%) - 8%),
+      transparent calc(var(--fill, 0%) + 16%),
+      transparent 100%) padding-box,
+    linear-gradient(rgba(0,0,0,0.30), rgba(0,0,0,0.30)) padding-box,
+    linear-gradient(180deg,
+      rgba(255,255,255,0.20) 0%,
+      rgba(255,255,255,0.04) 50%,
+      rgba(255,255,255,0.10) 100%) border-box !important;
+}
+
+/* Grid + top-card cells: feather the water-fill edge (the desktop look
+ * gets this softness for free from the pill's backdrop blur). */
+body.obs-mode .alt-index-grid .cell,
+body.obs-mode .alt-index-top-card .cell,
+body.obs-mode .rt-chip {
+  background:
+    linear-gradient(to top,
+      color-mix(in oklab, var(--heat, white) 60%, transparent) 0%,
+      color-mix(in oklab, var(--heat, white) 60%, transparent) calc(var(--fill, 0%) - 12%),
+      transparent calc(var(--fill, 0%) + 16%),
+      transparent 100%),
+    linear-gradient(180deg, rgba(80, 140, 220, 0.10), rgba(120, 180, 255, 0.06));
+}
+
+/* Bubbles: kill the broken backdrop-filter (it blacks out the fill
+ * behind it) and bake a heat-tinted wash into the pill instead, so the
+ * rank color carries through the bubble the way the frosted sampling
+ * does on desktop. Covers tier 7-9 pills too (they never had blur, but
+ * the wash keeps every row in the same visual family on stream). */
+body.obs-mode .alt-index-grid .cell-pill,
+body.obs-mode .alt-index-top-card .cell-pill,
+body.obs-mode .rt-pill {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  background:
+    linear-gradient(180deg,
+      rgba(255,255,255,0.20) 0%,
+      rgba(255,255,255,0.04) 50%,
+      rgba(255,255,255,0.10) 100%),
+    linear-gradient(to top,
+      color-mix(in oklab, var(--heat, transparent) 45%, transparent) 0%,
+      color-mix(in oklab, var(--heat, transparent) 45%, transparent) calc(var(--fill, 0%) - 4%),
+      transparent calc(var(--fill, 0%) + 20%),
+      transparent 100%);
+}
+
+
+/* ===== Recent-guess ticker ==================================================
+ * Replaces the single "latest guess" pinned card in alt mode (see
+ * RecentTicker.js). Lives in the DOMRenderer's scaled container, so every
+ * dimension here is in BASE UNITS (config.baseWidth = 1800), not screen
+ * pixels. The scale factor is ~0.259 at the tuned 448px column width, so
+ * `height: 92px` on the pill reads as ~24px on screen. Do not "fix" the
+ * apparently huge font sizes.
+ *
+ * The chip is a deliberate structural mirror of a grid cell so it reads
+ * as the same object at a smaller size:
+ *   .rt-chip ↔ .cell       water-fill in the rank color + faint blue tint
+ *   .rt-pill ↔ .cell-pill  liquid-glass bubble with the heat inset ring
+ *   .rt-w    ↔ .cell .w    uppercase, letter-spaced, drop-shadowed word
+ * The grid's cqw-based sizing can't be reused directly (the ticker isn't
+ * an inline-size container), so the recipe is restated in base units —
+ * but every color, gradient and shadow value is copied verbatim from the
+ * .cell / .cell-pill rules above. Change those, change these. */
+.recent-ticker {
+  height: 112px;
+  overflow: hidden;
+  /* Soft left edge so words dissolve out instead of guillotining
+   * mid-letter. Chromium (incl. OBS CEF) honors the -webkit- form; if a
+   * renderer ignores both, overflow:hidden still clips cleanly — the
+   * fallback is a hard edge, never a visible overflow. */
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 180px, #000 100%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 180px, #000 100%);
+}
+
+/* Right-aligned so the newest chip is pinned to the right edge and growth
+ * pushes the run leftward. */
+.recent-ticker-row {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 20px;
+  height: 100%;
+}
+
+/* Outer card — same two-layer background as .alt-index-grid .cell:
+ * rank-color water fill up to --fill%, over a faint blue tint. */
+.rt-chip {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  height: 100%;
+  padding: 10px;
+  border-radius: 28px;
+  background:
+    linear-gradient(to top,
+      color-mix(in oklab, var(--heat, white) 60%, transparent) 0%,
+      color-mix(in oklab, var(--heat, white) 60%, transparent) var(--fill, 0%),
+      transparent var(--fill, 0%),
+      transparent 100%),
+    linear-gradient(180deg, rgba(80, 140, 220, 0.10), rgba(120, 180, 255, 0.06));
+  white-space: nowrap;
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+  /* max-width is the entry animation's driver — RecentTicker.js measures
+   * the chip's natural width, collapses it via .rt-enter, then sets the
+   * measured value so it expands back and shoves its neighbors left.
+   * padding transitions alongside it so a collapsed chip is truly zero
+   * width (padding alone would leave a 20px stub). */
+  transition:
+    max-width 420ms cubic-bezier(0.22, 0.9, 0.3, 1),
+    padding 420ms cubic-bezier(0.22, 0.9, 0.3, 1),
+    opacity 300ms ease;
+}
+
+/* Inner bubble — liquid glass, verbatim from .alt-index-grid .cell-pill
+ * (blur 8px / saturate 150%, pillowed white gradient, heat-colored inset
+ * ring + bright top rim). */
+.rt-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 0 26px;
+  border-radius: 20px;
+  background: linear-gradient(180deg,
+    rgba(255, 255, 255, 0.22) 0%,
+    rgba(255, 255, 255, 0.04) 50%,
+    rgba(255, 255, 255, 0.12) 100%);
+  backdrop-filter: blur(8px) saturate(150%);
+  -webkit-backdrop-filter: blur(8px) saturate(150%);
+  box-shadow:
+    inset 0 0 0 3px var(--heat, rgba(255,255,255,0.20)),
+    inset 0 3px 0 rgba(255,255,255,0.55),
+    inset 0 -2px 0 rgba(255,255,255,0.08),
+    0 2px 6px rgba(0,0,0,0.18);
+  white-space: nowrap;
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* Word — same treatment as .alt-index-grid .cell .w, minus the grid's
+ * font-fit machinery (ticker chips size to content, so nothing shrinks). */
+.rt-w {
+  color: #fff;
+  font-weight: 700;
+  font-size: 46px;
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  text-shadow: 0 2px 6px rgba(0,0,0,0.7), 0 0 2px rgba(0,0,0,0.5);
+  position: relative;
+  z-index: 1;
+}
+
+/* Newest chip — the grid's pulsing rank-color halo (.cell.latest),
+ * scaled to the ticker's smaller footprint. */
+.rt-chip.latest {
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.45),
+    0 0 20px color-mix(in oklab, var(--heat) 60%, transparent);
+  animation: rt-latest-pulse 1.8s ease-in-out infinite;
+}
+@keyframes rt-latest-pulse {
+  0%, 100% { box-shadow: inset 0 1px 0 rgba(255,255,255,0.45), 0 0 16px color-mix(in oklab, var(--heat) 55%, transparent); }
+  50%      { box-shadow: inset 0 1px 0 rgba(255,255,255,0.45), 0 0 36px color-mix(in oklab, var(--heat) 85%, transparent); }
+}
+
+.rt-chip.rt-enter {
+  max-width: 0;
+  padding-left: 0;
+  padding-right: 0;
+  opacity: 0;
+  transition: none;
+}
+
+/* Re-guess pulse — mirrors the pinned card's old .bumped flash so a
+ * duplicate word still registers visually even though it doesn't append
+ * a second chip. */
+.rt-chip.bumped .rt-pill {
+  animation: rt-bump 460ms ease-out;
+}
+@keyframes rt-bump {
+  0%   { transform: scale(1); }
+  35%  { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}

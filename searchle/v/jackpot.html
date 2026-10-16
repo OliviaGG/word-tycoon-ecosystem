@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Searchle 3.0 — Jackpot Counter</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: transparent;
+      font-family: 'Inter', 'Segoe UI', sans-serif;
+      color: #f1f5f9;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    #jackpot-display {
+      text-align: center;
+      position: relative;
+    }
+
+    .jp-label {
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 6px;
+      color: rgba(251, 191, 36, 0.5);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .jp-amount {
+      font-size: 72px;
+      font-weight: 900;
+      color: #fbbf24;
+      text-shadow:
+        0 0 20px rgba(251, 191, 36, 0.5),
+        0 0 40px rgba(251, 191, 36, 0.2),
+        0 4px 12px rgba(0, 0, 0, 0.8);
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 2px;
+      line-height: 1;
+    }
+
+    .jp-coins {
+      font-size: 16px;
+      font-weight: 600;
+      color: rgba(251, 191, 36, 0.6);
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+
+    /* Badges row */
+    #badges-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+      justify-content: center;
+    }
+    .weekly-badge {
+      background: linear-gradient(135deg, #ffd700, #ff8c00);
+      color: #1a1a2e;
+      padding: 6px 20px;
+      border-radius: 18px;
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: 3px;
+      animation: weekly-glow 2s ease-in-out infinite alternate;
+      white-space: nowrap;
+    }
+    @keyframes weekly-glow {
+      from { box-shadow: 0 0 8px #ffd700; }
+      to { box-shadow: 0 0 20px #ff8c00, 0 0 36px rgba(255, 215, 0, 0.25); }
+    }
+    .frenzy-badge {
+      background: linear-gradient(135deg, #ff4500, #ff6347);
+      color: #fff;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      animation: frenzy-pulse 0.8s ease-in-out infinite alternate;
+      white-space: nowrap;
+    }
+    .frenzy-label { margin-right: 3px; }
+    @keyframes frenzy-pulse {
+      from { box-shadow: 0 0 4px #ff4500; transform: scale(1); }
+      to { box-shadow: 0 0 16px #ff6347, 0 0 24px rgba(255, 69, 0, 0.25); transform: scale(1.05); }
+    }
+
+    /* SVG gauge */
+    .gauge-bg { fill: none; stroke: rgba(251, 191, 36, 0.08); }
+    .gauge-fg { fill: none; stroke: #fbbf24; stroke-linecap: round; filter: drop-shadow(0 0 6px rgba(251, 191, 36, 0.5)); }
+    .gauge-glow { fill: none; stroke: #fbbf24; stroke-linecap: round; opacity: 0.2; filter: blur(8px); }
+
+    /* Particles */
+    .coin-spark {
+      position: fixed;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: #fbbf24;
+      pointer-events: none;
+      opacity: 0;
+    }
+
+    /* Stats row */
+    #stats-row {
+      display: flex;
+      gap: 40px;
+      margin-top: 20px;
+      align-items: center;
+    }
+
+    .stat-item {
+      text-align: center;
+    }
+    .stat-value {
+      font-size: 28px;
+      font-weight: 800;
+      color: #f1f5f9;
+      font-variant-numeric: tabular-nums;
+    }
+    .stat-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-top: 2px;
+    }
+
+    /* Closest word */
+    #closest-bar {
+      margin-top: 24px;
+      padding: 10px 28px;
+      background: rgba(52, 211, 153, 0.08);
+      border: 1px solid rgba(52, 211, 153, 0.2);
+      border-radius: 12px;
+      text-align: center;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    #closest-bar.visible { opacity: 1; }
+
+    .closest-word {
+      font-size: 24px;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: #34d399;
+      letter-spacing: 1px;
+    }
+    .closest-meta {
+      font-size: 12px;
+      color: #94a3b8;
+      margin-top: 2px;
+    }
+  </style>
+</head>
+<body>
+  <div id="jackpot-display">
+    <svg id="gauge-svg"></svg>
+    <div class="jp-label">JACKPOT</div>
+    <div class="jp-amount" id="jp-amount">3,000</div>
+    <div class="jp-coins">COINS</div>
+    <div id="badges-row">
+      <span class="weekly-badge" id="weekly-badge" style="display:none;">WEEKLY</span>
+      <span class="frenzy-badge" id="frenzy-badge" style="display:none;"><span class="frenzy-label">FRENZY</span><span id="frenzy-value">1.0x</span></span>
+    </div>
+  </div>
+
+  <div id="stats-row">
+    <div class="stat-item">
+      <div class="stat-value" id="guess-count">0</div>
+      <div class="stat-label">Guesses</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value" id="game-timer">0:00</div>
+      <div class="stat-label">Time</div>
+    </div>
+  </div>
+
+  <div id="closest-bar">
+    <div class="closest-word" id="closest-word">—</div>
+    <div class="closest-meta" id="closest-meta"></div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script>
+  (function () {
+    var socket = io({ reconnection: true, reconnectionDelay: 2000, reconnectionDelayMax: 10000, reconnectionAttempts: Infinity, transports: ['polling', 'websocket'] });
+
+    // State
+    var startTime = null;
+    var guessCount = 0;
+    var isWon = false;
+    var currentPot = 3000;
+    var displayedPot = 3000;
+
+    var amountEl = document.getElementById('jp-amount');
+    var guessEl = document.getElementById('guess-count');
+    var timerEl = document.getElementById('game-timer');
+    var closestWordEl = document.getElementById('closest-word');
+    var closestMetaEl = document.getElementById('closest-meta');
+    var closestBar = document.getElementById('closest-bar');
+    var weeklyBadge = document.getElementById('weekly-badge');
+    var frenzyBadge = document.getElementById('frenzy-badge');
+    var frenzyValueEl = document.getElementById('frenzy-value');
+    var frenzyMultiplier = 1.0;
+
+    function updateWeeklyBadge(state) {
+      if (state.isDaily) {
+        weeklyBadge.textContent = 'DAILY';
+        weeklyBadge.style.display = 'inline-block';
+      } else if (state.isWeekly) {
+        weeklyBadge.textContent = 'WEEKLY';
+        weeklyBadge.style.display = 'inline-block';
+      } else {
+        weeklyBadge.style.display = 'none';
+      }
+    }
+
+    function updateFrenzyBadge(frenzy) {
+      if (frenzy && frenzy.multiplier > 1.0) {
+        frenzyMultiplier = frenzy.multiplier;
+        frenzyBadge.style.display = 'inline-block';
+        frenzyValueEl.textContent = frenzy.multiplier.toFixed(1) + 'x';
+      } else {
+        frenzyMultiplier = 1.0;
+        frenzyBadge.style.display = 'none';
+      }
+    }
+
+    // SVG Gauge — semicircular arc above the amount
+    var W = 320, H = 60;
+    var gaugeR = 140;
+    var gaugeW = 8;
+    var gaugeStartAngle = -Math.PI * 0.8;
+    var gaugeEndAngle = Math.PI * 0.8;
+
+    var gaugeSvg = d3.select('#gauge-svg')
+      .attr('width', W).attr('height', H)
+      .attr('viewBox', '-160 -70 320 70');
+
+    var gaugeArc = d3.arc()
+      .innerRadius(gaugeR - gaugeW)
+      .outerRadius(gaugeR)
+      .cornerRadius(gaugeW / 2);
+
+    // Background
+    gaugeSvg.append('path')
+      .attr('class', 'gauge-bg')
+      .attr('stroke-width', gaugeW)
+      .attr('d', gaugeArc({ startAngle: gaugeStartAngle, endAngle: gaugeEndAngle }));
+
+    // Glow
+    var gaugeGlow = gaugeSvg.append('path')
+      .attr('class', 'gauge-glow')
+      .attr('stroke-width', gaugeW + 6)
+      .attr('d', gaugeArc({ startAngle: gaugeStartAngle, endAngle: gaugeStartAngle }));
+
+    // Foreground
+    var gaugeFg = gaugeSvg.append('path')
+      .attr('class', 'gauge-fg')
+      .attr('stroke-width', gaugeW)
+      .attr('d', gaugeArc({ startAngle: gaugeStartAngle, endAngle: gaugeStartAngle }));
+
+    var _currentGaugeAngle = gaugeStartAngle;
+
+    function updateGauge(pot) {
+      // Map pot 3000-100000 to 0-1
+      var fill = Math.min(1, Math.max(0, (pot - 3000) / 97000));
+      var targetAngle = gaugeStartAngle + fill * (gaugeEndAngle - gaugeStartAngle);
+
+      gaugeFg.transition().duration(600).ease(d3.easeCubicOut)
+        .attrTween('d', function () {
+          var interp = d3.interpolate(_currentGaugeAngle, targetAngle);
+          return function (t) {
+            return gaugeArc({ startAngle: gaugeStartAngle, endAngle: interp(t) });
+          };
+        });
+
+      gaugeGlow.transition().duration(600).ease(d3.easeCubicOut)
+        .attrTween('d', function () {
+          var interp = d3.interpolate(_currentGaugeAngle, targetAngle);
+          return function (t) {
+            return gaugeArc({ startAngle: gaugeStartAngle, endAngle: interp(t) });
+          };
+        });
+
+      _currentGaugeAngle = targetAngle;
+    }
+
+    // Smooth count-up animation for the jackpot number
+    function animateAmount(from, to, duration) {
+      var start = performance.now();
+      function tick(now) {
+        var progress = Math.min((now - start) / duration, 1);
+        var eased = 1 - Math.pow(1 - progress, 3);
+        var current = Math.round(from + (to - from) * eased);
+        amountEl.textContent = current.toLocaleString();
+        if (progress < 1) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    }
+
+    // Spark particles on value bump
+    function spawnSparks(count) {
+      var rect = amountEl.getBoundingClientRect();
+      var cx = rect.left + rect.width / 2;
+      var cy = rect.top + rect.height / 2;
+      for (var i = 0; i < count; i++) {
+        var spark = document.createElement('div');
+        spark.className = 'coin-spark';
+        var angle = Math.random() * Math.PI * 2;
+        var dist = 40 + Math.random() * 80;
+        var x = cx + Math.cos(angle) * dist;
+        var y = cy + Math.sin(angle) * dist;
+        spark.style.left = cx + 'px';
+        spark.style.top = cy + 'px';
+        document.body.appendChild(spark);
+        d3.select(spark)
+          .transition()
+          .duration(600 + Math.random() * 400)
+          .ease(d3.easeCubicOut)
+          .style('left', x + 'px')
+          .style('top', y + 'px')
+          .style('opacity', 1)
+          .transition()
+          .duration(300)
+          .style('opacity', 0)
+          .remove();
+      }
+    }
+
+    // Calculate jackpot
+    function calculatePot(numGuesses, gameStartTime) {
+      var seconds = (Date.now() - new Date(gameStartTime).getTime()) / 1000;
+      var guessBonus = numGuesses <= 1000 ? numGuesses * 10 : 10000 * Math.pow(numGuesses / 1000, 1.5);
+      var timeBonus = seconds <= 600 ? (seconds / 600) * 10000 : 10000 * Math.pow(seconds / 600, 1.5);
+      return Math.max(3000, Math.round((guessBonus + timeBonus) * frenzyMultiplier));
+    }
+
+    function updateJackpot() {
+      if (!startTime || isWon) return;
+      var newPot = calculatePot(guessCount, startTime);
+      if (newPot !== currentPot) {
+        var oldPot = displayedPot;
+        currentPot = newPot;
+        displayedPot = newPot;
+        animateAmount(oldPot, newPot, 500);
+        updateGauge(newPot);
+      }
+    }
+
+    // Timer
+    function updateTime() {
+      if (!startTime || isWon) return;
+      var elapsed = Math.floor((Date.now() - new Date(startTime).getTime()) / 1000);
+      var mins = Math.floor(elapsed / 60);
+      var secs = elapsed % 60;
+      timerEl.textContent = mins + ':' + secs.toString().padStart(2, '0');
+    }
+
+    // Socket events
+    socket.on('game-state', function (state) {
+      startTime = state.startTime;
+      isWon = state.isWon;
+      guessCount = (state.guesses || []).length;
+      guessEl.textContent = guessCount;
+
+      if (state.guesses && state.guesses.length > 0) {
+        var closest = state.guesses.slice().sort(function (a, b) { return a.rank - b.rank; })[0];
+        closestWordEl.textContent = closest.word;
+        closestMetaEl.textContent = '#' + closest.rank.toLocaleString() + ' — ' + closest.user.displayName;
+        closestBar.classList.add('visible');
+      }
+
+      updateWeeklyBadge(state);
+      updateFrenzyBadge(state.frenzy);
+
+      currentPot = calculatePot(guessCount, startTime);
+      displayedPot = currentPot;
+      amountEl.textContent = currentPot.toLocaleString();
+      updateGauge(currentPot);
+    });
+
+    socket.on('new-guess', function (guess) {
+      guessCount++;
+      guessEl.textContent = guessCount;
+
+      closestWordEl.textContent = guess.word;
+      closestMetaEl.textContent = '#' + guess.rank.toLocaleString() + ' — ' + guess.user.displayName;
+      closestBar.classList.add('visible');
+
+      var newPot = calculatePot(guessCount, startTime);
+      var oldPot = displayedPot;
+      currentPot = newPot;
+      displayedPot = newPot;
+      animateAmount(oldPot, newPot, 400);
+      updateGauge(newPot);
+      spawnSparks(8);
+    });
+
+    socket.on('game-won', function (data) {
+      isWon = true;
+      amountEl.style.fontSize = '64px';
+      animateAmount(displayedPot, data.pot, 1500);
+      spawnSparks(30);
+      closestWordEl.textContent = data.targetWord;
+      closestMetaEl.textContent = 'WON by ' + data.user.displayName + '!';
+      closestWordEl.style.color = '#fbbf24';
+    });
+
+    socket.on('new-game', function (data) {
+      startTime = data.startTime;
+      isWon = false;
+      guessCount = 0;
+      currentPot = 3000;
+      displayedPot = 3000;
+      amountEl.textContent = '3,000';
+      amountEl.style.fontSize = '';
+      guessEl.textContent = '0';
+      timerEl.textContent = '0:00';
+      closestWordEl.textContent = '—';
+      closestWordEl.style.color = '';
+      closestMetaEl.textContent = '';
+      closestBar.classList.remove('visible');
+      _currentGaugeAngle = gaugeStartAngle;
+      gaugeFg.attr('d', gaugeArc({ startAngle: gaugeStartAngle, endAngle: gaugeStartAngle }));
+      gaugeGlow.attr('d', gaugeArc({ startAngle: gaugeStartAngle, endAngle: gaugeStartAngle }));
+      // Badges reset — game-state event following new-game will set correct values
+      updateDailyBadge(false);
+    });
+
+    socket.on('frenzy-update', function (frenzy) {
+      updateFrenzyBadge(frenzy);
+    });
+
+    // Update loops
+    setInterval(updateJackpot, 1000);
+    setInterval(updateTime, 1000);
+  })();
+  </script>
+</body>
+</html>

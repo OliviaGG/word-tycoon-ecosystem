@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#fdf6e9">
+  <meta name="description" content="Forge anagrams, stack powerful contracts, and beat the boss. Play Letterworks daily or build a fresh five-shift run.">
+  <meta property="og:title" content="Letterworks — Word Tycoon">
+  <meta property="og:description" content="Five shifts. Six letters. One workshop to save. A new anagram challenge every day.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://wordtycoon.live/letterworks/">
+  <link rel="canonical" href="https://wordtycoon.live/letterworks/">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <title>Letterworks — Word Tycoon</title>
+  <link rel="stylesheet" href="styles.css?v=type2">
+</head>
+<body>
+  <div class="ambient ambient-one" aria-hidden="true"></div>
+  <div class="ambient ambient-two" aria-hidden="true"></div>
+  <main id="mainContent" class="app-shell">
+    <header class="brand-bar">
+      <a class="brand" href="https://wordtycoon.live/portal/" aria-label="Return to Word Tycoon">
+        <span class="brand-mark" aria-hidden="true">L<span class="brand-spark">✦</span></span>
+        <span class="brand-name">letter<b>works</b><small>A Word Tycoon game</small></span>
+      </a>
+      <div class="header-links"><a class="home-link" href="https://wordtycoon.live/">← Word Tycoon</a><span class="prototype-stamp">PUBLIC BETA</span></div>
+    </header>
+    <section id="startScreen" class="start-screen">
+      <div class="eyebrow">THE WORD TYCOON WORKSHOP</div>
+      <h1><span class="sr-only">Words</span><span class="hero-tiles" aria-hidden="true"><span>W</span><span>O</span><span>R</span><span>D</span><span>S</span></span> are your<br><em>raw material.</em></h1>
+      <p class="start-copy">Forge anagrams, meet the quota, and choose a new contract after every shift. Your upgrades stack. The boss does not play fair.</p>
+      <div class="loop-preview" aria-label="How a run works">
+        <div><span>01</span><b>Forge</b><small>Build words from six letters</small></div><i aria-hidden="true">→</i>
+        <div><span>02</span><b>Invest</b><small>Stack four powerful contracts</small></div><i aria-hidden="true">→</i>
+        <div><span>03</span><b>Survive</b><small>Beat the fifth-shift boss</small></div>
+      </div>
+      <div class="launch-buttons">
+        <button id="dailyButton" class="primary-button" type="button"><span>DAILY WORKSHOP <small id="dailyDate"></small></span><b>→</b></button>
+        <button id="startButton" class="secondary-button" type="button">Fresh run <span>↻</span></button>
+        <button id="practiceButton" class="secondary-button" type="button">Practice <small>No timer</small></button>
+      </div>
+      <button id="continueButton" class="continue-button" type="button" hidden>Continue saved run</button>
+      <p id="accountStatus" class="account-status" role="status">Checking Word Tycoon account…</p>
+      <p class="keyboard-note">Type or tap letters · Enter submits · Backspace undoes · Space shuffles</p>
+      <div id="personalStats" class="personal-stats" aria-label="Your workshop records"></div>
+      <details class="how-to"><summary>How to play</summary>
+        <p>Each shift gives you six reusable letters. Forge words with 3–6 letters. The ledger shows every accepted word as a hidden slot, grouped by length. Each word scores once per shift.</p>
+        <p><b>Base points:</b> 3 letters = 10 · 4 = 25 · 5 = 50 · 6 = 100. To bank a shift, meet its score quota and find at least one six-letter blueprint. You can keep forging for a higher score before banking.</p>
+        <p>Choose one of three contracts between shifts. Contracts last for the rest of the run. In the final shift, every word must include the boss’s locked letter.</p>
+        <p>The daily workshop uses the same racks and contract offers for everyone and changes at midnight in Edmonton. Fresh runs use different racks. Practice removes the clock. Use Pause to take a break; leaving the tab pauses your shift automatically.</p>
+      </details>
+      <p class="save-note" id="saveNote">Scores and saves stay in this browser.</p>
+      <section class="daily-leaderboard" aria-label="Daily workshop leaderboard"><div class="panel-heading"><span>DAILY WORKSHOP LEADERS</span></div><p class="save-note">Verified five-shift daily clears, ranked by score.</p><ol id="dailyLeaders"><li>Loading today’s workshop…</li></ol></section>
+    </section>
+    <section id="gameScreen" class="game-screen" hidden>
+      <div class="run-strip">
+        <div class="round-label"><span id="roundKicker">SHIFT 1 OF 5</span><strong id="puzzleName">Workshop</strong><small id="modeLabel"></small></div>
+        <div class="stat-group">
+          <div class="stat"><span>RUN SCORE</span><strong id="runScore">0</strong></div>
+          <div id="timerStat" class="stat timer-stat"><span>TIME</span><strong id="timer">1:40</strong></div>
+          <button id="pauseButton" class="secondary-button pause-button" type="button" aria-label="Pause run">Ⅱ</button>
+        </div>
+      </div>
+      <div id="bossBanner" class="boss-banner" hidden><span class="boss-pip">BOSS RULE</span><strong>Every word must contain <b id="requiredLetter">P</b></strong></div>
+      <section class="ledger-panel" aria-label="Word ledger">
+        <div class="panel-heading"><span>WORD LEDGER</span><b id="wordCount">0 found</b></div>
+        <div id="foundWords" class="found-words"></div>
+        <div id="guessTicker" class="guess-ticker" role="region" aria-label="Guess ticker: green correct, red incorrect, yellow repeats with total guess count"></div>
+      </section>
+      <div class="game-layout">
+        <section class="workbench-panel" aria-label="Letter workbench">
+          <div class="panel-heading"><span>THE WORKBENCH</span><button id="shuffleButton" class="text-button" type="button">↻ Shuffle</button></div>
+          <div id="wordDisplay" class="word-display" aria-live="polite"><span class="word-placeholder">Type or tap letters to build a word</span></div>
+          <div id="letterRack" class="letter-rack" aria-label="Available letters"></div>
+          <div class="action-row"><button id="clearButton" class="secondary-button" type="button">Clear</button><button id="submitButton" class="primary-button" type="button">Forge word <span>↵</span></button></div>
+          <div id="feedback" class="feedback" role="status" aria-live="polite"></div>
+          <div class="quota-card">
+            <div class="quota-copy"><span>SHIFT QUOTA</span><strong><b id="roundScore">0</b> / <b id="targetScore">160</b></strong></div>
+            <div id="quotaProgress" class="progress-track" role="progressbar" aria-label="Shift quota" aria-valuemin="0" aria-valuemax="160" aria-valuenow="0"><i id="scoreProgress"></i></div>
+            <div id="masterGoal" class="master-goal"><span>◇</span> Find a six-letter blueprint</div>
+          </div>
+          <button id="bankButton" class="bank-button" type="button" disabled><span>Quota incomplete</span><b>→</b></button>
+        </section>
+        <aside class="support-panel" aria-label="Hints and contracts">
+          <div class="hint-box"><div><span>STUCK?</span><small id="hintCount">1 hint available</small></div><button id="hintButton" type="button">Reveal a hint</button><p id="hintText" aria-live="polite"></p></div>
+          <div class="contracts-box"><div class="panel-heading"><span>ACTIVE CONTRACTS</span></div><div id="activeUpgrades" class="active-upgrades"></div></div>
+          <p class="workbench-note">Letters can be reused in your next word.<br>Bank early, or stay for a bigger score.</p>
+        </aside>
+      </div>
+    </section>
+    <footer class="game-footer"><a href="https://wordtycoon.live/portal/">Word Tycoon</a><span>Letterworks · Beta 1</span><a href="https://wordtycoon.live/privacy">Privacy</a></footer>
+    <noscript><p class="save-note">Letterworks needs JavaScript. Enable it and reload to play.</p></noscript>
+  </main>
+  <div id="modal" class="modal" hidden>
+    <div class="modal-backdrop"></div>
+    <section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="modalCopy" tabindex="-1">
+      <div id="modalEyebrow" class="eyebrow">SHIFT COMPLETE</div><h2 id="modalTitle">Choose your next contract.</h2><p id="modalCopy">It applies for the rest of this run.</p>
+      <div id="upgradeChoices" class="upgrade-choices" hidden></div><div id="resultSummary" class="result-summary" hidden></div>
+      <div id="answerReview" class="answer-review" hidden></div>
+      <div class="modal-actions">
+        <button id="resumeButton" class="primary-button" type="button" hidden>Resume shift <span>→</span></button>
+        <button id="restartButton" class="primary-button" type="button" hidden>Fresh run <span>↻</span></button>
+        <button id="shareButton" class="secondary-button" type="button" hidden>Copy result</button>
+        <button id="reviewButton" class="secondary-button" type="button" hidden>Review words</button>
+        <button id="homeButton" class="secondary-button" type="button" hidden>Save &amp; go home</button>
+        <button id="endButton" class="text-button" type="button" hidden>End this run</button>
+        <button id="confirmEndButton" class="secondary-button" type="button" hidden>Yes, end run</button>
+      </div>
+      <p id="modalFeedback" class="modal-feedback" role="status"></p>
+    </section>
+  </div>
+  <script src="catalog.js?v=lastword1"></script><script src="core.js?v=lastword1"></script><script src="rack-display.js?v=hidden2"></script><script src="guess-ticker.js?v=ticker1"></script><script src="game.js?v=lastword1"></script>
+</body>
+</html>

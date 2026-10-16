@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spelling Bee - OBS Overlay</title>
+  <link rel="stylesheet" href="css/overlay.css?v=2">
+</head>
+<body>
+  <div id="overlay" class="overlay">
+    <!-- Idle / No puzzle state -->
+    <div id="idle-screen" class="idle-screen">
+      <div class="idle-hex">&#x2B21;</div>
+      <div class="idle-text">SPELLING BEE</div>
+    </div>
+
+    <!-- Active game -->
+    <div id="game-screen" class="game-screen hidden">
+      <!-- Top: Leaderboard -->
+      <div class="info-section">
+        <div class="leaderboard">
+          <div class="section-title">LEADERBOARD</div>
+          <div id="leaderboard-list" class="leaderboard-list">
+            <div class="empty-state">No words found yet</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Middle: Honeycomb -->
+      <div class="honeycomb-section">
+        <div class="progress-bar-container">
+          <div class="progress-label">
+            <span id="found-count">0</span>/<span id="total-count">0</span> words
+          </div>
+          <div class="progress-track">
+            <div id="progress-fill" class="progress-fill"></div>
+          </div>
+          <div class="score-label">
+            <span id="current-score">0</span>/<span id="total-score">0</span> pts
+          </div>
+        </div>
+
+        <div class="honeycomb" id="honeycomb">
+          <!-- Row 1: 2 hexes -->
+          <div class="hex outer" id="hex-1" data-index="1">
+            <span class="hex-letter" id="letter-1"></span>
+          </div>
+          <div class="hex outer" id="hex-2" data-index="2">
+            <span class="hex-letter" id="letter-2"></span>
+          </div>
+          <!-- Row 2: 3 hexes -->
+          <div class="hex outer" id="hex-3" data-index="3">
+            <span class="hex-letter" id="letter-3"></span>
+          </div>
+          <div class="hex center" id="hex-0" data-index="0">
+            <span class="hex-letter" id="letter-0"></span>
+          </div>
+          <div class="hex outer" id="hex-4" data-index="4">
+            <span class="hex-letter" id="letter-4"></span>
+          </div>
+          <!-- Row 3: 2 hexes -->
+          <div class="hex outer" id="hex-5" data-index="5">
+            <span class="hex-letter" id="letter-5"></span>
+          </div>
+          <div class="hex outer" id="hex-6" data-index="6">
+            <span class="hex-letter" id="letter-6"></span>
+          </div>
+        </div>
+
+        <div id="timer" class="timer hidden">
+          <span id="timer-value">5:00</span>
+        </div>
+
+        <div class="badge-row">
+          <div id="status-badge" class="status-badge">WAITING</div>
+          <span id="daily-badge" class="daily-badge hidden">DAILY</span>
+          <span id="frenzy-badge" class="frenzy-badge hidden"><span class="frenzy-label">FRENZY</span><span id="frenzy-multiplier">1.0x</span></span>
+        </div>
+      </div>
+
+      <!-- Bottom: Recent Words -->
+      <div id="word-feed-section" class="word-feed-section">
+        <div class="word-feed">
+          <div class="section-title">RECENT WORDS</div>
+          <div id="word-feed-list" class="word-feed-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Word found popup -->
+    <div id="word-popup" class="word-popup hidden">
+      <div class="popup-word" id="popup-word"></div>
+      <div class="popup-player" id="popup-player"></div>
+      <div class="popup-score" id="popup-score"></div>
+    </div>
+  </div>
+
+  <script>
+  // ===== Viewport Scaling =====
+  (function () {
+    var BASE = 380;
+    var actualW = window.innerWidth;
+    var actualH = window.innerHeight;
+    var scale = actualW / BASE;
+    var baseH = Math.round(actualH / scale);
+    window.__gameScale = scale;
+    window.__gameViewport = { width: BASE, height: baseH };
+    if (Math.abs(scale - 1) > 0.01) {
+      var html = document.documentElement;
+      html.style.width = BASE + 'px';
+      html.style.height = baseH + 'px';
+      html.style.overflow = 'hidden';
+      html.style.transformOrigin = '0 0';
+      html.style.transform = 'scale(' + scale + ')';
+    }
+    document.documentElement.style.setProperty('--base-width', BASE + 'px');
+    document.documentElement.style.setProperty('--base-height', baseH + 'px');
+  })();
+  </script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="coin-reward.js?v=2"></script>
+  <script src="js/overlay.js?v=2"></script>
+  <script src="win-effects.js?v=2"></script>
+</body>
+</html>

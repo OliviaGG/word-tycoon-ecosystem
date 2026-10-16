@@ -1,0 +1,11 @@
+node_modules/
+.env
+.env.bak-*
+data/puzzles/*.jpg
+data/puzzles/*.png
+data/triangled.db
+logs/
+.codex-backups/
+*.bak
+*.bak-*
+*.bak-pre-*

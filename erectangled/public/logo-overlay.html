@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>erecTangled Logo</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { background: transparent; overflow: visible; }
+/* Kill chat widget, game-help, iframes, and any injected overlays */
+.chat-toggle, .chat-panel, .chat-btn, .chat-widget,
+[class*="chat"], [id*="chat"], [class*="game-help"],
+[id*="game-help"], iframe, .progress-card-container,
+[class*="toast"], [class*="overlay"] {
+    display: none !important;
+    visibility: hidden !important;
+}
+.logo {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 200px;
+    font-weight: 700;
+    white-space: nowrap;
+    -webkit-text-stroke: 6px #1a2060;
+    paint-order: stroke fill;
+    line-height: 1.15;
+    padding: 10px 16px;
+    display: inline-block;
+}
+</style>
+<script>
+new MutationObserver(function(muts) {
+    muts.forEach(function(m) {
+        m.addedNodes.forEach(function(n) {
+            if (!n || n.nodeType !== 1) return;
+            var sig = (n.id || '') + (n.className || '') + (n.src || '');
+            if (/chat|game-help|toast|overlay/i.test(sig)) n.remove();
+        });
+    });
+}).observe(document.documentElement, { childList: true, subtree: true });
+</script>
+</head>
+<body>
+<span class="logo"><span style="color:#44bb88">e</span><span style="color:#3EC8E8">r</span><span style="color:#F5920A">e</span><span style="color:#EFC000">c</span><span style="color:#1E52C8">T</span><span style="color:#E83020">a</span><span style="color:#42B238">n</span><span style="color:#88AAFF">g</span><span style="color:#C835B8">l</span><span style="color:#F5920A">e</span><span style="color:#1EB8A8">d</span></span>
+</body>
+</html>

@@ -1,0 +1,12 @@
+node_modules/
+.env
+*.log
+*.db
+*.db-journal
+package-lock.json
+NUL
+nul
+.codex-backups/
+*.bak
+*.bak-*
+*.bak-pre-*

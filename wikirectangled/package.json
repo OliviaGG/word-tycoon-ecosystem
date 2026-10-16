@@ -1,0 +1,24 @@
+{
+  "name": "wikirectangled",
+  "version": "0.1.0",
+  "description": "WiKirecTangled \u2014 find words hidden in a letter grid that also appear in a hidden Wikipedia article. Combines RecTangled (grid word search) with WikiSearchle (article reveal).",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test test/*.test.js"
+  },
+  "type": "commonjs",
+  "dependencies": {
+    "dotenv": "^16.6.1",
+    "express": "^4.22.2",
+    "socket.io": "^4.8.0",
+    "socket.io-client": "^4.8.3",
+    "sql.js": "^1.14.1"
+  },
+  "overrides": {
+    "path-to-regexp": "^0.1.13",
+    "qs": "^6.15.2",
+    "socket.io-parser": "^4.2.6",
+    "ws": "^8.21.0"
+  }
+}

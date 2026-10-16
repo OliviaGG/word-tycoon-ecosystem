@@ -1,0 +1,56 @@
+{
+  "name": "erecTangled",
+  "short_name": "erecTangled",
+  "description": "Play erecTangled on Word Tycoon — a free expanding word search puzzle game. Find hidden words in growing ring grids. Live multiplayer and daily solo puzzles.",
+  "id": "/?source=pwa",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a0f1a",
+  "theme_color": "#0d1320",
+  "categories": ["games", "entertainment", "word"],
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "/icon-192-v3.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512-v3.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Live Game",
+      "short_name": "Live",
+      "description": "Jump into the live erecTangled round.",
+      "url": "/?source=shortcut-live",
+      "icons": [
+        {
+          "src": "/icon-192-v3.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Solo Daily",
+      "short_name": "Daily",
+      "description": "Open the current solo daily puzzle.",
+      "url": "/solo?source=shortcut-daily",
+      "icons": [
+        {
+          "src": "/icon-192-v3.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ]
+}

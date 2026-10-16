@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Triangled - 30 Day Puzzle Review</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #1a1a2e; color: #e0e0e0; padding: 24px; }
+  h1 { text-align: center; font-size: 28px; color: #f0c040; margin-bottom: 8px; }
+  .subtitle { text-align: center; color: #888; font-size: 14px; margin-bottom: 32px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 20px; max-width: 1400px; margin: 0 auto; }
+  .card { background: #16213e; border-radius: 12px; overflow: hidden; border: 1px solid #2a2a4a; transition: transform 0.15s; }
+  .card:hover { transform: translateY(-3px); border-color: #f0c040; }
+  .card-img { width: 100%; height: 220px; object-fit: cover; display: block; background: #0f0f23; }
+  .no-img { width: 100%; height: 220px; display: flex; align-items: center; justify-content: center; background: #0f0f23; color: #444; font-size: 14px; }
+  .card-body { padding: 16px; }
+  .card-date { font-size: 12px; color: #888; margin-bottom: 4px; }
+  .card-theme { font-size: 20px; font-weight: 700; color: #f0c040; margin-bottom: 4px; }
+  .card-hint { font-size: 13px; color: #aaa; font-style: italic; margin-bottom: 12px; }
+  .spangram { display: inline-block; background: #f0c040; color: #1a1a2e; font-weight: 700; padding: 3px 10px; border-radius: 20px; font-size: 14px; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px; }
+  .words { display: flex; flex-wrap: wrap; gap: 6px; }
+  .word { background: #2a2a4a; color: #ccc; padding: 3px 10px; border-radius: 14px; font-size: 13px; }
+  .card-footer { padding: 8px 16px; border-top: 1px solid #2a2a4a; display: flex; justify-content: space-between; font-size: 11px; color: #666; }
+  .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; vertical-align: middle; }
+  .status-dot.ok { background: #4caf50; }
+  .status-dot.warn { background: #ff9800; }
+  .status-dot.bad { background: #f44336; }
+  .duplicate-badge { background: #ff5722; color: white; font-size: 10px; padding: 2px 6px; border-radius: 8px; margin-left: 8px; }
+</style>
+</head>
+<body>
+<h1>Triangled - 30 Day Puzzle Review</h1>
+<p class="subtitle">April 16 - May 15, 2026</p>
+<div class="grid" id="grid"></div>
+
+<script>
+const puzzles = [{"date":"2026-04-16","theme":"Spring Cleaning","themeHint":"Getting your home fresh for spring","spangram":"cleaning","words":["dust","mop","sweep","scrub","tidy","organize","vacuum","sparkle","rinse"],"hasGrid":true,"image":"2026-04-16_option1.jpg"},{"date":"2026-04-17","theme":"Rainy Day Indoors","themeHint":"Cozy activities when it's wet outside","spangram":"downpour","words":["movie","candle","reader","cookie","coffee","blanket","slippers","tea"],"hasGrid":true,"image":"2026-04-17_option1.jpg"},{"date":"2026-04-18","theme":"Garden Delights","themeHint":"Spring's bounty from the backyard","spangram":"gardening","words":["mulch","seeds","plant","herbs","viola","flower","sprout","shovel","pot"],"hasGrid":true,"image":"2026-04-18_option1.jpg"},{"date":"2026-04-19","theme":"Farmers Market","themeHint":"Fresh spring produce and goods","spangram":"marketday","words":["spice","vendor","basket","fruits","cheese","produce","veggies","rye"],"hasGrid":true,"image":"2026-04-19_option1.jpg"},{"date":"2026-04-20","theme":"Weekday Commute","themeHint":"Getting to work or school","spangram":"commuters","words":["route","subway","traffic","bicycle","carpool","journey","express"],"hasGrid":true,"image":"2026-04-20_option1.jpg"},{"date":"2026-04-21","theme":"April Showers","themeHint":"What brings May flowers","spangram":"rainyday","words":["cloud","storm","puddle","shower","droplet","drizzle","umbrella","fog"],"hasGrid":true,"image":"2026-04-21_option1.jpg"},{"date":"2026-04-22","theme":"Earth Day","themeHint":"Celebrating our planet and its wonders","spangram":"ecosystem","words":["green","ocean","water","nature","planet","forest","jungle","recycle"],"hasGrid":true,"image":"2026-04-22_option1.jpg"},{"date":"2026-04-23","theme":"Spring Picnic","themeHint":"Enjoying the outdoors","spangram":"picnicbasket","words":["sandwich","thermos","snacks","juice","fruit","salad","park","sun"],"hasGrid":true,"image":"2026-04-23_option1.jpg"},{"date":"2026-04-24","theme":"April Blossoms","themeHint":"Blooming flowers of springtime","spangram":"blossoms","words":["tulip","daffodil","crocus","iris","pansy","bloom","vernal","vivid","dew"],"hasGrid":true,"image":"2026-04-24_option1.jpg"},{"date":"2026-04-25","theme":"Outdoor Brunch","themeHint":"Weekend morning feast al fresco","spangram":"brunching","words":["mimosa","omelet","breeze","waffle","pastry","scones","griddle","oat"],"hasGrid":true,"image":"2026-04-25_option1.jpg"},{"date":"2026-04-26","theme":"Backyard Birdwatching","themeHint":"Observing feathered friends on a spring weekend","spangram":"birdwatch","words":["sparrow","robin","finch","nest","feeder","chirp","fly","perch","oriole"],"hasGrid":true,"image":"2026-04-26_option1.jpg"},{"date":"2026-04-27","theme":"Weekday Garden Prep","themeHint":"Getting ready for green growth","spangram":"landscape","words":["weeds","soil","rake","trowel","gloves","planter","spade","barrel","dig"],"hasGrid":true,"image":"2026-04-27_option1.jpg"},{"date":"2026-04-28","theme":"Coffee Break","themeHint":"A quick pick-me-up during the workday","spangram":"caffeine","words":["espresso","latte","mug","sugar","cream","biscotti","mocha","teabreak"],"hasGrid":true,"image":"2026-04-28_option1.jpg"},{"date":"2026-04-29","theme":"Weekday Wellness","themeHint":"Midweek boost for mind and body","spangram":"wellbeing","words":["relax","energy","stretch","breathe","nourish","mindful","balance"],"hasGrid":true,"image":"2026-04-29_option1.jpg"},{"date":"2026-04-30","theme":"Spring Sewing","themeHint":"Crafting creations for spring","spangram":"needlework","words":["thread","button","pattern","stitch","sewing","thimble","crochet"],"hasGrid":true,"image":"2026-04-30_option1.jpg"},{"date":"2026-05-01","theme":"Spring Afternoon","themeHint":"Relaxing outdoor activities on a mild day","spangram":"afternoon","words":["picnic","clouds","flowers","leisure","reading","sunshine","shade"],"hasGrid":true,"image":"2026-05-01_option1.jpg"},{"date":"2026-05-02","theme":"Weekend Getaway","themeHint":"Perfect escape for a spring weekend","spangram":"adventure","words":["cabin","sight","travel","escape","resort","explore","retreat","hike"],"hasGrid":true,"image":"2026-05-02_option1.jpg"},{"date":"2026-05-03","theme":"May Flowers","themeHint":"Blooming beauties of spring","spangram":"blossoming","words":["aster","daisy","petal","poppy","scent","bud","stem","rose","lily","sprig"],"hasGrid":true,"image":"2026-05-03_option1.jpg"},{"date":"2026-05-04","theme":"Bakery Fresh","themeHint":"Warm from the oven","spangram":"pastries","words":["bread","muffin","dough","glaze","flour","yeast","crust","scone","danish"],"hasGrid":true,"image":"2026-05-04_option1.jpg"},{"date":"2026-05-05","theme":"Cinco de Mayo Fiesta","themeHint":"Celebrating Mexican culture and heritage","spangram":"celebrate","words":["salsa","chili","music","dance","fiesta","nachos","parade","sombrero"],"hasGrid":true,"image":"2026-05-05_option1.jpg"},{"date":"2026-05-06","theme":"Midweek Recharge","themeHint":"A little break to refresh during the week","spangram":"recharge","words":["calm","pause","quiet","focus","renew","stroll","restore","workout","nap"],"hasGrid":true,"image":"2026-05-06_option1.jpg"},{"date":"2026-05-07","theme":"Spring Sprinkles","themeHint":"Gentle May showers","spangram":"rainstorm","words":["mist","drops","foggy","splash","squall","rainbow","overcast","steam"],"hasGrid":true,"image":"2026-05-07_option1.jpg"},{"date":"2026-05-08","theme":"Urban Greenery","themeHint":"Plants and parks in the city","spangram":"cityscape","words":["gazebo","shrub","bench","potted","plaza","tree","grass","urban","alley"],"hasGrid":true,"image":"2026-05-08_option1.jpg"},{"date":"2026-05-09","theme":"Weekend Crafting","themeHint":"Creative projects for a leisurely weekend","spangram":"handicraft","words":["mosaic","sketch","origami","pottery","knitting","painting","dye"],"hasGrid":true,"image":"2026-05-09_option1.jpg"},{"date":"2026-05-10","theme":"Mother's Day","themeHint":"Celebrating moms everywhere","spangram":"gratitude","words":["care","love","family","gift","hug","warmth","card","treat","mom","bouquet"],"hasGrid":true,"image":"2026-05-10_option1.jpg"},{"date":"2026-05-11","theme":"Morning Commute","themeHint":"Getting to work or school","spangram":"travelers","words":["highway","bridge","scooter","shuttle","walk","train","crowd","pedal"],"hasGrid":true,"image":"2026-05-11_option1.jpg"},{"date":"2026-05-12","theme":"Weekday Lunch Break","themeHint":"Midday meal during a busy week","spangram":"sandwiches","words":["pasta","soup","wrap","bagel","drink","yogurt","chips","apple","pickle"],"hasGrid":true,"image":"2026-05-12_option1.jpg"},{"date":"2026-05-13","theme":"Mid-Week Bloom","themeHint":"Brightening up the hump day","spangram":"flowering","words":["peony","lilac","lupin","flora","sunlit","crisp","meadow","vine","spray"],"hasGrid":true,"image":"2026-05-13_option1.jpg"},{"date":"2026-05-14","theme":"Spring Hiking Essentials","themeHint":"What to pack for a trail adventure","spangram":"backpack","words":["boots","flask","trail","snack","compass","map","jacket","firstaid","hat"],"hasGrid":true,"image":"2026-05-14_option1.jpg"},{"date":"2026-05-15","theme":"Spring Workspace","themeHint":"Refreshing your desk for the season","spangram":"workspace","words":["desk","pens","chair","bright","monitor","notebook","calendar","lamp"],"hasGrid":true,"image":"2026-05-15_option1.jpg"}];
+
+// Track duplicate themes
+const themeCounts = {};
+puzzles.forEach(p => { themeCounts[p.theme] = (themeCounts[p.theme] || 0) + 1; });
+
+const weekdays = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+const grid = document.getElementById('grid');
+puzzles.forEach(p => {
+  const d = new Date(p.date + 'T12:00:00');
+  const dateLabel = `${weekdays[d.getDay()]}, ${months[d.getMonth()]} ${d.getDate()}`;
+  const isDupe = themeCounts[p.theme] > 1;
+
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.innerHTML = `
+    ${p.image
+      ? `<img class="card-img" src="data/puzzles/${p.image}" alt="${p.theme}">`
+      : `<div class="no-img">No image generated</div>`}
+    <div class="card-body">
+      <div class="card-date">${dateLabel}</div>
+      <div class="card-theme">${p.theme}${isDupe ? '<span class="duplicate-badge">REPEAT</span>' : ''}</div>
+      <div class="card-hint">${p.themeHint}</div>
+      <div class="spangram">${p.spangram}</div>
+      <div class="words">
+        ${p.words.map(w => `<span class="word">${w}</span>`).join('')}
+      </div>
+    </div>
+    <div class="card-footer">
+      <span><span class="status-dot ${p.hasGrid ? 'ok' : 'bad'}"></span>${p.hasGrid ? 'Grid ready' : 'No grid'}</span>
+      <span>${p.image ? 'Has image' : 'No image'}</span>
+    </div>
+  `;
+  grid.appendChild(card);
+});
+</script>
+</body>
+</html>

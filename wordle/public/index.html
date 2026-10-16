@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-18066640610"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag("js", new Date());
+  gtag("config", "AW-18066640610");
+</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#111827">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Wordle">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="description" content="Wordle is a live multiplayer word guessing game with solo play, daily rounds, and stream-friendly puzzle action.">
+  <meta property="og:title" content="Wordle | Live Multiplayer Word Guessing Game">
+  <meta property="og:description" content="Play live Wordle rounds, daily challenges, and solo word puzzles in your browser.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Wordle | Live Multiplayer Word Guessing Game">
+  <meta name="twitter:description" content="Live multiplayer Wordle rounds plus solo and daily puzzle play.">
+  <title>Wordle | Live Multiplayer Word Guessing Game</title>
+  <link rel="manifest" href="/wordle/manifest.webmanifest?v=1">
+  <link rel="icon" type="image/svg+xml" href="/wordle/app-icon.svg">
+  <link rel="apple-touch-icon" href="/wordle/app-icon.svg">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "VideoGame",
+    "name": "Wordle",
+    "description": "Wordle is a live multiplayer word guessing game with daily and solo puzzle modes.",
+    "genre": ["Word Game", "Puzzle", "Multiplayer"],
+    "gamePlatform": "Web Browser",
+    "applicationCategory": "Game",
+    "operatingSystem": "Any",
+    "inLanguage": "en"
+  }
+  </script>
+  <link rel="stylesheet" href="style.css?v=3">
+</head>
+<body>
+  <div class="container">
+    <div class="game-area">
+      <div class="game-frame">
+        <!-- Daily / Frenzy badges -->
+        <div id="badges-bar" class="badges-bar" style="display:none">
+          <span id="daily-badge" class="daily-badge" style="display:none">&#11088; DAILY</span>
+          <span id="frenzy-badge" class="frenzy-badge" style="display:none">
+            <span class="frenzy-label">FRENZY</span>
+            <span id="frenzy-mult">1.0x</span>
+          </span>
+        </div>
+
+        <!-- Game grid - scrolling feed of guesses -->
+        <div class="grid-wrapper">
+          <div class="grid" id="grid">
+            <!-- Rows added dynamically -->
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <footer class="legal-footer">
+      <a href="https://wordtycoon.live/privacy" target="_blank" rel="noopener">Privacy</a> &middot;
+      <a href="https://wordtycoon.live/terms" target="_blank" rel="noopener">Terms</a> &middot;
+      <a href="https://discord.gg/C8Nm2jEZFC" target="_blank" rel="noopener">Discord</a> &middot;
+      <a href="https://www.jorry.live" target="_blank" rel="noopener">jorry.live</a> &middot;
+      <a href="https://wordtycoon.live/portal">&copy; 2026 Word Tycoon</a>
+    </footer>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://wordtycoon.live/js/win-card.js"></script>
+  <script src="coin-reward.js?v=2"></script>
+  <script src="game.js?v=4"></script>
+
+  <script src="/portal/js/library-toast.js" data-mode="mp"></script>
+  <script src="/portal/js/cosmetic-reward.js"></script>
+  <script src="/portal/js/progress-card.js"></script>
+  <script src="/wordle/pwa-install.js?v=2"></script>
+  <script>
+    (function () {
+      var storageKey = 'wordle_theme';
+      var globalStorageKey = 'wordtycoon_theme';
+      var root = document.documentElement;
+      var meta = document.querySelector('meta[name="theme-color"]');
+      var darkColor = '#111827';
+      var lightColor = '#eef4fb';
+      function getTheme() {
+        try {
+          var saved = localStorage.getItem(globalStorageKey);
+          if (saved !== 'light' && saved !== 'dark') saved = localStorage.getItem(storageKey);
+          if (saved === 'light' || saved === 'dark') return saved;
+        } catch (e) {}
+        return window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+      }
+      function applyTheme(theme) {
+        root.setAttribute('data-theme', theme);
+        if (meta) meta.setAttribute('content', theme === 'light' ? lightColor : darkColor);
+      }
+      applyTheme(getTheme());
+    })();
+  </script>
+</body>
+</html>

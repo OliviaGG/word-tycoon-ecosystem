@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=640" />
+  <title>Play WikiWord on Word Tycoon — Famous Quotes Word Search</title>
+  <meta name="description" content="Play WikiWord on Word Tycoon — a compact board with no podium. Find words hidden in a smaller letter grid from a famous quote." />
+  <link rel="canonical" href="https://wikiword.live/" />
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="WikiWord">
+  <meta property="og:title" content="Play WikiWord on Word Tycoon — Famous Quotes Word Search">
+  <meta property="og:description" content="Play WikiWord on Word Tycoon — a compact board with no podium. Find words hidden in a smaller letter grid from a famous quote.">
+  <meta property="og:url" content="https://wikiword.live/">
+  <meta property="og:image" content="https://wikirectangled.com/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Play WikiWord on Word Tycoon — Famous Quotes Word Search">
+  <meta name="twitter:description" content="Play WikiWord on Word Tycoon — a compact board with no podium. Find words hidden in a smaller letter grid from a famous quote.">
+  <meta name="twitter:image" content="https://wikirectangled.com/og-image.png">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": "https://wikiword.live/#website",
+        "url": "https://wikiword.live/",
+        "name": "WikiWord",
+        "description": "Compact quote word search game on Word Tycoon.",
+        "publisher": {
+          "@type": "Organization",
+          "name": "Word Tycoon",
+          "url": "https://wordtycoon.live/"
+        }
+      },
+      {
+        "@type": "VideoGame",
+        "name": "WikiWord",
+        "url": "https://wikiword.live/",
+        "image": "https://wikirectangled.com/og-image.png",
+        "description": "WikiWord is a compact quote-based word search game with a 5×7 letter grid and no podium.",
+        "genre": ["Word Game", "Puzzle", "Trivia"],
+        "playMode": ["SinglePlayer", "MultiPlayer"],
+        "applicationCategory": "Game",
+        "operatingSystem": "Web Browser",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD",
+          "availability": "https://schema.org/InStock"
+        }
+      }
+    ]
+  }
+  </script>
+  <link rel="icon" type="image/png" href="/img/icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Inter:wght@500;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/style.css?v=20261003-keyboard" />
+  <link rel="stylesheet" href="/css/wikiword.css?v=20260831a" />
+  <script src="/socket.io/socket.io.js"></script>
+<style>.mp-login-screen,.sp-login-screen{display:none!important;}</style>
+<script src="https://wordtycoon.live/login-prompt.js?v=3" defer></script>
+</head>
+<body class="wikiword-mode">
+  <header class="topbar">
+    <img src="/img/logo.png" alt="WikiWord" class="logo" id="logo" />
+    <div class="topbar-spacer"></div>
+    <div class="counts">
+      <span class="count g"><span class="badge">G</span><b id="grid-found">0</b></span>
+      <span class="count t"><span class="badge">T</span><b id="title-found">0</b><span class="slash">/</span><span class="total" id="title-total">0</span></span>
+      <span class="count c"><span class="badge">C</span><b id="common-found">0</b><span class="slash">/</span><span class="total" id="common-total">0</span></span>
+    </div>
+    <span id="hint-btn-wrap"></span>
+    <button class="mute-toggle" id="muteToggle" type="button" aria-pressed="false" aria-label="Toggle sound">
+      <svg class="icon-sound" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+      <svg class="icon-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="22" y1="9" x2="16" y2="15"/><line x1="16" y1="9" x2="22" y2="15"/></svg>
+    </button>
+  </header>
+
+  <main class="layout mini-layout">
+    <div class="title-block">
+      <div class="title-eyebrow">TITLE</div>
+      <div class="title-chips" id="title-chips"></div><div class="title-tier-status" id="title-tier-status" data-active="false"></div>
+    </div>
+    <section class="right-col" id="target-cards"></section>
+    <div class="found-words-card" id="found-words-card">
+      <div class="found-words-list" id="found-words-list"></div>
+    </div>
+  </main>
+
+  <div class="ticker" id="ticker"><div class="ticker-track" id="ticker-track"></div></div>
+
+  <section class="grid-wrap" id="grid-wrap">
+    <div class="grid" id="grid"></div>
+    <svg class="swipe-svg" id="swipe-svg"></svg>
+  </section>
+
+  <form class="composer" id="composer" autocomplete="off">
+    <input type="text" id="guess-input" aria-label="Guess a word" placeholder="Type or Swipe" autocomplete="off" autofocus />
+    <button type="submit">Guess</button>
+  </form>
+
+  <div class="win-strip" id="win-strip">
+    <span class="count t"><span class="badge">T</span><b id="win-title-found">0</b><span class="slash">/</span><span class="total" id="win-title-total">0</span></span>
+    <span class="count c"><span class="badge">C</span><b id="win-common-found">0</b><span class="slash">/</span><span class="total" id="win-common-total">0</span></span>
+    <span class="count r"><span class="badge">R</span><b id="win-rare-found">0</b><span class="slash">/</span><span class="total" id="win-rare-total">0</span></span>
+    <span class="count u"><span class="badge">U</span><b id="win-ultra-found">0</b><span class="slash">/</span><span class="total" id="win-ultra-total">0</span></span>
+  </div>
+  <div class="player-strip">
+    Playing as <button type="button" id="rename-link" aria-label="Change display name"></button> · <a href="/">Classic →</a> · <a href="/solo">Solo →</a>
+  </div>
+
+  <script src="/js/ticker.js?v=20260914a"></script>
+  <script src="/js/cosmetics-cache.js?v=20260808n"></script>
+  <script src="/js/cosmetics-applier.js?v=1778416918"></script>
+  <script src="https://wordtycoon.live/js/win-card.js"></script>
+  <script src="/js/sfx-engine.js?v=1778139617"></script>
+  <div id="wktLoginScreen" class="mp-login-screen hidden" aria-hidden="true">
+  <div class="mp-login-card">
+    <button id="wktLoginDismiss" class="mp-login-close" type="button" aria-label="Continue as guest">&times;</button>
+    <img src="/img/logo.png" alt="WikiWord" class="mp-login-logo">
+    <div class="mp-guest-row">
+      <div class="mp-guest-copy">Play as <strong>Anonymous</strong></div>
+      <button id="wktGuestContinueBtn" class="mp-guest-btn" type="button">Continue</button>
+    </div>
+    <div class="mp-login-divider"><span>or</span></div>
+    <a id="wktDiscordLoginLink" href="#" class="mp-discord-btn">
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037 19.736 19.736 0 0 0-4.886 1.515.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c.126-.094.252-.192.372-.292a.074.074 0 0 1 .078-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.1.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
+      Login with Discord
+    </a>
+    <a id="wktGithubLoginLink" href="#" class="mp-github-btn">
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.01-1.04-.015-2.04-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+      Login with GitHub
+    </a>
+    <a href="https://wordtycoon.live" class="mp-back-link">← Back to Word Tycoon</a>
+  </div>
+</div>
+
+
+  <link rel="stylesheet" href="https://wordtycoon.live/portal/assets/badges/perk-badges.css?b3">
+  <script src="https://wordtycoon.live/portal/assets/badges/perk-badges.js?b3"></script>
+  <script src="/js/xp-flyout.js?v=20260808n"></script>
+  <script src="https://wordtycoon.live/js/hints.js?v=1"></script>
+  <script src="/js/main.js?v=20260902b"></script>
+  <div id="word-announce" class="word-announce">
+    <div class="wa-pfp" id="wa-pfp"></div>
+    <div class="wa-info">
+      <div class="wa-name" id="wa-name"></div>
+      <div class="wa-line">
+        <span class="wa-word" id="wa-word"></span>
+        <span class="wa-pts" id="wa-pts"></span>
+      </div>
+    </div>
+  </div>
+  <footer class="wt-legal-footer">
+    <a href="https://wordtycoon.live/privacy" target="_blank" rel="noopener">Privacy</a> &middot; <a href="https://wordtycoon.live/terms" target="_blank" rel="noopener">Terms</a> &middot; <a href="https://discord.gg/C8Nm2jEZFC" target="_blank" rel="noopener">Discord</a> &middot; <a href="https://www.jorry.live" target="_blank" rel="noopener">jorry.live</a> &middot; <a href="https://wordtycoon.live/portal">&copy; 2026 Word Tycoon</a>
+  </footer>
+  <style>
+    .wt-legal-footer{padding:14px 16px 18px;text-align:center;font:12px/1.4 "Segoe UI",Tahoma,sans-serif;color:#7a8a9b;opacity:.75}
+    .wt-legal-footer a{color:inherit;text-decoration:none;margin:0 2px}
+    .wt-legal-footer a:hover{text-decoration:underline;opacity:1}
+  </style>
+  <!-- Login modal. authBase stays absolute (top-level nav to the hub's OAuth); the
+       session probe must be same-origin so it sees this domain's wt_remember, the
+       cookie main.js plants via /api/auth/exchange. See snippets/wt-relay-auth.conf. -->
+  <script>(function(){var H='https://wordtycoon.live';var A=/^(localhost|127\.0\.0\.1)$/i.test(location.hostname)?H:'';function show(){if(!window.LoginPrompt||!window.LoginPrompt.showModal)return setTimeout(show,60);window.LoginPrompt.showModal({authBase:H,returnTo:location.href,onDismiss:function(){var b=document.getElementById("wktGuestContinueBtn");if(b)b.click();}});}fetch(A+'/api/me/session',{credentials:'include'}).then(function(r){return r.json();}).then(function(d){if(!d||!d.ok||!d.user)show();}).catch(show);})();</script>
+</body>
+</html>

@@ -1,0 +1,30 @@
+{
+  "name": "wikisearchle",
+  "version": "1.0.0",
+  "description": "WikiSearchle — composite game combining Searchle's semantic-rank cards with WikiWord's redacted-article reveal. Both halves share the same target.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "vite --config vite.config.mjs",
+    "build": "vite build --config vite.config.mjs",
+    "demo": "node scripts/vite-demo.cjs",
+    "preview:demo": "node scripts/vite-demo.cjs --built",
+    "test": "node --test test/*.test.cjs",
+    "test:vite": "node scripts/verify-vite.cjs"
+  },
+  "dependencies": {
+    "dotenv": "^16.3.1",
+    "express": "^4.22.2",
+    "socket.io": "^4.7.2",
+    "socket.io-client": "^4.7.2"
+  },
+  "overrides": {
+    "path-to-regexp": "^0.1.13",
+    "qs": "^6.15.2",
+    "socket.io-parser": "^4.2.6",
+    "ws": "^8.21.0"
+  },
+  "devDependencies": {
+    "vite": "8.3.2"
+  }
+}

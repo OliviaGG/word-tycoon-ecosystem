@@ -1,0 +1,43 @@
+{
+  "name": "UnWordle",
+  "short_name": "UnWordle",
+  "description": "Play UnWordle on Word Tycoon — a free reverse word puzzle game. Install for one-tap solo daily puzzles.",
+  "id": "./sp.html?source=pwa",
+  "start_url": "./sp.html?source=pwa",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0e1220",
+  "theme_color": "#111827",
+  "categories": ["games", "entertainment", "word"],
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Solo Daily",
+      "short_name": "Daily",
+      "description": "Open today's UnWordle puzzle.",
+      "url": "./sp.html?source=shortcut-daily",
+      "icons": [
+        {
+          "src": "app-icon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
+    }
+  ]
+}

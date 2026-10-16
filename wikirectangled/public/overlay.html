@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=640" />
+  <title>WiKirecTangled — overlay</title>
+  <meta name="robots" content="noindex" />
+  <link rel="icon" type="image/png" href="/img/icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Inter:wght@500;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/style.css?v=20261003-keyboard" />
+  <script src="/socket.io/socket.io.js"></script>
+  <style>
+    /* === OBS overlay styling — glass minimalism over transparent body === */
+    html, body { background: transparent !important; }
+    body.obs-mode {
+      padding: 18px;
+      gap: 10px;
+      min-height: 100vh;
+      align-items: center;
+      justify-content: flex-start;
+    }
+    /* Glass card behind the entire game stack.
+       NOTE: backdrop-filter is intentionally removed for OBS performance.
+       A static tinted panel + border gives the same readable contrast without
+       forcing CEF to blur the entire background every frame. */
+    body.obs-mode::before {
+      content: '';
+      position: fixed;
+      inset: 14px;
+      z-index: -1;
+      border-radius: 28px;
+      background: rgba(15, 24, 36, 0.78);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow:
+        0 12px 48px rgba(0, 0, 0, 0.45),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.35);
+    }
+    /* Tight, fitted appearance — kill the page-level chrome */
+    body.obs-mode .topbar { width: min(640px, 100%); padding: 0; gap: 10px; }
+    body.obs-mode .layout { gap: 14px; }
+    body.obs-mode .grid-wrap { width: min(640px, 100%); }
+    body.obs-mode .ticker {
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.02);
+    }
+    /* Read-only: hide composer + bottom player-strip on overlay */
+    body.obs-mode .composer,
+    body.obs-mode .player-strip,
+    body.obs-mode .mute-toggle,
+    body.obs-mode .streamer-status {
+      display: none !important;
+    }
+    /* Anchor logo top so the +25% scale doesn't breach the glass card's top border */
+    body.obs-mode .logo { transform-origin: left top; }
+    /* Slight rounding on the win-strip so it nests in the glass card */
+    body.obs-mode .win-strip {
+      background: rgba(255, 255, 255, 0.04);
+      border-radius: 12px;
+      padding: 8px 10px;
+    }
+  </style>
+  <link rel="stylesheet" href="https://wordtycoon.live/portal/assets/badges/perk-badges.css?b3">
+  <script src="https://wordtycoon.live/portal/assets/badges/perk-badges.js?b3"></script>
+</head>
+<body class="streamer-mode obs-mode">
+  <header class="topbar">
+    <img src="/img/logo.png" alt="WiKirecTangled" class="logo" id="logo" />
+    <div class="topbar-spacer"></div>
+    <div class="counts">
+      <span class="count g"><span class="badge">G</span><b id="grid-found">0</b></span>
+      <span class="count t"><span class="badge">T</span><b id="title-found">0</b><span class="slash">/</span><span class="total" id="title-total">0</span></span>
+      <span class="count c"><span class="badge">C</span><b id="common-found">0</b><span class="slash">/</span><span class="total" id="common-total">0</span></span>
+    </div>
+  </header>
+
+  <div class="streamer-status" id="streamer-status">Waiting for chat to start a round…</div>
+
+  <main class="layout">
+    <section class="left-col">
+      <div class="title-block">
+        <div class="title-eyebrow">TITLE</div>
+        <div class="title-chips" id="title-chips"></div><div class="title-tier-status" id="title-tier-status" data-active="false"></div>
+      </div>
+      <div class="leader-spacer"></div>
+      <div class="players-row" id="players-row"></div>
+    </section>
+    <section class="right-col">
+      <div id="target-cards"></div>
+    </section>
+    <div class="found-words-card" id="found-words-card">
+      <div class="found-words-list" id="found-words-list"></div>
+    </div>
+  </main>
+
+  <div class="ticker" id="ticker"><div class="ticker-track" id="ticker-track"></div></div>
+
+  <section class="grid-wrap">
+    <div class="grid" id="grid"></div>
+    <svg class="swipe-svg" id="swipe-svg"></svg>
+  </section>
+
+  <form class="composer" id="composer" autocomplete="off">
+    <input type="text" id="guess-input" aria-label="Guess a word" placeholder="Type or Swipe" autocomplete="off" />
+    <button type="submit">Guess</button>
+  </form>
+  <div class="win-strip" id="win-strip">
+    <span class="count t"><span class="badge">T</span><b id="win-title-found">0</b><span class="slash">/</span><span class="total" id="win-title-total">0</span></span>
+    <span class="count c"><span class="badge">C</span><b id="win-common-found">0</b><span class="slash">/</span><span class="total" id="win-common-total">0</span></span>
+    <span class="count r"><span class="badge">R</span><b id="win-rare-found">0</b><span class="slash">/</span><span class="total" id="win-rare-total">0</span></span>
+    <span class="count u"><span class="badge">U</span><b id="win-ultra-found">0</b><span class="slash">/</span><span class="total" id="win-ultra-total">0</span></span>
+  </div>
+
+  <script src="/js/ticker.js?v=20260914a"></script>
+  <script src="/js/cosmetics-cache.js?v=20260808n"></script>
+  <script src="/js/cosmetics-applier.js?v=20260808n"></script>
+  <script src="/js/xp-flyout.js?v=20260822perfc"></script>
+  <script src="/js/sfx-engine.js"></script>
+  <script src="/js/streamer.js?v=20261003borders"></script>
+  <div id="word-announce" class="word-announce">
+    <div class="wa-pfp" id="wa-pfp"></div>
+    <div class="wa-info">
+      <div class="wa-name" id="wa-name"></div>
+      <div class="wa-line">
+        <span class="wa-word" id="wa-word"></span>
+        <span class="wa-pts" id="wa-pts"></span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

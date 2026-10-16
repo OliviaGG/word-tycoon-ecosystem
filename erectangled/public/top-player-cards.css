@@ -1,0 +1,183 @@
+/* top-player-cards.css — Shared top-3 square player cards */
+
+.cosmetic-title { font-size: 9px; font-weight: 600; letter-spacing: 0.5px; margin-left: 3px; opacity: 0.9; }
+
+.top-players {
+    display: flex;
+    gap: 4px;
+    align-items: flex-end;
+    align-self: center;
+    flex-shrink: 0;
+    overflow: visible;
+}
+.tp-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    gap: 0;
+    overflow: visible;
+    position: relative;
+    isolation: isolate;
+}
+.tp-card.gold {
+    width: 62px; height: 62px;
+    border-radius: 13px;
+    background: linear-gradient(145deg, rgba(255,220,40,0.28) 0%, rgba(180,130,0,0.18) 100%);
+    border: 2.5px solid rgba(255,215,0,0.7);
+    box-shadow: 0 0 8px rgba(255,215,0,0.25), inset 0 1px 0 rgba(255,255,255,0.12);
+    padding: 3px 3px 2px;
+}
+.tp-card.silver {
+    width: 50px; height: 50px;
+    border-radius: 11px;
+    background: linear-gradient(145deg, rgba(200,200,210,0.2) 0%, rgba(140,140,160,0.12) 100%);
+    border: 2px solid rgba(192,192,192,0.5);
+    box-shadow: 0 0 6px rgba(192,192,192,0.15), inset 0 1px 0 rgba(255,255,255,0.08);
+    padding: 3px 2px 2px;
+}
+.tp-card.bronze {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    background: linear-gradient(145deg, rgba(210,140,60,0.2) 0%, rgba(160,90,30,0.12) 100%);
+    border: 2px solid rgba(205,127,50,0.5);
+    box-shadow: 0 0 5px rgba(205,127,50,0.15), inset 0 1px 0 rgba(255,255,255,0.06);
+    padding: 2px 2px 1px;
+}
+
+/* Ranks 4-6 — flat tier behind the medals, no medal gradient, score only */
+.tp-card.minor {
+    width: 38px; height: 38px;
+    border-radius: 9px;
+    background: linear-gradient(145deg, rgba(148,163,184,0.16) 0%, rgba(100,116,139,0.09) 100%);
+    border: 1.5px solid rgba(148,163,184,0.34);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+    padding: 2px 2px 1px;
+}
+
+.tp-pfp { flex-shrink: 0; border-radius: 50%; overflow: visible; position: relative; isolation: isolate; }
+.tp-pfp.has-fan-club-badge::after {
+    content: '';
+    position: absolute;
+    top: -28%;
+    right: -28%;
+    width: 56%;
+    height: 56%;
+    background-image: url('https://wordtycoon.live/portal/assets/badges/tiktok-fanclub.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    pointer-events: none;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6));
+    z-index: 5;
+}
+.tp-card.gold .tp-pfp   { width: 32px; height: 32px; }
+.tp-card.silver .tp-pfp  { width: 26px; height: 26px; }
+.tp-card.bronze .tp-pfp  { width: 22px; height: 22px; }
+.tp-card.minor .tp-pfp   { width: 20px; height: 20px; }
+
+.tp-avatar {
+    width: 100%; height: 100%; border-radius: 50%; object-fit: cover;
+    border: 2px solid rgba(255,255,255,0.15);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+    position: relative;
+    z-index: 1;
+}
+.tp-card.gold .tp-avatar   { border-color: rgba(255,215,0,0.6); }
+.tp-card.silver .tp-avatar  { border-color: rgba(192,192,192,0.45); }
+.tp-card.bronze .tp-avatar  { border-color: rgba(205,127,50,0.45); }
+.tp-card.minor .tp-avatar   { border-color: rgba(148,163,184,0.4); border-width: 1.5px; }
+
+.tp-fallback {
+    width: 100%; height: 100%; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; color: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+    position: relative;
+    z-index: 1;
+}
+.tp-card.gold .tp-fallback   { font-size: 0.8rem; background: linear-gradient(135deg, rgba(255,200,40,0.5), rgba(200,150,0,0.4)); border: 2px solid rgba(255,215,0,0.6); }
+.tp-card.silver .tp-fallback  { font-size: 0.65rem; background: linear-gradient(135deg, rgba(180,180,200,0.5), rgba(140,140,160,0.4)); border: 2px solid rgba(192,192,192,0.45); }
+.tp-card.bronze .tp-fallback  { font-size: 0.55rem; background: linear-gradient(135deg, rgba(200,120,50,0.5), rgba(160,90,30,0.4)); border: 2px solid rgba(205,127,50,0.45); }
+.tp-card.minor .tp-fallback   { font-size: 0.5rem; background: linear-gradient(135deg, rgba(148,163,184,0.42), rgba(100,116,139,0.32)); border: 1.5px solid rgba(148,163,184,0.4); }
+
+.tp-info {
+    display: flex; flex-direction: column; align-items: center;
+    min-width: 0; line-height: 1.1; width: 100%; overflow: hidden;
+    margin-top: 1px;
+    position: relative;
+    z-index: 1;
+}
+.tp-name {
+    font-weight: 700; overflow: hidden; text-overflow: ellipsis;
+    white-space: nowrap; text-align: center; max-width: 100%;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+.tp-card.gold .tp-name   { font-size: 0.5rem; color: #ffd700; }
+.tp-card.silver .tp-name  { font-size: 0.42rem; color: #d0d0d8; }
+.tp-card.bronze .tp-name  { font-size: 0.38rem; color: #d4944a; }
+
+.tp-score {
+    font-weight: 600; white-space: nowrap; text-align: center;
+    text-shadow: 0 1px 1px rgba(0,0,0,0.4);
+}
+.tp-card.gold .tp-score   { font-size: 0.42rem; color: rgba(255,215,0,0.55); }
+.tp-card.silver .tp-score  { font-size: 0.36rem; color: rgba(192,192,192,0.5); }
+.tp-card.bronze .tp-score  { font-size: 0.32rem; color: rgba(205,127,50,0.5); }
+.tp-card.minor .tp-score   { font-size: 0.32rem; color: rgba(203,213,225,0.6); }
+
+/* Hero badge — premium background on top-3 player cards, border follows rank */
+/* Hero badge — border + glow set inline by JS from badge theme color */
+
+.tp-card > * {
+    position: relative;
+    z-index: 1;
+}
+
+.word-announce,
+.mp-word-announce {
+    position: relative;
+    isolation: isolate;
+    overflow: visible;
+}
+
+.word-announce > *,
+.mp-word-announce > * {
+    position: relative;
+    z-index: 1;
+}
+
+.tp-cosmetic-layer {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: contain;
+    z-index: 0;
+    will-change: transform, opacity, filter;
+}
+
+.tp-cosmetic-layer--frame {
+    inset: -16%;
+    filter: saturate(1.05) brightness(1.03) drop-shadow(0 0 7px rgba(255,255,255,0.07)) drop-shadow(0 0 12px rgba(168,120,255,0.10));
+    animation: tp-cosmetic-frame-float 8s ease-in-out infinite;
+}
+
+.tp-cosmetic-layer--surface {
+    border-radius: inherit;
+    opacity: 0.96;
+    filter: saturate(1.04) brightness(1.03);
+    animation: tp-cosmetic-surface-breathe 10s ease-in-out infinite;
+}
+
+@keyframes tp-cosmetic-frame-float {
+    0%, 100% { transform: translate3d(0, 0, 0) scale(1); opacity: 0.98; }
+    50% { transform: translate3d(0, -1px, 0) scale(1.01); opacity: 1; }
+}
+
+@keyframes tp-cosmetic-surface-breathe {
+    0%, 100% { opacity: 0.92; filter: saturate(1.03) brightness(1.02); }
+    50% { opacity: 0.98; filter: saturate(1.08) brightness(1.05); }
+}

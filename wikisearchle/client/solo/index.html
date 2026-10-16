@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en" data-brand="wikicontexto">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content">
+<title>WikiContexto Solo on Word Tycoon — Daily Wikipedia Word Guessing Puzzle</title>
+
+<!--SEO_BLOCK_START-->
+<meta name="description" content="WikiContexto Solo on Word Tycoon — a free daily Wikipedia word guessing puzzle inspired by Contexto. Guess words to reveal a hidden article — ranked by semantic relevance. New puzzle every day — no account needed.">
+<meta name="keywords" content="wikisearchle solo, daily wikipedia puzzle, contexto solo, word guessing daily, wikipedia word game, free puzzle game">
+<link rel="canonical" href="https://wikicontexto.com/solo/">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="WikiContexto">
+<meta property="og:title" content="WikiContexto Solo on Word Tycoon — Daily Wikipedia Word Guessing Puzzle">
+<meta property="og:description" content="WikiContexto Solo on Word Tycoon — a free daily Wikipedia word guessing puzzle inspired by Contexto. Guess words to reveal a hidden article — ranked by semantic relevance.">
+<meta property="og:url" content="https://wikicontexto.com/solo/">
+<meta property="og:image" content="https://wikicontexto.com/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="WikiContexto Solo on Word Tycoon — Daily Wikipedia Word Guessing Puzzle">
+<meta name="twitter:description" content="WikiContexto Solo on Word Tycoon — a free daily Wikipedia word guessing puzzle inspired by Contexto. Guess words to reveal a hidden article — ranked by semantic relevance.">
+<meta name="twitter:image" content="https://wikicontexto.com/og-image.png">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "VideoGame",
+  "name": "WikiContexto Solo",
+  "url": "https://wikicontexto.com/solo/",
+  "image": "https://wikicontexto.com/og-image.png",
+  "description": "WikiContexto Solo is a free daily Wikipedia word guessing puzzle inspired by Contexto. Players guess words ranked by semantic relevance to reveal a hidden Wikipedia article. New article every day, plus an unlimited random mode.",
+  "genre": ["Word Game", "Puzzle", "Trivia"],
+  "playMode": "SinglePlayer",
+  "applicationCategory": "Game",
+  "operatingSystem": "Web Browser",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD",
+    "availability": "https://schema.org/InStock"
+  }
+}
+</script>
+<!--SEO_BLOCK_END-->
+<script>
+(function () {
+  try {
+    if (localStorage.getItem('wikisearchle-theme') === 'light') {
+      document.documentElement.classList.add('theme-light');
+    }
+  } catch (e) {}
+})();
+
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Roboto+Mono:wght@400;500&family=Inter:wght@400;600;700;800&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<link rel="icon" type="image/svg+xml" href="/icon.svg">
+<link rel="apple-touch-icon" href="/icons/icon-180.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#020a25">
+
+
+
+
+
+
+
+
+</head>
+<body data-vite-ui="true" class="neon-solo game-loading">
+
+<div class="scroll-wrap">
+<div class="page-wrap">
+
+  <header class="site-header">
+    <a href="/" class="brand-link" aria-label="WikiContexto home" title="Home">
+      <img src="/icon.svg" alt="" class="brand-img hub-logo">
+      <span class="hub-name">WikiContexto</span>
+    </a>
+    <div class="header-nav">
+      <a href="/online" class="nav-btn" aria-label="Go to online mode" title="Online (multiplayer)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        <span>Online</span>
+      </a>
+      <button id="statsToggle" class="nav-btn" type="button" aria-label="View your stats" title="Your stats" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21V10M9 21V3M15 21V13M21 21V7"/></svg>
+        <span>Stats</span>
+      </button>
+      <button id="soloHelpToggle" class="nav-btn" type="button" aria-label="How to play WikiContexto" title="How to play" aria-haspopup="dialog">?</button>
+      <button id="themeToggle" class="theme-toggle" type="button" aria-label="Toggle light/dark theme" title="Toggle theme">
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Stats drawer (career-only on solo — single-player has no live leaderboard) -->
+  <div id="statsBackdrop" class="stats-backdrop hidden" aria-hidden="true"></div>
+  <aside id="statsDrawer" class="stats-drawer hidden" role="dialog" aria-modal="false" aria-labelledby="statsDrawerTitle" tabindex="-1">
+    <div class="stats-drawer-head">
+      <div class="stats-drawer-title" id="statsDrawerTitle">Your Stats</div>
+      <button id="statsDrawerClose" class="stats-drawer-close" type="button" aria-label="Close stats">&times;</button>
+    </div>
+    <div class="stats-drawer-body" id="statsDrawerBody">
+      <div class="ps-empty">Loading…</div>
+    </div>
+  </aside>
+
+
+  <div class="neon-brand" aria-label="WikiContexto Solo">
+    <img src="/wikicontexto-brand-web.svg" alt="WikiContexto">
+    <span class="solo-label">Solo</span>
+  </div>
+
+  <nav class="mode-bar" id="modeBar" aria-label="Solo mode" hidden>
+    <button class="mode-seg" type="button" data-mode="daily">Daily</button>
+    <button class="mode-seg" type="button" data-mode="random">Random</button>
+  </nav>
+
+  <!-- Solo unavailable state -->
+  <p id="archiveReplayNote" hidden style="text-align:center;color:var(--muted);font-size:12px;margin-bottom:16px"></p>
+  <section id="noWeekly" class="no-weekly" hidden>
+    <h2>Solo unavailable</h2>
+    <p>Check back later; the solo article pool is unavailable right now.</p>
+  </section>
+
+  <!-- Game area -->
+  <main id="gameArea" hidden>
+    <section class="article-panel">
+      <div class="top-row">
+        <aside class="left-col">
+          <div class="title-block">
+            <div class="title-sub">Title</div>
+            <div id="titleText"></div>
+          </div>
+          <div class="stats-bar solo-stats" aria-label="Puzzle progress">
+            <div class="stat"><span class="stat-label">Score</span><span class="stat-val" id="soloScore">0</span></div>
+            <div class="stat"><span class="stat-label">Title Words</span><span class="stat-val" id="soloTitleProg">0 / 0</span></div>
+            <div class="stat"><span class="stat-label">Guesses</span><span class="stat-val" id="soloGuessCount">0</span></div>
+          </div>
+        </aside>
+
+        <div class="right-col" id="cards">
+          <div class="cards-empty" id="cardsEmpty">Type a word below to start guessing</div>
+        </div>
+
+        <div class="word-announce hidden" id="announce">
+            <a class="wa-beta-link" href="https://play.google.com/apps/internaltest/4701413765617392283" target="_blank" rel="noopener">
+              <img src="/icon.svg" alt="" width="38" height="38">
+              <span>Join the WikiContexto Android Beta</span><span aria-hidden="true">→</span>
+            </a>
+            <div class="wa-avatar" id="waAvatar">Y</div>
+            <div class="wa-info">
+              <div class="wa-top">
+                <span class="wa-player" id="waPlayer"><span class="wa-name" id="waName">You</span></span>
+                <span class="wa-total" id="waTotal">0 pts</span>
+                <span class="wa-earned" id="waEarned">+0</span>
+              </div>
+              <div class="wa-bottom">
+                <span class="wa-word" id="waWord">—</span>
+                <span class="wa-rarity common" id="waRarity">COMMON</span>
+              </div>
+            </div>
+        </div>
+      </div>
+
+      <div class="ticker-wrap">
+        <div class="ticker" id="ticker"></div>
+      </div>
+
+      <div class="article-body-panel">
+        <div id="body"></div>
+      </div>
+    </section>
+  </main>
+</div>
+</div>
+
+<section id="gameLoadingScreen" class="wk-loading-screen" data-message="Getting your puzzle ready." aria-label="Loading Solo">
+  <div class="wk-loading-card">
+    <img class="wk-loading-brand" src="/wikicontexto-brand-web.svg" alt="WikiContexto" width="280" height="43">
+    <div class="wk-loading-mode">Solo</div>
+    <div id="gameLoadingSpinner" class="wk-loading-spinner" aria-hidden="true"></div>
+    <div role="status" aria-live="polite">
+      <h1 id="gameLoadingTitle">Loading…</h1>
+      <p id="gameLoadingMessage">Getting your puzzle ready.</p>
+    </div>
+    <div id="gameLoadingActions" class="wk-loading-actions" hidden>
+      <button id="gameLoadingRetry" type="button">Try again</button>
+      <a href="/">Back to home</a>
+    </div>
+  </div>
+</section>
+
+
+<!-- Win card: shared WinCard component (self-injects its CSS/deps) -->
+
+<div class="solo-toast" id="soloToast"></div>
+
+<dialog id="soloHelpDialog" class="wk-help-dialog" aria-labelledby="soloHelpTitle" aria-describedby="soloHelpIntro">
+  <header class="wk-help-dialog-header">
+    <img class="wk-help-dialog-brand" src="/wikicontexto-brand-web.svg" alt="WikiContexto" width="210" height="32">
+    <button id="soloHelpClose" class="wk-help-close" type="button" aria-label="Close how to play">×</button>
+    <h2 id="soloHelpTitle">How to play</h2>
+    <p id="soloHelpIntro" class="wk-help-dialog-intro">One hidden article. Find its title, one word at a time.</p>
+  </header>
+  <div class="wk-help-dialog-body">
+    <ol class="wk-help-steps">
+      <li><span class="wk-help-step-number" aria-hidden="true">1</span><div><h3>Guess a word</h3><p>Type any word into the guess bar. Start broad, then follow what you discover.</p></div></li>
+      <li><span class="wk-help-step-number" aria-hidden="true">2</span><div><h3>Follow the clues</h3><p>Words in the article reveal text. <strong>Lower ranks mean closer guesses</strong> to the highlighted title word—even if no text appears.</p></div></li>
+      <li><span class="wk-help-step-number" aria-hidden="true">3</span><div><h3>Find the title</h3><p>Guess each hidden title word to solve the puzzle. When you find one, the ranks reset for the next word.</p></div></li>
+    </ol>
+  </div>
+  <footer class="wk-help-dialog-footer">
+    <button id="soloHelpStart" class="wk-help-primary" type="button" autofocus>Start guessing <span aria-hidden="true">→</span></button>
+    <a id="soloHelpGuide" class="wk-help-link" href="/about">Read the full How to Play guide</a>
+  </footer>
+</dialog>
+
+<script src="https://wordtycoon.live/js/win-card.js"></script>
+
+
+
+
+
+
+
+
+
+<script type="module" src="../src/solo/entry.js"></script>
+</body>
+</html>

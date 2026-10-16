@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>GOAT · Word Tycoon Leaderboard</title>
+  <meta name="description" content="The greatest Word Tycoon players of all time — ranked by ELO, coins, wins, and more.">
+  <link rel="canonical" href="https://wordtycoon.live/goat">
+  <meta name="theme-color" content="#0a0f18">
+  <link rel="icon" href="/portal/img/logo.png">
+  <link rel="apple-touch-icon" href="/portal/img/logo.png">
+  <meta property="og:title" content="GOAT Leaderboard">
+  <meta property="og:description" content="The greatest Word Tycoon players of all time.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://wordtycoon.live/goat">
+  <meta property="og:site_name" content="Word Tycoon">
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/css/goat.css?v=1"/>
+</head>
+<body>
+  <header class="goat-topbar">
+    <a href="/" class="brand">
+      <span class="brand-mark">G</span>
+      <span class="brand-text">
+        <span class="eyebrow">Word Tycoon</span>
+        <span class="title">
+          Player Hub <span class="crumb">/</span> <span class="crumb-here">GOAT Leaderboard</span>
+        </span>
+      </span>
+    </a>
+
+    <code class="api-endpoint" id="api-endpoint">GET /api/goat?sort=coins&limit=50</code>
+
+    <div class="topbar-right">
+      <div class="search-box">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5L14 14"/></svg>
+        <input id="search" type="text" placeholder="Search name or identity…" autocomplete="off"/>
+      </div>
+      <button class="icon-btn admin-toggle" id="toggle-admin" title="Toggle admin endpoints">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1.5l5.5 2v4c0 3-2.4 5.6-5.5 6.5C4.9 13.1 2.5 10.5 2.5 7.5v-4l5.5-2Z"/></svg>
+        Admin
+      </button>
+      <button class="icon-btn" id="refresh-btn" title="Refresh">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M13.5 8a5.5 5.5 0 1 1-1.6-3.9"/><path d="M13.5 2v3h-3"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="shell">
+    <section class="hero-strip">
+      <div class="hero-left">
+        <h1>
+          <span class="crown" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17 5.5 7l4.5 5 2-7 2 7 4.5-5L21 17H3Z"/><path d="M5 19h14"/></svg>
+          </span>
+          GOAT Leaderboard
+          <span class="live-pill">● Live · ELO v1</span>
+        </h1>
+        <p>ELO-rated across all Word Tycoon games. K/(N−1) normalized pairwise after every round with N≥3 scorers. Public board gates at <b>roundsCounted ≥ 5</b>.</p>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <span class="label">Eligible</span>
+          <span class="value tabular" id="hero-eligible">—</span>
+          <span class="delta">≥5 rated rd</span>
+        </div>
+        <div class="hero-stat">
+          <span class="label">Accounts</span>
+          <span class="value tabular" id="hero-accounts">—</span>
+          <span class="delta">backfilled @1200</span>
+        </div>
+        <div class="hero-stat">
+          <span class="label">Top ELO</span>
+          <span class="value tabular" id="hero-top-elo">—</span>
+          <span class="delta">all-time peak</span>
+        </div>
+        <div class="hero-stat hero-stat--alert">
+          <span class="label">Flagged</span>
+          <span class="value tabular" id="hero-flagged">—</span>
+          <span class="delta">susp. ≥ 50</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="toolbar">
+      <div class="toolbar-group">
+        <span class="label">Region</span>
+        <button class="chip active" data-region="global">Global</button>
+        <button class="chip" data-region="NA">NA</button>
+        <button class="chip" data-region="EU">EU</button>
+        <button class="chip" data-region="APAC">APAC</button>
+      </div>
+
+      <div id="cheaters-chip-wrap" style="display:none;">
+        <button class="toggle danger-toggle" id="toggle-cheaters">
+          <span class="switch"></span>
+          Flagged only
+        </button>
+      </div>
+
+      <div class="toolbar-spacer"></div>
+
+      <span class="toolbar-label">Sort</span>
+      <select id="sort-select" class="sort-select-compact">
+        <option value="coins">Coins (default)</option>
+        <option value="elo">ELO</option>
+        <option value="total_game_wins">Total game wins</option>
+        <option value="total_taps">Taps</option>
+        <option value="library_words">Library words</option>
+        <optgroup label="Game wins">
+          <option value="word5000">Word5000</option>
+          <option value="subtextle">Subtextle</option>
+          <option value="wikicontexto">WikiContexto</option>
+          <option value="wikirectangled">WikirecTangled</option>
+          <option value="betwixt">Betwixt</option>
+          <option value="rectangled">recTangled</option>
+          <option value="erectangled">erecTangled</option>
+          <option value="triangled">Triangled</option>
+          <option value="spellingbee">Spelling Bee</option>
+          <option value="wordle">Wordle</option>
+          <option value="figural">Figural</option>
+          <option value="pixeletters">PixeLetters</option>
+          <option value="unwordle">UnWordle</option>
+          <option value="color500">Color500</option>
+        </optgroup>
+      </select>
+    </section>
+
+    <section class="board">
+      <div class="board-head">
+        <div class="num">Rank</div>
+        <div class="num">Coins</div>
+        <div></div>
+        <div>Player</div>
+        <div>ELO · Tier</div>
+        <div class="col-country">Region</div>
+        <div class="num col-wins">W / Played</div>
+        <div class="num col-winrate">Win rate</div>
+        <div class="num col-metric admin-hide">Metric</div>
+        <div class="num admin-show">Suspicion</div>
+        <div></div>
+      </div>
+      <div id="player-list">
+        <div class="loading-state"><div class="spinner"></div><p>Loading legends…</p></div>
+      </div>
+    </section>
+
+    <nav id="pagination" class="pagination hidden">
+      <div class="page-info">
+        Showing <b id="range-from">1</b>–<b id="range-to">20</b> of <b id="range-total">—</b>
+        <span id="range-context">eligible</span>
+      </div>
+      <div class="page-controls" id="page-controls"></div>
+    </nav>
+  </main>
+
+  <script src="/js/goat-data.js?v=1"></script>
+  <script src="/js/goat.js?v=1"></script>
+  <footer class="wt-legal-footer">
+    <a href="/privacy">Privacy</a> &middot; <a href="/terms">Terms</a> &middot; <a href="https://discord.gg/C8Nm2jEZFC" target="_blank" rel="noopener">Discord</a> &middot; <a href="https://www.jorry.live" target="_blank" rel="noopener">jorry.live</a> &middot; <a href="https://wordtycoon.live/portal">&copy; 2026 Word Tycoon</a>
+  </footer>
+  <style>
+    .wt-legal-footer{padding:14px 16px 18px;text-align:center;font:12px/1.4 "Segoe UI",Tahoma,sans-serif;color:#7a8a9b;opacity:.75}
+    .wt-legal-footer a{color:inherit;text-decoration:none;margin:0 2px}
+    .wt-legal-footer a:hover{text-decoration:underline;opacity:1}
+  </style>
+</body>
+</html>

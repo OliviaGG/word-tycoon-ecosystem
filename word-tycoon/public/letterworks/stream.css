@@ -1,0 +1,35 @@
+.stream-shell { position: relative; z-index: 1; max-width: 920px; width: calc(100% - 32px); margin: 0 auto; padding: 20px 0; }
+.stream-shell .brand-bar { margin-bottom: 22px; }
+.stream-status { color: var(--purple); font-weight: 900; text-align: center; font-size: 18px; line-height: 1.5; }
+.stream-shell .ledger-panel { margin-bottom: 18px; }
+.stream-shell .found-words { max-height: 170px; }
+.stream-shell .workbench-panel { padding: 20px; }
+.stream-shell .letter-rack { max-width: 600px; margin: auto; }
+.stream-shell .letter-tile { display: grid; place-items: center; }
+.stream-goal { text-align: center; font-weight: 900; font-size: 18px; margin: 20px 0 12px; }
+.stream-forge { min-height: 20px; text-align: center; font-size: 16px; color: #156e40; font-weight: 800; }
+.stream-instruction { text-align: center; font-size: 15px; color: var(--muted); }
+#webForge { display: flex; gap: 12px; max-width: 460px; margin: 18px auto 0; }
+#liveInput { width: 100%; min-width: 0; border: var(--line); border-radius: 12px; background: var(--paper); padding: 12px; font: 800 16px "Segoe UI", sans-serif; color: var(--ink); }
+#webForge button { white-space: nowrap; }
+.stream-shell .support-panel { display: block; margin-top: 22px; }
+.stream-shell .support-panel > p { font-size: 15px; }
+.stream-shell .upgrade-card { min-height: auto; }
+.stream-shell .daily-leaderboard { max-width: none; }
+.stream-shell .upgrade-choices { gap: 12px; }
+.stream-shell .upgrade-card strong { font-size: 16px; }
+.stream-shell .upgrade-card p { font-size: 14px; }
+.stream-page.obs-mode { background: transparent; }
+html.obs-document { background: transparent; }
+.obs-mode::before { display: none; }
+.obs-mode .game-footer, .obs-mode #webForge, .obs-mode #webStatus, .obs-mode .brand-bar .prototype-stamp { display: none; }
+.obs-mode .stream-shell { padding-top: 12px; }
+@media (max-width:520px) {
+  .stream-shell { width: calc(100% - 24px); padding-top: 16px; }
+  .stream-shell .brand-bar { margin-bottom: 18px; }
+  .stream-shell .letter-tile { font-size: 28px; }
+  .stream-shell .workbench-panel { padding: 13px; }
+  .stream-status { font-size: 16px; }
+  .stream-goal { font-size: 16px; }
+  .stream-shell .upgrade-card { grid-template-columns: 28px 1fr; padding: 12px; }
+}

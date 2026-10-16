@@ -1,0 +1,55 @@
+{
+  "version": "beta-1",
+  "contentVersion": "trail-2",
+  "dailyVersion": "daily-1",
+  "builtAt": "2026-09-18T00:05:35.231Z",
+  "path": "/word-trails/",
+  "levels": 24,
+  "persistence": "browser-local",
+  "files": {
+    "assets/alpine-3d.jpg": {
+      "sha256": "110e9fb2da0c9eae4359ec89d9c68c41e2c9030c81190ed8722ec37a1fe32799",
+      "bytes": 302577
+    },
+    "assets/art-prompts.json": {
+      "sha256": "da2953d041b39e3f8ae6f950a9a9a080eed4e8139ca00032c160b31a49b61039",
+      "bytes": 3176
+    },
+    "assets/coast-3d.jpg": {
+      "sha256": "545bf0d3dc4fc190cab6c7a765765a69ab22ca4481c2614dc6b6e53b3bd17c87",
+      "bytes": 276725
+    },
+    "assets/desert-3d.jpg": {
+      "sha256": "bbdb89487d9139211643e636a69e5c6afc434c69e3638706a81cdc53702a3fb6",
+      "bytes": 310220
+    },
+    "core.js": {
+      "sha256": "e95af13474c3d66c454823083aa1470ea53da8911403862cfe698da0b633f68e",
+      "bytes": 18443
+    },
+    "game-card.svg": {
+      "sha256": "04381e5ae7a811f2822cbb054366e13962123e04d4fb37c42b4e67c66f1f623b",
+      "bytes": 3065
+    },
+    "game.js": {
+      "sha256": "12758889094e4172180e065baa8e20d9783bebe49a2beea5e25e7c7c676a0d1b",
+      "bytes": 27636
+    },
+    "icon.svg": {
+      "sha256": "ddc965aef1a54c7f4c6bc576bccd5c93a374632e25254928ee6c669d07d94651",
+      "bytes": 380
+    },
+    "index.html": {
+      "sha256": "21e593748f68e52ff37087daaad2bbcbffa7d154db8b649913a323e581b7c275",
+      "bytes": 10192
+    },
+    "styles.css": {
+      "sha256": "93a2a67b5df52bbb78c20512c66d60e59ae4da9d28863b90627577c08b5cd99e",
+      "bytes": 14922
+    },
+    "theme.css": {
+      "sha256": "5c4f0028231cfd155fb03789fb5c5660aee32dec4a91d2cc3cacc8997758a17c",
+      "bytes": 12723
+    }
+  }
+}

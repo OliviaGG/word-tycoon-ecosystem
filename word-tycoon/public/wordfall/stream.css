@@ -1,0 +1,20 @@
+body.stream-embed{background:linear-gradient(155deg,#10182e,#263056);min-height:100vh}
+.stream-embed .ambient,.stream-embed .site-header,.stream-embed .hero,.stream-embed footer,
+.stream-embed .mode-tabs,.stream-embed .combo-card,.stream-embed .guide-card:not(.podium-card),
+.stream-embed .local-note,.stream-embed .gesture-note{display:none!important}
+.stream-embed .page-shell{width:min(100%,808px);padding:10px}
+.stream-embed .multi-hud{margin-top:0}
+.stream-embed .game-layout{display:block}
+.stream-embed .game-card{padding:17px}
+.stream-embed.mode-multi .game-card{padding-top:10px}
+.stream-embed .stats{margin:12px 0 10px}
+.stream-embed .board-heading{margin:12px 2px 9px}
+.stream-embed .side-rail{display:none}
+.stream-embed .podium-card{padding:20px}
+.stream-embed .game-actions{margin-top:6px}
+@media(max-width:760px){
+  .stream-embed .game-layout{grid-template-columns:1fr}
+  .stream-embed .podium-card{padding:12px}
+  .stream-embed .podium-card ol{display:flex;gap:12px;overflow:auto}
+  .stream-embed .podium-card li{white-space:nowrap;gap:8px}
+}

@@ -1,0 +1,23 @@
+{
+  "name": "spelling-bee",
+  "version": "1.0.0",
+  "description": "Interactive Spelling Bee game with OBS overlay and chat integration",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "an-array-of-english-words": "^2.0.0",
+    "dotenv": "^17.4.2",
+    "express": "^4.22.2",
+    "socket.io": "^4.7.4",
+    "socket.io-client": "^4.7.4"
+  },
+  "overrides": {
+    "path-to-regexp": "^0.1.13",
+    "qs": "^6.15.2",
+    "socket.io-parser": "^4.2.6",
+    "ws": "^8.21.0"
+  }
+}

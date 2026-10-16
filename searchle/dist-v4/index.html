@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#090c18">
+  <title>Subtextle Beta — live 2D interface</title>
+  <script type="module" crossorigin src="./assets/index-VyXeKYTI.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-BwT7H35R.css">
+</head>
+<body>
+  <main id="subtextle-v4" class="subtextle-v4" data-layout="compact">
+    <section class="prototype-toolbar" aria-label="Beta status and controls">
+      <div>
+        <span class="prototype-eyebrow">2D beta</span>
+        <strong>Live multiplayer interface</strong>
+      </div>
+      <div class="prototype-actions">
+        <span class="selected-direction" id="connection-state" data-state="connecting"><span></span>Connecting</span>
+        <button type="button" class="prototype-replay" id="replay-motion">Replay motion</button>
+      </div>
+    </section>
+
+    <section class="game-shell" aria-label="Subtextle game preview">
+      <section class="top-interface" aria-label="Game status and players">
+        <div class="top-interface__edge"></div>
+
+        <header class="brand-row">
+          <div class="brand-mark" aria-label="Subtextle">
+            <span class="brand-mark__dot"></span>
+            <span>SUBTEXTLE</span>
+          </div>
+          <div class="round-state"><span></span> LIVE ROUND <strong id="round-number">—</strong></div>
+          <nav class="mode-actions" aria-label="Game modes">
+            <a href="/solo">Solo</a>
+            <a href="https://grid.subtextle.com">Grid</a>
+            <button type="button" id="hint-button" disabled>Hint <span id="hint-count">—</span></button>
+          </nav>
+        </header>
+
+        <div class="top-grid">
+          <section class="previous-round" aria-label="Last game and current game statistics">
+            <div class="section-heading">
+              <div><span>Last word</span><strong id="last-word">—</strong></div>
+              <span class="round-time">Game time <strong id="last-game-time">—</strong></span>
+            </div>
+            <div class="current-summary-label"><span class="live-indicator"></span>Current game</div>
+            <div class="metric-row" aria-label="Current game statistics">
+              <div class="metric"><span>Time</span><strong id="current-time">0:00</strong></div>
+              <div class="metric"><span>Guesses</span><strong id="guess-count">0</strong></div>
+              <div class="metric metric--accent"><span>XP</span><strong id="current-xp">0</strong></div>
+            </div>
+          </section>
+
+          <section class="live-board" aria-label="Current game leaders">
+            <div class="section-heading section-heading--live">
+              <div><span class="live-indicator"></span><span>Current game</span></div>
+              <span>Top XP this round</span>
+            </div>
+            <div class="live-players" id="live-players"></div>
+          </section>
+
+          <a class="promo-tile" href="https://wordtycoon.live" aria-label="Open Word Tycoon">
+            <div class="promo-tile__logo">WT</div>
+            <div><strong>Word Tycoon</strong><span>Your games. One economy.</span></div>
+            <span class="promo-tile__arrow">↗</span>
+          </a>
+
+          <footer class="utility-row">
+            <div class="streamer-picker" data-state="closed">
+              <button type="button" class="streamer-status" id="streamer-toggle" aria-expanded="false"><span></span> <b id="streamer-count">0</b>&nbsp;<span id="streamer-label">Live Streamers</span> <i>⌄</i></button>
+              <div class="streamer-menu" id="streamer-menu" hidden></div>
+            </div>
+            <div class="play-url">www.subtextle.com/beta</div>
+            <button type="button" class="hide-control" id="hide-cards" aria-expanded="true">Hide cards <span>⌃</span></button>
+          </footer>
+        </div>
+      </section>
+
+      <section class="current-word-stack" aria-label="Latest found word">
+        <div id="current-word" class="current-word"></div>
+      </section>
+
+      <section class="ranked-words" id="ranked-words" aria-label="Ranked word list">
+        <div id="ranked-list" class="ranked-list"></div>
+      </section>
+    </section>
+
+    <section class="bottom-controls" aria-label="Guess controls">
+      <form id="guess-form" class="guess-form" autocomplete="off" novalidate>
+        <div class="guess-bar-inner">
+          <button class="guess-profile" id="profile-button" type="button" aria-label="Sign in or open player profile">
+            <img id="profile-image" alt="" hidden>
+            <svg id="profile-fallback" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </button>
+          <label class="guess-input-wrap">
+            <span class="sr-only">Guess a word</span>
+            <input id="guess-input" type="text" inputmode="none" placeholder="Guess a word..." maxlength="42" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false">
+            <svg class="guess-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </label>
+          <button class="guess-submit" type="submit">Enter</button>
+        </div>
+        <span id="guess-status" class="guess-status" role="status" aria-live="polite"></span>
+      </form>
+
+      <div class="touch-keyboard" aria-label="On-screen keyboard">
+        <div id="keyboard" class="touch-keyboard__shell"></div>
+      </div>
+    </section>
+
+    <section class="win-overlay" id="win-overlay" aria-live="assertive" hidden>
+      <div class="win-card">
+        <button type="button" class="win-card__close" id="win-close" aria-label="Close round result">×</button>
+        <span class="win-card__eyebrow">Round complete</span>
+        <strong class="win-card__word" id="win-word">—</strong>
+        <div class="win-card__winner" id="win-winner"></div>
+        <div class="win-card__stats"><span id="win-guesses">0 guesses</span><span id="win-time">0:00</span><span id="win-xp">0 XP</span></div>
+      </div>
+    </section>
+
+    <section class="premium-wall" id="premium-wall" aria-live="polite" hidden>
+      <div class="premium-card">
+        <button type="button" class="premium-card__close" id="premium-close" aria-label="Close message">×</button>
+        <span>Word Tycoon Premium</span>
+        <h2>Multiplayer is Donor-only</h2>
+        <p>The daily and weekly games stay free. Online multiplayer needs Donor Class; TikTok Super Fans get access too.</p>
+        <div>
+          <a href="/solo?mode=weekly">Play the free weekly</a>
+          <a href="https://wordtycoon.live/me?tab=pass">Become a Donor — $2/mo</a>
+          <a id="premium-signin" href="#">Sign in</a>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

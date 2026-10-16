@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1b1510"/>
+      <stop offset="100%" stop-color="#0f0d09"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ffd970"/>
+      <stop offset="100%" stop-color="#ffb938"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="120" fill="url(#bg)"/>
+  <g fill="url(#gold)">
+    <polygon points="256,92 324,131 324,209 256,248 188,209 188,131"/>
+    <polygon points="164,146 232,185 232,263 164,302 96,263 96,185"/>
+    <polygon points="348,146 416,185 416,263 348,302 280,263 280,185"/>
+    <polygon points="164,264 232,303 232,381 164,420 96,381 96,303"/>
+    <polygon points="348,264 416,303 416,381 348,420 280,381 280,303"/>
+  </g>
+  <circle cx="256" cy="248" r="54" fill="#2b2113"/>
+  <text x="256" y="267" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="88" font-weight="800" fill="#fff4cf">B</text>
+</svg>

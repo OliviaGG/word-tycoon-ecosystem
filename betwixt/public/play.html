@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <meta name="theme-color" content="#121213"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="Betwixt Solo"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="description" content="Play Betwixt Solo on Word Tycoon — daily and practice mode for the alphabetical word puzzle game."/>
+  <title>Betwixt Solo | Word Tycoon</title>
+<link rel="manifest" href="manifest.webmanifest?v=3"/>
+<link rel="icon" type="image/png" href="favicon-32-v3.png"/>
+<link rel="apple-touch-icon" href="apple-touch-icon-v3.png"/>
+  <link rel="canonical" href="https://wordtycoon.live/betwixt/play.html">
+  <meta property="og:title" content="Betwixt Solo | Word Tycoon">
+  <meta property="og:description" content="Play Betwixt Solo on Word Tycoon — daily and practice mode for the alphabetical word puzzle.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://wordtycoon.live/betwixt/play.html">
+  <meta property="og:image" content="https://wordtycoon.live/portal/img/betwixt-og.png">
+  <meta property="og:site_name" content="Word Tycoon">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Betwixt Solo | Word Tycoon">
+  <meta name="twitter:description" content="Play Betwixt Solo on Word Tycoon — daily and practice mode.">
+  <meta name="twitter:image" content="https://wordtycoon.live/portal/img/betwixt-og.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="play.css?v=8"/>
+<script src="https://wordtycoon.live/login-prompt.js?v=3" defer></script>
+</head>
+<body>
+  <div id="app">
+    <!-- Header -->
+    <header id="header">
+      <span class="title">BETWIXT</span>
+      <span id="daily-badge" class="daily-badge" style="display:none">&#x2B50; DAILY</span>
+      <span id="frenzy-badge" class="frenzy-badge" style="display:none">
+        <span class="frenzy-label">FRENZY</span>
+        <span id="frenzy-mult">1.0x</span>
+      </span>
+      <span class="guess-counter" id="guess-counter">0</span>
+      <div class="word-size-toggle" id="word-size-toggle"></div>
+    </header>
+
+    <!-- Game Area -->
+    <main id="game-area">
+      <!-- Lower boundary (AFTER) -->
+      <div class="boundary after" id="lower-boundary">
+        <div class="bnd-lead">
+          <span class="bnd-label">AFTER</span>
+          <span class="bnd-arrow">&darr;</span>
+        </div>
+        <div class="bnd-tiles" id="lower-tiles"></div>
+        <div class="bnd-tail"><div class="pfp-circle" id="lower-pfp"></div></div>
+      </div>
+
+      <!-- Confirmed letters row (ghost shell keeps its tiles in the same columns) -->
+      <div class="boundary ghost">
+        <div class="bnd-lead" aria-hidden="true">
+          <span class="bnd-label">BEFORE</span>
+          <span class="bnd-arrow">&uarr;</span>
+        </div>
+        <div class="confirmed-row" id="confirmed-row"></div>
+        <div class="bnd-tail" aria-hidden="true"><div class="pfp-circle"></div></div>
+      </div>
+
+      <!-- Upper boundary (BEFORE) -->
+      <div class="boundary before" id="upper-boundary">
+        <div class="bnd-lead">
+          <span class="bnd-label">BEFORE</span>
+          <span class="bnd-arrow">&uarr;</span>
+        </div>
+        <div class="bnd-tiles" id="upper-tiles"></div>
+        <div class="bnd-tail"><div class="pfp-circle" id="upper-pfp"></div></div>
+      </div>
+
+      <!-- Alphabet grid (moved inside game-area, right below BEFORE boundary) -->
+      <div class="alphabet" id="alphabet">
+        <div class="alpha-row" id="alpha-row-1"></div>
+        <div class="alpha-row" id="alpha-row-2"></div>
+      </div>
+    </main>
+
+    <!-- QWERTY Keyboard -->
+    <div class="keyboard" id="keyboard"></div>
+
+    <!-- Error toast -->
+    <div class="error-toast hidden" id="error-toast"></div>
+
+    <footer class="legal-footer">
+      <a href="https://wordtycoon.live/privacy" target="_blank" rel="noopener">Privacy</a> &middot;
+      <a href="https://wordtycoon.live/terms" target="_blank" rel="noopener">Terms</a> &middot;
+      <a href="https://discord.gg/C8Nm2jEZFC" target="_blank" rel="noopener">Discord</a> &middot;
+      <a href="https://www.jorry.live" target="_blank" rel="noopener">jorry.live</a> &middot;
+      <a href="https://wordtycoon.live/portal">&copy; 2026 Word Tycoon</a>
+    </footer>
+  </div>
+
+  <script src="win-effects.js?v=3"></script>
+  <script src="https://wordtycoon.live/js/win-card.js"></script>
+  <script src="sp-engine.js?v=7"></script>
+  <script src="/portal/js/library-toast.js" data-mode="player"></script>
+  <script src="/portal/js/cosmetic-reward.js"></script>
+  <script src="/portal/js/progress-card.js"></script>
+  <script src="pwa-install.js?v=2"></script>
+</body>
+</html>

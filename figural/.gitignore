@@ -1,0 +1,13 @@
+node_modules/
+data/
+logs/
+*.log
+*.db
+*.db-journal
+.env
+*.bak
+*.bak-*
+package-lock.json
+
+# Authoritative private game state and reward intentions
+data/mp-actions/

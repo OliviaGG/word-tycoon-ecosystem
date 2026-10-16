@@ -1,0 +1,24 @@
+{
+  "name": "WikiContexto",
+  "short_name": "WikiContexto",
+  "id": "/",
+  "description": "Guess words to uncover a hidden article. Play the daily Wikipedia puzzle, explore random articles, and join live multiplayer rounds.",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#020a25",
+  "background_color": "#020a25",
+  "categories": ["games", "word", "puzzle"],
+  "lang": "en",
+  "icons": [
+    { "src": "/icons/icon-192.png",          "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png",          "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-192-maskable.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icons/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Solo Daily",     "short_name": "Daily",   "url": "/daily?source=pwa-shortcut", "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Live Multiplayer", "short_name": "Live", "url": "/online?source=pwa-shortcut", "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }] }
+  ]
+}

@@ -1,0 +1,14 @@
+node_modules/
+.env
+.env.*
+!.env.example
+*.db
+*.db-*
+*.sqlite
+*.log
+logs/
+backups/
+*.bak*
+data/*session*
+data/*history*
+data/*state*

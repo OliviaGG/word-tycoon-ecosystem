@@ -1,0 +1,1068 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --bg: #0d0d0f;
+  --surface: rgba(18, 18, 19, 0.95);
+  --surface-solid: #121213;
+  --border: rgba(58, 58, 60, 0.7);
+  --text: #ffffff;
+  --text-dim: #818384;
+  --green: #538d4e;
+  --green-bright: #6aaa64;
+  --before-color: #22d3ee;
+  --after-color: #7b68ee;
+  --purple: #7b68ee;
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+}
+
+#app {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 0 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+.legal-footer {
+  flex: 0 0 auto;
+  padding: 4px 4px 8px;
+  text-align: center;
+  font-size: 10px;
+  line-height: 1.35;
+  color: var(--text-dim);
+  opacity: 0.76;
+}
+
+.legal-footer a {
+  color: inherit;
+  text-decoration: none;
+  margin: 0 2px;
+}
+
+.legal-footer a:hover {
+  color: var(--text);
+  text-decoration: underline;
+}
+
+/* ===== Header ===== */
+#header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 4px 8px;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.title {
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  color: var(--text);
+}
+
+/* ===== Guess Counter ===== */
+.guess-counter {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-dim);
+  background: rgba(58, 58, 60, 0.5);
+  padding: 2px 10px;
+  border-radius: 10px;
+  letter-spacing: 0.05em;
+  min-width: 28px;
+  text-align: center;
+}
+
+/* ===== Word Size Toggle ===== */
+.word-size-toggle {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.ws-btn {
+  width: 30px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-dim);
+  background: rgba(58, 58, 60, 0.5);
+  border: 1.5px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  padding: 0;
+}
+
+.ws-btn:active {
+  transform: scale(0.93);
+}
+
+.ws-btn.active {
+  background: var(--purple);
+  border-color: var(--purple);
+  color: #fff;
+  box-shadow: 0 0 8px rgba(123, 104, 238, 0.4);
+}
+
+/* ===== Daily Badge ===== */
+.daily-badge {
+  background: linear-gradient(135deg, #ffd700, #ff8c00);
+  color: #1a1a2e;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  animation: daily-glow 2s ease-in-out infinite alternate;
+  white-space: nowrap;
+}
+@keyframes daily-glow {
+  from { box-shadow: 0 0 4px #ffd700; }
+  to   { box-shadow: 0 0 12px #ff8c00, 0 0 20px rgba(255, 215, 0, 0.25); }
+}
+
+/* ===== Frenzy Badge ===== */
+.frenzy-badge {
+  background: linear-gradient(135deg, #ff4500, #ff6347);
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  animation: frenzy-pulse 0.8s ease-in-out infinite alternate;
+  white-space: nowrap;
+}
+.frenzy-label { margin-right: 3px; }
+@keyframes frenzy-pulse {
+  from { box-shadow: 0 0 4px #ff4500; transform: scale(1); }
+  to   { box-shadow: 0 0 16px #ff6347, 0 0 24px rgba(255, 69, 0, 0.25); transform: scale(1.05); }
+}
+
+/* ===== Game Area ===== */
+#game-area {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  padding: 10px 0;
+  gap: 8px;
+  justify-content: center;
+}
+
+/* ===== Boundary Rows ===== */
+.boundary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.boundary.after {
+  border-left: 3px solid var(--after-color);
+}
+
+.boundary.before {
+  border-left: 3px solid var(--before-color);
+}
+
+.boundary.pop {
+  transform: scale(1.02);
+}
+
+/* Ghost boundary: invisible shell that wraps the confirmed-letters row so it
+   inherits the exact same lead/tail geometry as the real boundary rows. */
+.boundary.ghost {
+  background: none;
+  border-color: transparent;
+  border-left-width: 3px;
+  border-top-width: 0;
+  border-bottom-width: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.boundary.ghost .bnd-lead,
+.boundary.ghost .bnd-tail {
+  visibility: hidden;
+}
+
+/* Equal-width flanks so the tiles sit dead-centre in every row */
+.bnd-lead,
+.bnd-tail {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1 1 0;
+  min-width: max-content;
+}
+
+.bnd-tail {
+  justify-content: flex-end;
+}
+
+.bnd-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--text-dim);
+  min-width: 64px;
+  text-align: center;
+}
+
+.boundary.after .bnd-label { color: var(--after-color); }
+.boundary.before .bnd-label { color: var(--before-color); }
+
+.bnd-arrow {
+  font-size: 1.4rem;
+  color: var(--text-dim);
+  min-width: 12px;
+  text-align: center;
+}
+
+.boundary.after .bnd-arrow { color: var(--after-color); }
+.boundary.before .bnd-arrow { color: var(--before-color); }
+
+.bnd-distance {
+  font-size: 1.0rem;
+  font-weight: 700;
+  min-width: 28px;
+  text-align: center;
+  opacity: 0.85;
+  font-variant-numeric: tabular-nums;
+}
+
+.boundary.after .bnd-distance { color: var(--after-color); }
+.boundary.before .bnd-distance { color: var(--before-color); }
+
+.bnd-tiles {
+  display: flex;
+  gap: 3px;
+  flex: 0 1 auto;
+  justify-content: center;
+}
+
+.bnd-tile {
+  width: 34px;
+  min-width: 0;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  border-radius: 5px;
+  background: rgba(42, 42, 43, 0.9);
+  border: 2px solid var(--border);
+  color: var(--text);
+  transition: all 0.3s ease;
+  flex-shrink: 1;
+}
+
+.boundary.after .bnd-tile { border-color: rgba(123, 104, 238, 0.4); }
+.boundary.before .bnd-tile { border-color: rgba(34, 211, 238, 0.4); }
+
+.bnd-tile.masked {
+  color: var(--text-dim);
+}
+
+/* Profile picture circle on boundary */
+.pfp-circle {
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
+}
+
+.pfp-circle img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.pfp-circle .pfp-letter {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-dim);
+}
+
+.pfp-circle.empty {
+  opacity: 0.3;
+}
+
+/* ===== Confirmed Letters Row ===== */
+.confirmed-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 3px;
+  flex: 0 1 auto;
+  padding: 8px 0;
+  min-height: 48px;
+}
+
+.confirmed-tile {
+  width: 34px;
+  min-width: 0;
+  height: 38px;
+  flex-shrink: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  border-radius: 5px;
+  background: rgba(42, 42, 43, 0.5);
+  border: 2px solid rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.15);
+  transition: all 0.3s ease;
+}
+
+.confirmed-tile.filled {
+  border-color: rgba(255, 255, 255, 0.5);
+  color: #fff;
+  background: rgba(60, 60, 62, 0.8);
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.1);
+}
+
+.confirmed-tile.confirmed {
+  border-color: var(--green-bright);
+  color: var(--green-bright);
+  background: rgba(83, 141, 78, 0.3);
+  box-shadow: 0 0 10px rgba(106, 170, 100, 0.3);
+}
+
+/* ===== Alphabet (2 rows) — inside game-area, below BEFORE boundary ===== */
+.alphabet {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 2px 0 0;
+  flex-shrink: 0;
+  align-items: center;
+}
+
+.alpha-pos-label {
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--purple);
+  letter-spacing: 0.1em;
+  margin-bottom: 1px;
+}
+
+.alpha-row {
+  display: flex;
+  justify-content: center;
+  gap: 3px;
+}
+
+.alpha-tile {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  border-radius: 4px;
+  border: 1.5px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.alpha-tile.possible {
+  background: rgba(123, 104, 238, 0.2);
+  border-color: var(--purple);
+  color: var(--text);
+}
+
+.alpha-tile.edge {
+  background: rgba(34, 211, 238, 0.2);
+  border-color: var(--before-color);
+  color: var(--before-color);
+}
+
+.alpha-tile.eliminated {
+  background: rgba(58, 58, 60, 0.25);
+  border-color: transparent;
+  color: rgba(255, 255, 255, 0.13);
+}
+
+/* ===== QWERTY Keyboard ===== */
+.keyboard {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px 0 10px;
+  flex-shrink: 0;
+}
+
+.kb-row {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+}
+
+.kb-key {
+  height: 48px;
+  flex: 1;
+  max-width: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+  background: rgba(58, 58, 60, 0.8);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.1s, transform 0.1s;
+  font-family: inherit;
+  padding: 0;
+  user-select: none;
+}
+
+.kb-key:active {
+  background: rgba(90, 90, 92, 0.9);
+  transform: scale(0.95);
+}
+
+.kb-key.wide {
+  flex: 1.5;
+  max-width: 62px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+}
+
+.kb-key.enter {
+  background: var(--green);
+  color: #fff;
+}
+
+.kb-key.enter:active {
+  background: var(--green-bright);
+}
+
+.kb-key.backspace {
+  font-size: 1.2rem;
+}
+
+/* Active typing row (shown between keyboard and alphabet when typing) */
+.typing-row {
+  display: flex;
+  justify-content: center;
+  gap: 3px;
+  padding: 4px 0 2px;
+  min-height: 40px;
+  flex-shrink: 0;
+}
+
+.typing-tile {
+  width: 34px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  border-radius: 5px;
+  background: rgba(42, 42, 43, 0.7);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  color: var(--text);
+  transition: all 0.15s ease;
+}
+
+.typing-tile.active {
+  border-color: var(--green);
+  box-shadow: 0 0 8px rgba(83, 141, 78, 0.3);
+}
+
+.typing-tile.empty {
+  color: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+/* ===== Error Toast ===== */
+.error-toast {
+  position: fixed;
+  top: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #dc2626;
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 8px 20px;
+  border-radius: 8px;
+  z-index: 50;
+  animation: toastIn 0.3s ease-out;
+  pointer-events: none;
+  white-space: nowrap;
+  max-width: 90vw;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.error-toast.hidden {
+  display: none;
+}
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translate(-50%, -10px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+.error-toast.shake {
+  animation: toastIn 0.3s ease-out, toastShake 0.4s ease 0.1s;
+}
+
+@keyframes toastShake {
+  0%, 100% { transform: translate(-50%, 0); }
+  25% { transform: translate(calc(-50% - 6px), 0); }
+  75% { transform: translate(calc(-50% + 6px), 0); }
+}
+
+/* ===== Win Overlay ===== */
+.win-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 20px;
+}
+
+.win-overlay.hidden {
+  display: none;
+}
+
+.win-modal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+  background: var(--surface-solid);
+  padding: 24px 28px;
+  border-radius: 20px;
+  border: 2px solid var(--green-bright);
+  box-shadow: 0 0 40px rgba(74, 222, 128, 0.3);
+  animation: bounceIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  max-width: 340px;
+  width: 100%;
+  position: relative;
+  overflow: visible;
+}
+
+@keyframes bounceIn {
+  0% { transform: scale(0.5); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.win-pic {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 3px solid var(--green-bright);
+  box-shadow: 0 0 24px rgba(74, 222, 128, 0.3);
+  background: rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+.win-pic img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.win-pic .placeholder-letter {
+  font-size: 48px;
+  font-weight: 800;
+  color: var(--green-bright);
+}
+
+.win-badge {
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #facc15;
+  color: #1a1a2e;
+  font-size: 13px;
+  font-weight: 800;
+  min-width: 24px;
+  height: 24px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 7px;
+  box-shadow: 0 0 8px rgba(250, 204, 21, 0.5);
+  border: 2px solid var(--surface-solid);
+  line-height: 1;
+}
+
+.win-name {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--green-bright);
+  text-shadow: 0 0 16px rgba(74, 222, 128, 0.4);
+  letter-spacing: 1.5px;
+}
+
+.win-word {
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: 0.25em;
+  color: var(--green-bright);
+}
+
+.win-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
+.win-countdown {
+  margin-top: 4px;
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  letter-spacing: 0.05em;
+}
+
+/* ===== Cosmetic Animations ===== */
+.cosmetic-title { font-size: 9px; font-weight: 600; letter-spacing: 0.5px; margin-left: 3px; opacity: 0.9; }
+@keyframes cosmetic-prismatic { 0% { filter: hue-rotate(0deg); } 100% { filter: hue-rotate(360deg); } }
+@keyframes cosmetic-void-pulse { 0%, 100% { opacity: 0.9; } 50% { opacity: 1; } }
+@keyframes cosmetic-border-rotate { 0% { filter: hue-rotate(0deg); } 100% { filter: hue-rotate(360deg); } }
+@keyframes cosmetic-inferno-pulse { 0%, 100% { box-shadow: 0 0 10px rgba(255,69,0,0.6), 0 0 20px rgba(255,69,0,0.3); } 50% { box-shadow: 0 0 15px rgba(255,69,0,0.8), 0 0 30px rgba(255,69,0,0.5); } }
+@keyframes cosmetic-supernova { 0%, 100% { box-shadow: 0 0 15px rgba(255,200,0,0.7), 0 0 30px rgba(255,100,0,0.4); } 50% { box-shadow: 0 0 20px rgba(255,200,0,0.9), 0 0 40px rgba(255,100,0,0.6); } }
+@keyframes cosmetic-cosmic { 0% { box-shadow: 0 0 15px rgba(100,0,255,0.7), 0 0 30px rgba(200,0,255,0.4); } 33% { box-shadow: 0 0 15px rgba(255,0,200,0.7), 0 0 30px rgba(255,0,100,0.4); } 66% { box-shadow: 0 0 15px rgba(0,200,255,0.7), 0 0 30px rgba(0,100,255,0.4); } 100% { box-shadow: 0 0 15px rgba(100,0,255,0.7), 0 0 30px rgba(200,0,255,0.4); } }
+@keyframes cosmetic-legendary-glow { 0%, 100% { text-shadow: 0 0 8px rgba(255,215,0,0.8), 0 0 16px rgba(255,180,0,0.5); } 50% { text-shadow: 0 0 12px rgba(255,215,0,1), 0 0 24px rgba(255,180,0,0.7); } }
+@keyframes cosmetic-chromatic { 0% { -webkit-text-stroke-color: #ff0000; } 16% { -webkit-text-stroke-color: #ff8800; } 33% { -webkit-text-stroke-color: #ffff00; } 50% { -webkit-text-stroke-color: #00ff00; } 66% { -webkit-text-stroke-color: #0088ff; } 83% { -webkit-text-stroke-color: #8800ff; } 100% { -webkit-text-stroke-color: #ff0000; } }
+@keyframes cosmetic-god-pulse { 0%, 100% { opacity: 0.9; text-shadow: 0 0 10px rgba(255,68,68,0.7); } 50% { opacity: 1; text-shadow: 0 0 15px rgba(255,68,68,0.9), 0 0 30px rgba(255,68,68,0.4); } }
+@keyframes cosmetic-glitch { 0% { transform: translate(0); } 20% { transform: translate(-2px, 1px); } 40% { transform: translate(2px, -1px); } 60% { transform: translate(-1px, -1px); } 80% { transform: translate(1px, 2px); } 100% { transform: translate(0); } }
+@keyframes cosmetic-glitch-text { 0%, 100% { text-shadow: 2px 0 #ff0040, -2px 0 #00ffff; } 25% { text-shadow: -2px 0 #ff0040, 2px 0 #00ffff; } 50% { text-shadow: 2px 1px #ff0040, -2px -1px #00ffff; } 75% { text-shadow: -1px -1px #ff0040, 1px 1px #00ffff; } }
+@keyframes cosmetic-plasma-border { 0%, 100% { box-shadow: 0 0 10px rgba(124,58,237,0.6), 0 0 20px rgba(124,58,237,0.3); } 50% { box-shadow: 0 0 15px rgba(168,85,247,0.8), 0 0 30px rgba(124,58,237,0.5); } }
+@keyframes cosmetic-void-ring { 0%, 100% { box-shadow: 0 0 12px rgba(45,27,105,0.8), 0 0 24px rgba(100,0,255,0.4); } 50% { box-shadow: 0 0 18px rgba(100,0,255,0.9), 0 0 36px rgba(180,74,255,0.5); } }
+@keyframes cosmetic-celestial { 0% { filter: hue-rotate(0deg); box-shadow: 0 0 15px rgba(255,215,0,0.6), 0 0 30px rgba(255,150,0,0.3); } 50% { box-shadow: 0 0 20px rgba(255,215,0,0.8), 0 0 40px rgba(255,150,0,0.5); } 100% { filter: hue-rotate(360deg); box-shadow: 0 0 15px rgba(255,215,0,0.6), 0 0 30px rgba(255,150,0,0.3); } }
+@keyframes cosmetic-electric-aura { 0%, 100% { box-shadow: 0 0 12px rgba(34,211,238,0.6), 0 0 24px rgba(34,211,238,0.3); } 33% { box-shadow: 0 0 16px rgba(34,211,238,0.8), 0 0 32px rgba(34,211,238,0.4); } 66% { box-shadow: 0 0 10px rgba(34,211,238,0.5), 0 0 20px rgba(34,211,238,0.25); } }
+@keyframes cosmetic-void-aura { 0%, 100% { box-shadow: 0 0 15px rgba(45,27,105,0.8), 0 0 30px rgba(100,0,255,0.5); } 50% { box-shadow: 0 0 20px rgba(100,0,255,0.9), 0 0 40px rgba(180,74,255,0.6), 0 0 60px rgba(180,74,255,0.3); } }
+@keyframes cosmetic-divine-glow { 0%, 100% { text-shadow: 0 0 10px rgba(255,255,255,0.9), 0 0 20px rgba(255,215,0,0.6); } 50% { text-shadow: 0 0 15px rgba(255,255,255,1), 0 0 30px rgba(255,215,0,0.8), 0 0 45px rgba(255,180,0,0.4); } }
+@keyframes cosmetic-neon-flicker { 0%, 100% { opacity: 1; } 92% { opacity: 1; } 93% { opacity: 0.6; } 94% { opacity: 1; } 96% { opacity: 0.7; } 97% { opacity: 1; } }
+@keyframes cosmetic-supreme-pulse { 0%, 100% { text-shadow: 0 0 10px rgba(255,255,255,0.8), 0 0 20px rgba(255,215,0,0.4); opacity: 0.9; } 50% { text-shadow: 0 0 15px rgba(255,255,255,1), 0 0 30px rgba(255,215,0,0.6), 0 0 45px rgba(255,100,0,0.3); opacity: 1; } }
+@keyframes cosmetic-wg-fire { 0%, 100% { text-shadow: 0 0 8px rgba(255,100,0,0.7), 0 0 16px rgba(255,50,0,0.4); } 50% { text-shadow: 0 0 12px rgba(255,100,0,0.9), 0 0 24px rgba(255,50,0,0.6); } }
+@keyframes cosmetic-wg-frost { 0%, 100% { text-shadow: 0 0 8px rgba(103,232,249,0.6), 0 0 16px rgba(103,232,249,0.3); } 50% { text-shadow: 0 0 12px rgba(103,232,249,0.8), 0 0 24px rgba(103,232,249,0.5); } }
+@keyframes cosmetic-wg-bloodmoon { 0%, 100% { text-shadow: 0 0 8px rgba(220,38,38,0.7), 0 0 16px rgba(180,0,0,0.4); } 50% { text-shadow: 0 0 12px rgba(220,38,38,0.9), 0 0 24px rgba(180,0,0,0.6), 0 0 32px rgba(120,0,0,0.3); } }
+@keyframes cosmetic-wg-galaxy { 0%, 100% { text-shadow: 0 0 10px rgba(180,74,255,0.7), 0 0 20px rgba(100,0,200,0.4); } 50% { text-shadow: 0 0 14px rgba(180,74,255,0.9), 0 0 28px rgba(100,0,200,0.6), 0 0 36px rgba(50,0,150,0.3); } }
+@keyframes cosmetic-wg-golden { 0%, 100% { text-shadow: 0 0 8px rgba(255,215,0,0.8), 0 0 16px rgba(255,180,0,0.5); } 50% { text-shadow: 0 0 12px rgba(255,215,0,1), 0 0 24px rgba(255,180,0,0.7); } }
+@keyframes cosmetic-wg-aurora { 0% { text-shadow: 0 0 8px rgba(0,255,135,0.7), 0 0 16px rgba(0,188,212,0.5); } 33% { text-shadow: 0 0 8px rgba(0,188,212,0.7), 0 0 16px rgba(124,77,255,0.5); } 66% { text-shadow: 0 0 8px rgba(124,77,255,0.7), 0 0 16px rgba(224,64,251,0.5); } 100% { text-shadow: 0 0 8px rgba(0,255,135,0.7), 0 0 16px rgba(0,188,212,0.5); } }
+@keyframes cosmetic-wg-divine { 0%, 100% { text-shadow: 0 0 10px rgba(255,255,255,0.9), 0 0 20px rgba(255,215,0,0.6); } 50% { text-shadow: 0 0 15px rgba(255,255,255,1), 0 0 30px rgba(255,215,0,0.8), 0 0 45px rgba(255,180,0,0.4); } }
+@keyframes cosmetic-wg-void { 0%, 100% { text-shadow: 0 0 10px rgba(180,74,255,0.8), 0 0 20px rgba(100,0,255,0.5); } 50% { text-shadow: 0 0 15px rgba(180,74,255,1), 0 0 30px rgba(100,0,255,0.7), 0 0 40px rgba(50,0,200,0.4); } }
+
+/* ===== Responsive: narrow phones ===== */
+@media (max-width: 400px) {
+  .boundary { padding: 6px 6px; gap: 5px; }
+  .bnd-lead, .bnd-tail { gap: 5px; }
+  .bnd-label { font-size: 0.7rem; min-width: 54px; }
+  .bnd-arrow { font-size: 0.9rem; min-width: 10px; }
+  .bnd-distance { font-size: 0.7rem; min-width: 22px; }
+  .bnd-tile { width: 28px; height: 32px; font-size: 0.8rem; }
+  .confirmed-tile { width: 28px; height: 32px; font-size: 0.8rem; }
+  .pfp-circle { width: 22px; height: 22px; min-width: 22px; }
+  .pfp-circle .pfp-letter { font-size: 10px; }
+  .alpha-tile { width: 22px; height: 22px; font-size: 0.6rem; }
+}
+
+/* ===== Safe area padding for notched phones ===== */
+@keyframes ov-gradient-flow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .keyboard {
+    padding-bottom: calc(10px + env(safe-area-inset-bottom));
+  }
+}
+
+/* =====================================================================
+   BUBBLE SKIN  (v8)
+   Toon member of the same 3D family as RecTangled 3d6 and UnWordle v7,
+   but built from a hard outline + tall top-light instead of a soft cast:
+   2.5px #0b0e1c outline, fat radii, inset 0 5px 0 highlight, inner bottom
+   lip, and a flat slab in the OUTLINE colour. No blurred shadows — that
+   is what keeps it reading as toon rather than embossed.
+
+   Betwixt-specific: an unsolved position in the confirmed row is a
+   pressed-in socket and a solved one is a raised keycap, so "how much is
+   left" is carried by depth. Same idea as UnWordle's pattern tiles.
+
+   SPECIFICITY NOTES — both of these were load-bearing:
+   - public-shared.css is linked AFTER play.css on sp.html and mp.html,
+     so every rule that touches a class it owns (.hub-btn,
+     .stats-toggle-btn) must be `body .x` (0,1,1) or it loses on source
+     order. It is not enough that this block is later in play.css.
+   - sp.html redeclares .daily-badge in an inline <style> that also comes
+     after the <link>. Same fix, or the badge differs between solo and
+     multiplayer.
+   Board rules below are plain selectors on purpose: they are in this
+   same file and win ties by being last.
+
+   Every slab is written FLAT per state. A custom property resolves where
+   it is DECLARED, so one shared --slab would paint every tile the same.
+   ===================================================================== */
+
+/* --- shell lifts off near-black: a #0b0e1c outline is invisible on #0d0d0f --- */
+:root {
+  --bg: #1b1f36;
+  --surface: #252b4a;
+  --surface-solid: #252b4a;
+  --border: #0b0e1c;
+  --outline: #0b0e1c;
+}
+
+/* ===== Header chrome — body-prefixed to beat public-shared.css ===== */
+body .hub-btn,
+body .stats-toggle-btn {
+  width: 32px;
+  height: 32px;
+  background: #3b4470;
+  border: 2px solid #0b0e1c;
+  border-radius: 10px;
+  color: #e6ebfa;
+  box-shadow:
+    inset 0 3px 0 rgba(255, 255, 255, 0.20),
+    0 3px 0 #0b0e1c;
+}
+body .hub-btn:hover,
+body .stats-toggle-btn:hover,
+body .stats-toggle-btn.active {
+  background: #8f7bff;
+  border-color: #0b0e1c;
+  color: #fff;
+}
+body .hub-btn:active,
+body .stats-toggle-btn:active {
+  box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.14), 0 1px 0 #0b0e1c;
+}
+
+body .guess-counter {
+  background: #3b4470;
+  border: 2px solid #0b0e1c;
+  border-radius: 10px;
+  color: #e6ebfa;
+  padding: 2px 9px;
+  box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.20), 0 3px 0 #0b0e1c;
+}
+
+body .ws-btn {
+  background: #3b4470;
+  border: 2px solid #0b0e1c;
+  border-radius: 10px;
+  color: #c2cbe6;
+  box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.20), 0 3px 0 #0b0e1c;
+}
+body .ws-btn.active {
+  background: #8f7bff;
+  border-color: #0b0e1c;
+  color: #fff;
+  box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.34), 0 3px 0 #0b0e1c;
+}
+/* the base .ws-btn:active scale stays; drop the slab so it reads as pressed */
+body .ws-btn:active { box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.14), 0 1px 0 #0b0e1c; }
+
+/* beats sp.html's inline <style> .daily-badge (0,1,0) */
+body .daily-badge {
+  background: #ffc53d;
+  color: #3d2700;
+  border: 2px solid #0b0e1c;
+  border-radius: 11px;
+  animation: none;
+  box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.45), 0 3px 0 #0b0e1c;
+}
+body .frenzy-badge {
+  background: #ff7043;
+  color: #2b0f00;
+  border: 2px solid #0b0e1c;
+  border-radius: 11px;
+  animation: none;
+  box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.40), 0 3px 0 #0b0e1c;
+}
+
+#header { border-bottom: 2px solid #0b0e1c; }
+.title { text-shadow: 0 2px 0 #0b0e1c; }
+
+/* ===== Boundary rails — toon cards ===== */
+.boundary {
+  background: #252b4a;
+  border: 2.5px solid #0b0e1c;
+  border-radius: 16px;
+  box-shadow:
+    inset 0 3px 0 rgba(255, 255, 255, 0.07),
+    0 4px 0 #0b0e1c;
+}
+/* the accent now lives in the label pill, so drop the coloured left edge */
+.boundary.after,
+.boundary.before { border-left: 2.5px solid #0b0e1c; }
+
+/* The ghost is an invisible geometry shim around the confirmed row. It
+   resets background/border-color at (0,2,0) but NOT box-shadow, so without
+   this it would wear a slab around nothing. Needs (0,2,1) to win. */
+body .boundary.ghost {
+  background: none;
+  border: 2.5px solid transparent;
+  border-top-width: 0;
+  border-bottom-width: 0;
+  box-shadow: none;
+}
+
+/* ===== Labels become pill badges ===== */
+.bnd-label {
+  min-width: 0;
+  padding: 3px 7px;
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  border: 2px solid #0b0e1c;
+  border-radius: 20px;
+}
+.boundary.after .bnd-label {
+  background: #8f7bff;
+  color: #180f3d;
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.40);
+}
+.boundary.before .bnd-label {
+  background: #3fd9f0;
+  color: #04303a;
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.45);
+}
+.boundary.after .bnd-arrow,
+.boundary.after .bnd-distance { color: #b0a3ff; }
+.boundary.before .bnd-arrow,
+.boundary.before .bnd-distance { color: #6fe4f5; }
+
+/* ===== Boundary word tiles — raised keycaps in the rail's own hue ===== */
+.bnd-tile {
+  border: 2.5px solid #0b0e1c;
+  border-radius: 13px;
+}
+.boundary.after .bnd-tile {
+  background: #7c68f0;
+  border-color: #0b0e1c;
+  color: #fff;
+  box-shadow:
+    inset 0 5px 0 rgba(255, 255, 255, 0.26),
+    inset 0 -4px 0 rgba(0, 0, 0, 0.22),
+    0 5px 0 #0b0e1c;
+}
+.boundary.before .bnd-tile {
+  background: #2fbdd4;
+  border-color: #0b0e1c;
+  color: #fff;
+  box-shadow:
+    inset 0 5px 0 rgba(255, 255, 255, 0.30),
+    inset 0 -4px 0 rgba(0, 0, 0, 0.22),
+    0 5px 0 #0b0e1c;
+}
+/* .bnd-tile.masked is (0,2,0) and would lose to the (0,3,0) rules above,
+   so the hidden-letter dimming is restated at (0,4,0). */
+.boundary.after .bnd-tile.masked,
+.boundary.before .bnd-tile.masked {
+  color: rgba(255, 255, 255, 0.42);
+}
+
+.pfp-circle {
+  background: #3b4470;
+  border: 2px solid #0b0e1c;
+}
+.pfp-circle .pfp-letter { color: #c2cbe6; }
+
+/* ===== Confirmed row — THE state signal =====
+   no .confirmed  -> pressed-in socket
+   .confirmed     -> raised green keycap */
+.confirmed-tile {
+  background: #151934;
+  border: 2.5px solid #0b0e1c;
+  border-radius: 13px;
+  color: transparent;
+  box-shadow: inset 0 5px 9px rgba(0, 0, 0, 0.75);
+}
+.confirmed-tile.filled {
+  background: #3b4470;
+  border-color: #0b0e1c;
+  color: #e6ebfa;
+  box-shadow:
+    inset 0 5px 0 rgba(255, 255, 255, 0.20),
+    inset 0 -4px 0 rgba(0, 0, 0, 0.22),
+    0 5px 0 #0b0e1c;
+}
+.confirmed-tile.confirmed {
+  background: #6ad277;
+  border-color: #0b0e1c;
+  color: #0d2412;
+  box-shadow:
+    inset 0 5px 0 rgba(255, 255, 255, 0.38),
+    inset 0 -4px 0 rgba(0, 0, 0, 0.20),
+    0 6px 0 #0b0e1c;
+}
+
+/* ===== Alphabet — inherits the same socket/keycap grammar ===== */
+.alpha-pos-label { color: #ffc53d; }
+.alpha-tile {
+  border: 2px solid #0b0e1c;
+  border-radius: 7px;
+}
+.alpha-tile.eliminated {
+  background: #171b32;
+  border-color: #0b0e1c;
+  color: #39406a;
+  box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.60);
+}
+.alpha-tile.possible {
+  background: #8f7bff;
+  border-color: #0b0e1c;
+  color: #180f3d;
+  box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.34), 0 3px 0 #0b0e1c;
+}
+.alpha-tile.edge {
+  background: #3fd9f0;
+  border-color: #0b0e1c;
+  color: #04303a;
+  box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.42), 0 3px 0 #0b0e1c;
+}
+
+/* ===== Keyboard ===== */
+.kb-key {
+  background: #4d5788;
+  border: 2.5px solid #0b0e1c;
+  border-radius: 11px;
+  color: #fff;
+  box-shadow:
+    inset 0 4px 0 rgba(255, 255, 255, 0.22),
+    inset 0 -3px 0 rgba(0, 0, 0, 0.24),
+    0 4px 0 #0b0e1c;
+}
+/* press collapses the slab instead of only scaling, so it reads as travel */
+.kb-key:active {
+  background: #5a659c;
+  box-shadow:
+    inset 0 4px 0 rgba(255, 255, 255, 0.16),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.22),
+    0 1px 0 #0b0e1c;
+}
+.kb-key.enter {
+  background: #6ad277;
+  color: #0d2412;
+}
+.kb-key.enter:active {
+  background: #7bdd87;
+  box-shadow:
+    inset 0 4px 0 rgba(255, 255, 255, 0.30),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.20),
+    0 1px 0 #0b0e1c;
+}
+
+/* ===== Typing row ===== */
+.typing-tile {
+  background: #151934;
+  border: 2.5px solid #0b0e1c;
+  border-radius: 13px;
+  color: #fff;
+  box-shadow: inset 0 5px 9px rgba(0, 0, 0, 0.70);
+}
+.typing-tile.active {
+  background: #3b4470;
+  border-color: #0b0e1c;
+  box-shadow:
+    inset 0 5px 0 rgba(255, 255, 255, 0.20),
+    inset 0 -4px 0 rgba(0, 0, 0, 0.22),
+    0 5px 0 #0b0e1c;
+}
+.typing-tile.empty {
+  background: #151934;
+  color: transparent;
+  box-shadow: inset 0 5px 9px rgba(0, 0, 0, 0.70);
+}
+
+/* ===== Toast + win modal ===== */
+.error-toast {
+  background: #ef5350;
+  color: #2b0505;
+  border: 2.5px solid #0b0e1c;
+  border-radius: 13px;
+  box-shadow: inset 0 4px 0 rgba(255, 255, 255, 0.30), 0 4px 0 #0b0e1c;
+}
+.win-modal {
+  background: #252b4a;
+  border: 3px solid #0b0e1c;
+  border-radius: 22px;
+  box-shadow: inset 0 5px 0 rgba(255, 255, 255, 0.08), 0 7px 0 #0b0e1c;
+}
+.win-pic {
+  border: 3px solid #6ad277;
+  box-shadow: inset 0 4px 0 rgba(255, 255, 255, 0.12);
+}
+.win-word,
+.win-name { color: #6ad277; text-shadow: 0 2px 0 #0b0e1c; }
+.win-badge { border: 2px solid #0b0e1c; box-shadow: 0 2px 0 #0b0e1c; }
+
+/* ===== Narrow phones — the pill label is wider than the old text label,
+   so trim it back rather than letting the rail overflow. ===== */
+@media (max-width: 400px) {
+  .bnd-label { font-size: 0.56rem; padding: 2px 6px; }
+  .bnd-tile,
+  .confirmed-tile,
+  .typing-tile { border-radius: 10px; }
+  .alpha-tile { border-radius: 6px; }
+}

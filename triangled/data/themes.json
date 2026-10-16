@@ -1,0 +1,62 @@
+[
+  {
+    "theme": "Breakfast Time",
+    "themeHint": "Morning meal favorites",
+    "spangram": "breakfast",
+    "words": ["pancake", "waffle", "toast", "eggs", "juice", "bacon", "syrup", "cereal", "jam"]
+  },
+  {
+    "theme": "Under the Sea",
+    "themeHint": "Creatures of the deep",
+    "spangram": "submarine",
+    "words": ["dolphin", "coral", "whale", "shark", "crab", "squid", "otter", "kelp", "turtle"]
+  },
+  {
+    "theme": "In the Garden",
+    "themeHint": "Growing in the yard",
+    "spangram": "gardening",
+    "words": ["flowers", "tulips", "bloom", "mulch", "seeds", "prune", "soil", "vines", "hose"]
+  },
+  {
+    "theme": "Music Hall",
+    "themeHint": "Instruments that play",
+    "spangram": "orchestra",
+    "words": ["trumpet", "violin", "drums", "cello", "piano", "flute", "harps", "oboe", "tuba"]
+  },
+  {
+    "theme": "Board Games",
+    "themeHint": "Family game night picks",
+    "spangram": "tabletop",
+    "words": ["chess", "tokens", "cards", "pawns", "timer", "winner", "rules", "board", "piece"]
+  },
+  {
+    "theme": "Camping Trip",
+    "themeHint": "Into the great outdoors",
+    "spangram": "campfire",
+    "words": ["tent", "hiking", "trail", "lantern", "snack", "boots", "river", "marsh", "lodge"]
+  },
+  {
+    "theme": "Bakery Fresh",
+    "themeHint": "Warm from the oven",
+    "spangram": "pastries",
+    "words": ["bread", "muffin", "dough", "glaze", "flour", "yeast", "crust", "scone", "danish"]
+  },
+  {
+    "theme": "Winter Wonderland",
+    "themeHint": "When the snow falls",
+    "spangram": "snowflake",
+    "words": ["icicle", "frost", "sledge", "mitten", "chill", "scarf", "winds", "blizzard"]
+  },
+  {
+    "theme": "Movie Night",
+    "themeHint": "Lights, camera, action",
+    "spangram": "filmmaker",
+    "words": ["script", "actor", "scene", "popcorn", "reel", "drama", "plot", "screen", "clip"]
+  },
+  {
+    "theme": "Pet Shop",
+    "themeHint": "Furry and feathered friends",
+    "spangram": "companion",
+    "words": ["kitten", "puppy", "hamster", "parrot", "bunny", "fish", "leash", "treat", "toy"]
+  }
+]

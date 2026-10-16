@@ -1,0 +1,3754 @@
+[
+  {
+    "id": 1,
+    "name": "Crystal Cavern",
+    "theme": "Nature",
+    "letters": [
+      "b",
+      "s",
+      "z",
+      "i",
+      "a",
+      "o",
+      "t",
+      "e",
+      "f",
+      "m",
+      "r",
+      "n"
+    ],
+    "initialIndices": [
+      0,
+      1,
+      2,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "bonusOrder": [
+      3,
+      4,
+      11
+    ]
+  },
+  {
+    "id": 2,
+    "name": "Forest Depths",
+    "theme": "Nature",
+    "letters": [
+      "e",
+      "s",
+      "t",
+      "r",
+      "a",
+      "c",
+      "s",
+      "i",
+      "v",
+      "l",
+      "t",
+      "o"
+    ],
+    "initialIndices": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      6,
+      8,
+      9,
+      10
+    ],
+    "bonusOrder": [
+      5,
+      7,
+      11
+    ]
+  },
+  {
+    "id": 3,
+    "name": "River Stone",
+    "theme": "Nature",
+    "letters": [
+      "a",
+      "n",
+      "i",
+      "e",
+      "u",
+      "r",
+      "e",
+      "u",
+      "g",
+      "m",
+      "t",
+      "s"
+    ],
+    "initialIndices": [
+      1,
+      2,
+      4,
+      5,
+      6,
+      7,
+      8,
+      10,
+      11
+    ],
+    "bonusOrder": [
+      0,
+      3,
+      9
+    ]
+  },
+  {
+    "id": 4,
+    "name": "Mountain Pass",
+    "theme": "Nature",
+    "letters": [
+      "s",
+      "i",
+      "a",
+      "r",
+      "f",
+      "n",
+      "o",
+      "a",
+      "o",
+      "e",
+      "t",
+      "l"
+    ],
+    "initialIndices": [
+      0,
+      2,
+      3,
+      4,
+      5,
+      7,
+      9,
+      10,
+      11
+    ],
+    "bonusOrder": [
+      1,
+      6,
+      8
+    ]
+  },
+  {
+    "id": 5,
+    "name": "Desert Bloom",
+    "theme": "Nature",
+    "letters": [
+      "i",
+      "r",
+      "s",
+      "n",
+      "a",
+      "d",
+      "c",
+      "u",
+      "t",
+      "e",
+      "j",
+      "a"
+    ],
+    "initialIndices": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      8,
+      9,
+      11
+    ],
+    "bonusOrder": [
+      0,
+      7,
+      10
+    ]
+  },
+  {
+    "id": 6,
+    "name": "Ocean Floor",
+    "theme": "Nature",
+    "letters": [
+      "g",
+      "m",
+      "c",
+      "i",
+      "a",
+      "n",
+      "e",
+      "i",
+      "s",
+      "r",
+      "o",
+      "d"
+    ],
+    "initialIndices": [
+      0,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      11
+    ],
+    "bonusOrder": [
+      1,
+      2,
+      10
+    ]
+  },
+  {
+    "id": 7,
+    "name": "Meadow Mist",
+    "theme": "Nature",
+    "letters": [
+      "p",
+      "r",
+      "s",
+      "c",
+      "d",
+      "l",
+      "t",
+      "e",
+      "t",
+      "o",
+      "a",
+      "n"
+    ],
+    "initialIndices": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      7,
+      8,
+      10,
+      11
+    ],
+    "bonusOrder": [
+      0,
+      6,
+      9
+    ]
+  },
+  {
+    "id": 8,
+    "name": "Pine Ridge",
+    "theme": "Nature",
+    "letters": [
+      "l",
+      "i",
+      "w",
+      "d",
+      "e",
+      "s",
+      "r",
+      "n",
+      "o",
+      "i",
+      "p",
+      "u"
+    ],
+    "initialIndices": [
+      0,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      10
+    ],
+    "bonusOrder": [
+      1,
+      9,
+      11
+    ]
+  },
+  {
+    "id": 9,
+    "name": "Coral Reef",
+    "theme": "Nature",
+    "letters": [
+      "e",
+      "c",
+      "t",
+      "s",
+      "a",
+      "i",
+      "n",
+      "r",
+      "r",
+      "c",
+      "g",
+      "o"
+    ],
+    "initialIndices": [
+      0,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "bonusOrder": [
+      1,
+      2,
+      11
+    ]
+  },
+  {
+    "id": 10,
+    "name": "Thunder Peak",
+    "theme": "Nature",
+    "letters": [
+      "r",
+      "s",
+      "g",
+      "c",
+      "m",
+      "i",
+      "o",
+      "f",
+      "n",
+      "e",
+      "l",
+      "t"
+    ],
+    "initialIndices": [
+      1,
+      2,
+      3,
+      5,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "bonusOrder": [
+      0,
+      4,
+      6
+    ]
+  },
+  {
+    "id": 11,
+    "name": "Spice Vault",
+    "theme": "Food",
+    "letters": [
+      "s",
+      "a",
+      "r",
+      "n",
+      "g",
+      "o",
+      "r",
+      "t",
+      "e",
+      "a",
+      "i",
+      "u"
+    ],
+    "initialIndices": [
+      0,
+      2,
+      3,
+      4,
+      6,
+      7,
+      8,
+      10,
+      11
+    ],
+    "bonusOrder": [
+      1,
+      5,
+      9
+    ]
+  },
+  {
+    "id": 12,
+    "name": "Bread Oven",
+    "theme": "Food",
+    "letters": [
+      "y",
+      "e",
+      "a",
+      "e",
+      "i",
+      "c",
+      "m",
+      "n",
+      "s",
+      "r",
+      "t",
+      "o"
+    ],
+    "initialIndices": [
+      0,
+      1,
+      2,
+      3,
+      5,
+      6,
+      8,
+      9,
+      10
+    ],
+    "bonusOrder": [
+      4,
+      7,
+      11
+    ]
+  },
+  {
+    "id": 13,
+    "name": "Sugar Mine",
+    "theme": "Food",
+    "letters": [
+      "n",
+      "r",
+      "y",
+      "n",
+      "g",
+      "m",
+      "t",
+      "s",
+      "u",
+      "e",
+      "a",
+      "i"
+    ],
+    "initialIndices": [
+      0,
+      1,
+      3,
+      4,
+      6,
+      7,
+      8,
+      9,
+      11
+    ],
+    "bonusOrder": [
+      2,
+      5,
+      10
+    ]
+  },
+  {
+    "id": 14,
+    "name": "Herb Garden",
+    "theme": "Food",
+    "letters": [
+      "a",
+      "g",
+      "a",
+      "i",
+      "n",
+      "e",
+      "l",
+      "r",
+      "l",
+      "s",
+      "t",
+      "o"
+    ],
+    "initialIndices": [
+      0,
+      2,
+      3,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "bonusOrder": [
+      1,
+      4,
+      11
+    ]
+  },
+  {
+    "id": 15,
+    "name": "Fruit Cellar",
+    "theme": "Food",
+    "letters": [
+      "i",
+      "t",
+      "c",
+      "d",
+      "p",
+      "e",
+      "i",
+      "a",
+      "o",
+      "r",
+      "s",
+      "n"
+    ],
+    "initialIndices": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      7,
+      9,
+      10,
+      11
+    ],
+    "bonusOrder": [
+      0,
+      6,
+      8
+    ]
+  },
+  {
+    "id": 16,
+    "name": "Cheese Cave",
+    "theme": "Food",
+    "letters": [
+      "t",
+      "r",
+      "n",
+      "e",
+      "i",
+      "o",
+      "m",
+      "d",
+      "e",
+      "o",
+      "a",
+      "s"
+    ],
+    "initialIndices": [
+      0,
+      1,
+      2,
+      3,
+      6,
+      7,
+      8,
+      10,
+      11
+    ],
+    "bonusOrder": [
+      4,
+      5,
+      9
+    ]
+  },
+  {
+    "id": 17,
+    "name": "Salt Flat",
+    "theme": "Food",
+    "letters": [
+      "i",
+      "l",
+      "u",
+      "a",
+      "n",
+      "t",
+      "e",
+      "i",
+      "o",
+      "j",
+      "s",
+      "r"
+    ],
+    "initialIndices": [
+      0,
+      1,
+      3,
+      5,
+      6,
+      7,
+      9,
+      10,
+      11
+    ],
+    "bonusOrder": [
+      2,
+      4,
+      8
+    ]
+  },
+  {
+    "id": 18,
+    "name": "Grain Silo",
+    "theme": "Food",
+    "letters": [
+      "p",
+      "e",
+      "r",
+      "a",
+      "t",
+      "n",
+      "i",
+      "r",
+      "s",
+      "u",
+      "f",
+      "m"
+    ],
+    "initialIndices": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      7,
+      8,
+      10,
+      11
+    ],
+    "bonusOrder": [
+      5,
+      6,
+      9
+    ]
+  },
+  {
+    "id": 19,
+    "name": "Wine Barrel",
+    "theme": "Food",
+    "letters": [
+      "a",
+      "a",
+      "s",
+      "t",
+      "l",
+      "r",
+      "t",
+      "e",
+      "n",
+      "b",
+      "c",
+      "i"
+    ],
+    "initialIndices": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      9
+    ],
+    "bonusOrder": [
+      8,
+      10,
+      11
+    ]
+  },
+  {
+    "id": 20,
+    "name": "Pepper Pit",
+    "theme": "Food",
+    "letters": [
+      "p",
+      "y",
+      "e",
+      "a",
+      "r",
+      "p",
+      "n",
+      "o",
+      "t",
+      "i",
+      "s",
+      "e"
+    ],
+    "initialIndices": [
+      0,
+      2,
+      4,
+      5,
+      6,
+      7,
+      8,
+      10,
+      11
+    ],
+    "bonusOrder": [
+      1,
+      3,
+      9
+    ]
+  },
+  {
+    "id": 21,
+    "name": "Bear Den",
+    "theme": "Animals",
+    "letters": [
+      "p",
+      "l",
+      "a",
+      "d",
+      "i",
+      "o",
+      "t",
+      "r",
+      "s",
+      "o",
+      "e",
+      "r"
+    ],
+    "initialIndices": [
+      1,
+      2,
+      3,
+      4,
+      6,
+      7,
+      8,
+      10,
+      11
+    ],
+    "bonusOrder": [
+      0,
+      5,
+      9
+    ]
+  },
+  {
+    "id": 22,
+    "name": "Eagle Nest",
+    "theme": "Animals",
+    "letters": [
+      "i",
+      "e",
+      "g",
+      "w",
+      "s",
+      "n",
+      "r",
+      "t",
+      "e",
+      "f",
+      "l",
+      "a"
+    ],
+    "initialIndices": [
+      1,
+      3,
+      4,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "bonusOrder": [
+      0,
+      2,
+      5
+    ]
+  },
+  {
+    "id": 23,
+    "name": "Wolf Trail",
+    "theme": "Animals",
+    "letters": [
+      "c",
+      "r",
+      "u",
+      "o",
+      "t",
+      "e",
+      "a",
+      "z",
+      "i",
+      "s",
+      "z",
+      "n"
+    ],
+    "initialIndices": [
+      0,
+      1,
+      2,
+      4,
+      5,
+      7,
+      9,
+      10,
+      11
+    ],
+    "bonusOrder": [
+      3,
+      6,
+      8
+    ]
+  },
+  {
+    "id": 24,
+    "name": "Coral Spawn",
+    "theme": "Animals",
+    "letters": [
+      "u",
+      "t",
+      "t",
+      "a",
+      "e",
+      "r",
+      "c",
+      "o",
+      "i",
+      "i",
+      "n",
+      "s"
+    ],
+    "initialIndices": [
+      0,
+      1,
+      2,
+      4,
+      6,
+      8,
+      9,
+      10,
+      11
+    ],
+    "bonusOrder": [
+      3,
+      5,
+      7
+    ]
+  },
+  {
+    "id": 25,
+    "name": "Tiger Stripe",
+    "theme": "Animals",
+    "letters": [
+      "i",
+      "o",
+      "n",
+      "r",
+      "s",
+      "a",
+      "e",
+      "g",
+      "t",
+      "e",
+      "i",
+      "m"
+    ],
+    "initialIndices": [
+      0,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      9,
+      10
+    ],
+    "bonusOrder": [
+      1,
+      8,
+      11
+    ]
+  },
+  {
+    "id": 26,
+    "name": "Falcon Dive",
+    "theme": "Animals",
+    "letters": [
+      "e",
+      "c",
+      "l",
+      "r",
+      "r",
+      "a",
+      "i",
+      "o",
+      "p",
+      "s",
+      "d",
+      "u"
+    ],
+    "initialIndices": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      7,
+      8,
+      10
+    ],
+    "bonusOrder": [
+      6,
+      9,
+      11
+    ]
+  },
+  {
+    "id": 27,
+    "name": "Spider Web",
+    "theme": "Animals",
+    "letters": [
+      "e",
+      "v",
+      "d",
+      "r",
+      "p",
+      "i",
+      "n",
+      "a",
+      "e",
+      "i",
+      "t",
+      "s"
+    ],
+    "initialIndices": [
+      1,
+      2,
+      3,
+      4,
+      6,
+      7,
+      8,
+      10,
+      11
+    ],
+    "bonusOrder": [
+      0,
+      5,
+      9
+    ]
+  },
+  {
+    "id": 28,
+    "name": "Horse Ranch",
+    "theme": "Animals",
+    "letters": [
+      "r",
+      "h",
+      "i",
+      "e",
+      "n",
+      "t",
+      "g",
+      "o",
+      "w",
+      "a",
+      "s",
+      "o"
+    ],
+    "initialIndices": [
+      0,
+      1,
+      2,
+      4,
+      5,
+      6,
+      8,
+      10,
+      11
+    ],
+    "bonusOrder": [
+      3,
+      7,
+      9
+    ]
+  },
+  {
+    "id": 29,
+    "name": "Dolphin Bay",
+    "theme": "Animals",
+    "letters": [
+      "d",
+      "n",
+      "e",
+      "a",
+      "l",
+      "s",
+      "i",
+      "a",
+      "o",
+      "r",
+      "o",
+      "c"
+    ],
+    "initialIndices": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      7,
+      9,
+      11
+    ],
+    "bonusOrder": [
+      6,
+      8,
+      10
+    ]
+  },
+  {
+    "id": 30,
+    "name": "Beetle Burrow",
+    "theme": "Animals",
+    "letters": [
+      "t",
+      "s",
+      "l",
+      "e",
+      "o",
+      "u",
+      "i",
+      "a",
+      "r",
+      "e",
+      "d",
+      "u"
+    ],
+    "initialIndices": [
+      0,
+      1,
+      2,
+      3,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "bonusOrder": [
+      4,
+      5,
+      11
+    ]
+  },
+  {
+    "id": 31,
+    "name": "Steel Mill",
+    "theme": "City",
+    "letters": [
+      "a",
+      "s",
+      "e",
+      "l",
+      "l",
+      "t",
+      "c",
+      "r",
+      "t",
+      "m",
+      "n",
+      "i"
+    ],
+    "initialIndices": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "bonusOrder": [
+      9,
+      10,
+      11
+    ]
+  },
+  {
+    "id": 32,
+    "name": "Brick Lane",
+    "theme": "City",
+    "letters": [
+      "d",
+      "a",
+      "s",
+      "t",
+      "o",
+      "r",
+      "f",
+      "l",
+      "n",
+      "e",
+      "i",
+      "s"
+    ],
+    "initialIndices": [
+      0,
+      1,
+      3,
+      5,
+      6,
+      7,
+      8,
+      9,
+      11
+    ],
+    "bonusOrder": [
+      2,
+      4,
+      10
+    ]
+  },
+  {
+    "id": 33,
+    "name": "Train Depot",
+    "theme": "City",
+    "letters": [
+      "r",
+      "i",
+      "i",
+      "t",
+      "e",
+      "h",
+      "n",
+      "r",
+      "o",
+      "a",
+      "s",
+      "g"
+    ],
+    "initialIndices": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      10,
+      11
+    ],
+    "bonusOrder": [
+      0,
+      8,
+      9
+    ]
+  },
+  {
+    "id": 34,
+    "name": "Clock Tower",
+    "theme": "City",
+    "letters": [
+      "r",
+      "t",
+      "i",
+      "e",
+      "d",
+      "y",
+      "s",
+      "l",
+      "a",
+      "u",
+      "t",
+      "o"
+    ],
+    "initialIndices": [
+      0,
+      1,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      10
+    ],
+    "bonusOrder": [
+      2,
+      9,
+      11
+    ]
+  },
+  {
+    "id": 35,
+    "name": "Market Square",
+    "theme": "City",
+    "letters": [
+      "r",
+      "n",
+      "i",
+      "c",
+      "e",
+      "e",
+      "r",
+      "s",
+      "b",
+      "a",
+      "l",
+      "t"
+    ],
+    "initialIndices": [
+      0,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "bonusOrder": [
+      1,
+      2,
+      3
+    ]
+  },
+  {
+    "id": 36,
+    "name": "Harbor Dock",
+    "theme": "City",
+    "letters": [
+      "d",
+      "t",
+      "a",
+      "e",
+      "b",
+      "h",
+      "o",
+      "r",
+      "s",
+      "n",
+      "i",
+      "r"
+    ],
+    "initialIndices": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      8,
+      9,
+      11
+    ],
+    "bonusOrder": [
+      6,
+      7,
+      10
+    ]
+  },
+  {
+    "id": 37,
+    "name": "Copper Pipe",
+    "theme": "City",
+    "letters": [
+      "i",
+      "o",
+      "s",
+      "i",
+      "k",
+      "a",
+      "d",
+      "t",
+      "r",
+      "e",
+      "n",
+      "c"
+    ],
+    "initialIndices": [
+      2,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "bonusOrder": [
+      0,
+      1,
+      3
+    ]
+  },
+  {
+    "id": 38,
+    "name": "Stone Bridge",
+    "theme": "City",
+    "letters": [
+      "n",
+      "b",
+      "a",
+      "e",
+      "t",
+      "i",
+      "e",
+      "n",
+      "s",
+      "o",
+      "r",
+      "d"
+    ],
+    "initialIndices": [
+      1,
+      2,
+      3,
+      4,
+      6,
+      7,
+      8,
+      10,
+      11
+    ],
+    "bonusOrder": [
+      0,
+      5,
+      9
+    ]
+  },
+  {
+    "id": 39,
+    "name": "Library Wing",
+    "theme": "City",
+    "letters": [
+      "a",
+      "g",
+      "t",
+      "n",
+      "i",
+      "b",
+      "c",
+      "s",
+      "a",
+      "e",
+      "d",
+      "r"
+    ],
+    "initialIndices": [
+      1,
+      3,
+      4,
+      5,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "bonusOrder": [
+      0,
+      2,
+      6
+    ]
+  },
+  {
+    "id": 40,
+    "name": "Forge Anvil",
+    "theme": "City",
+    "letters": [
+      "s",
+      "v",
+      "h",
+      "o",
+      "r",
+      "b",
+      "e",
+      "i",
+      "l",
+      "a",
+      "f",
+      "g"
+    ],
+    "initialIndices": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      8,
+      10
+    ],
+    "bonusOrder": [
+      7,
+      9,
+      11
+    ]
+  },
+  {
+    "id": 41,
+    "name": "Lab Reactor",
+    "theme": "Science",
+    "letters": [
+      "a",
+      "t",
+      "e",
+      "o",
+      "h",
+      "l",
+      "n",
+      "r",
+      "i",
+      "s",
+      "e",
+      "g"
+    ],
+    "initialIndices": [
+      1,
+      2,
+      4,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "bonusOrder": [
+      0,
+      3,
+      5
+    ]
+  },
+  {
+    "id": 42,
+    "name": "Atom Core",
+    "theme": "Science",
+    "letters": [
+      "n",
+      "e",
+      "g",
+      "o",
+      "c",
+      "l",
+      "i",
+      "m",
+      "r",
+      "t",
+      "x",
+      "a"
+    ],
+    "initialIndices": [
+      0,
+      1,
+      2,
+      4,
+      6,
+      7,
+      8,
+      10,
+      11
+    ],
+    "bonusOrder": [
+      3,
+      5,
+      9
+    ]
+  },
+  {
+    "id": 43,
+    "name": "Prism Light",
+    "theme": "Science",
+    "letters": [
+      "s",
+      "m",
+      "o",
+      "b",
+      "r",
+      "w",
+      "d",
+      "u",
+      "e",
+      "t",
+      "i",
+      "a"
+    ],
+    "initialIndices": [
+      0,
+      1,
+      3,
+      4,
+      5,
+      6,
+      8,
+      9,
+      11
+    ],
+    "bonusOrder": [
+      2,
+      7,
+      10
+    ]
+  },
+  {
+    "id": 44,
+    "name": "Nerve Pulse",
+    "theme": "Science",
+    "letters": [
+      "u",
+      "e",
+      "s",
+      "p",
+      "o",
+      "n",
+      "i",
+      "r",
+      "e",
+      "u",
+      "a",
+      "t"
+    ],
+    "initialIndices": [
+      0,
+      1,
+      2,
+      3,
+      6,
+      7,
+      8,
+      9,
+      11
+    ],
+    "bonusOrder": [
+      4,
+      5,
+      10
+    ]
+  },
+  {
+    "id": 45,
+    "name": "Gene Strand",
+    "theme": "Science",
+    "letters": [
+      "y",
+      "f",
+      "u",
+      "r",
+      "s",
+      "n",
+      "a",
+      "t",
+      "d",
+      "i",
+      "e",
+      "o"
+    ],
+    "initialIndices": [
+      0,
+      1,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      10
+    ],
+    "bonusOrder": [
+      2,
+      9,
+      11
+    ]
+  },
+  {
+    "id": 46,
+    "name": "Quartz Lens",
+    "theme": "Science",
+    "letters": [
+      "s",
+      "t",
+      "c",
+      "n",
+      "r",
+      "e",
+      "i",
+      "v",
+      "y",
+      "a",
+      "t",
+      "l"
+    ],
+    "initialIndices": [
+      0,
+      1,
+      4,
+      5,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "bonusOrder": [
+      2,
+      3,
+      6
+    ]
+  },
+  {
+    "id": 47,
+    "name": "Plasma Tube",
+    "theme": "Science",
+    "letters": [
+      "t",
+      "m",
+      "d",
+      "a",
+      "l",
+      "i",
+      "n",
+      "s",
+      "a",
+      "r",
+      "e",
+      "t"
+    ],
+    "initialIndices": [
+      1,
+      2,
+      3,
+      4,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "bonusOrder": [
+      0,
+      5,
+      6
+    ]
+  },
+  {
+    "id": 48,
+    "name": "Carbon Fiber",
+    "theme": "Science",
+    "letters": [
+      "u",
+      "n",
+      "o",
+      "r",
+      "j",
+      "l",
+      "s",
+      "g",
+      "a",
+      "f",
+      "e",
+      "i"
+    ],
+    "initialIndices": [
+      1,
+      3,
+      4,
+      5,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "bonusOrder": [
+      0,
+      2,
+      6
+    ]
+  },
+  {
+    "id": 49,
+    "name": "Oxide Layer",
+    "theme": "Science",
+    "letters": [
+      "l",
+      "i",
+      "a",
+      "e",
+      "s",
+      "r",
+      "v",
+      "e",
+      "n",
+      "l",
+      "g",
+      "t"
+    ],
+    "initialIndices": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      10
+    ],
+    "bonusOrder": [
+      0,
+      9,
+      11
+    ]
+  },
+  {
+    "id": 50,
+    "name": "Voltage Spike",
+    "theme": "Science",
+    "letters": [
+      "g",
+      "s",
+      "r",
+      "l",
+      "c",
+      "a",
+      "c",
+      "a",
+      "e",
+      "n",
+      "i",
+      "t"
+    ],
+    "initialIndices": [
+      0,
+      1,
+      2,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "bonusOrder": [
+      3,
+      4,
+      11
+    ]
+  },
+  {
+    "id": 51,
+    "name": "Paint Studio",
+    "theme": "Arts",
+    "letters": [
+      "e",
+      "o",
+      "t",
+      "n",
+      "s",
+      "i",
+      "a",
+      "c",
+      "b",
+      "l",
+      "r",
+      "n"
+    ],
+    "initialIndices": [
+      0,
+      3,
+      4,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "bonusOrder": [
+      1,
+      2,
+      5
+    ]
+  },
+  {
+    "id": 52,
+    "name": "Bronze Cast",
+    "theme": "Arts",
+    "letters": [
+      "a",
+      "t",
+      "o",
+      "d",
+      "i",
+      "l",
+      "o",
+      "r",
+      "e",
+      "s",
+      "n",
+      "n"
+    ],
+    "initialIndices": [
+      0,
+      1,
+      3,
+      5,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "bonusOrder": [
+      2,
+      4,
+      6
+    ]
+  },
+  {
+    "id": 53,
+    "name": "Drum Circle",
+    "theme": "Arts",
+    "letters": [
+      "r",
+      "h",
+      "o",
+      "u",
+      "c",
+      "e",
+      "s",
+      "i",
+      "m",
+      "h",
+      "n",
+      "t"
+    ],
+    "initialIndices": [
+      0,
+      1,
+      2,
+      4,
+      5,
+      6,
+      9,
+      10,
+      11
+    ],
+    "bonusOrder": [
+      3,
+      7,
+      8
+    ]
+  },
+  {
+    "id": 54,
+    "name": "Stone Chisel",
+    "theme": "Arts",
+    "letters": [
+      "r",
+      "o",
+      "a",
+      "t",
+      "e",
+      "s",
+      "n",
+      "o",
+      "i",
+      "a",
+      "e",
+      "p"
+    ],
+    "initialIndices": [
+      0,
+      1,
+      3,
+      4,
+      5,
+      6,
+      7,
+      10,
+      11
+    ],
+    "bonusOrder": [
+      2,
+      8,
+      9
+    ]
+  },
+  {
+    "id": 55,
+    "name": "Ink Well",
+    "theme": "Arts",
+    "letters": [
+      "v",
+      "e",
+      "a",
+      "w",
+      "h",
+      "i",
+      "l",
+      "t",
+      "s",
+      "o",
+      "n",
+      "o"
+    ],
+    "initialIndices": [
+      0,
+      1,
+      3,
+      4,
+      6,
+      7,
+      8,
+      10,
+      11
+    ],
+    "bonusOrder": [
+      2,
+      5,
+      9
+    ]
+  },
+  {
+    "id": 56,
+    "name": "Stage Light",
+    "theme": "Arts",
+    "letters": [
+      "t",
+      "b",
+      "l",
+      "e",
+      "a",
+      "e",
+      "r",
+      "c",
+      "n",
+      "i",
+      "t",
+      "s"
+    ],
+    "initialIndices": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      10,
+      11
+    ],
+    "bonusOrder": [
+      7,
+      8,
+      9
+    ]
+  },
+  {
+    "id": 57,
+    "name": "Verse Form",
+    "theme": "Arts",
+    "letters": [
+      "r",
+      "v",
+      "a",
+      "e",
+      "f",
+      "t",
+      "s",
+      "i",
+      "n",
+      "e",
+      "o",
+      "u"
+    ],
+    "initialIndices": [
+      0,
+      1,
+      3,
+      4,
+      5,
+      6,
+      8,
+      9,
+      11
+    ],
+    "bonusOrder": [
+      2,
+      7,
+      10
+    ]
+  },
+  {
+    "id": 58,
+    "name": "Craft Table",
+    "theme": "Arts",
+    "letters": [
+      "e",
+      "n",
+      "a",
+      "s",
+      "r",
+      "t",
+      "i",
+      "r",
+      "f",
+      "p",
+      "f",
+      "o"
+    ],
+    "initialIndices": [
+      0,
+      1,
+      3,
+      5,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "bonusOrder": [
+      2,
+      4,
+      6
+    ]
+  },
+  {
+    "id": 59,
+    "name": "Loom Thread",
+    "theme": "Arts",
+    "letters": [
+      "i",
+      "a",
+      "t",
+      "k",
+      "m",
+      "i",
+      "o",
+      "r",
+      "e",
+      "s",
+      "g",
+      "l"
+    ],
+    "initialIndices": [
+      0,
+      1,
+      2,
+      3,
+      5,
+      7,
+      8,
+      9,
+      11
+    ],
+    "bonusOrder": [
+      4,
+      6,
+      10
+    ]
+  },
+  {
+    "id": 60,
+    "name": "Mosaic Tile",
+    "theme": "Arts",
+    "letters": [
+      "s",
+      "s",
+      "r",
+      "u",
+      "o",
+      "m",
+      "a",
+      "l",
+      "c",
+      "n",
+      "i",
+      "e"
+    ],
+    "initialIndices": [
+      0,
+      1,
+      2,
+      5,
+      6,
+      7,
+      8,
+      9,
+      11
+    ],
+    "bonusOrder": [
+      3,
+      4,
+      10
+    ]
+  },
+  {
+    "id": 61,
+    "name": "Sprint Track",
+    "theme": "Sports",
+    "letters": [
+      "g",
+      "n",
+      "i",
+      "o",
+      "m",
+      "t",
+      "r",
+      "s",
+      "v",
+      "f",
+      "e",
+      "a"
+    ],
+    "initialIndices": [
+      0,
+      1,
+      2,
+      4,
+      6,
+      8,
+      9,
+      10,
+      11
+    ],
+    "bonusOrder": [
+      3,
+      5,
+      7
+    ]
+  },
+  {
+    "id": 62,
+    "name": "Boxing Ring",
+    "theme": "Sports",
+    "letters": [
+      "e",
+      "s",
+      "t",
+      "r",
+      "o",
+      "y",
+      "a",
+      "g",
+      "o",
+      "n",
+      "i",
+      "i"
+    ],
+    "initialIndices": [
+      0,
+      1,
+      3,
+      5,
+      6,
+      7,
+      9,
+      10,
+      11
+    ],
+    "bonusOrder": [
+      2,
+      4,
+      8
+    ]
+  },
+  {
+    "id": 63,
+    "name": "Surf Break",
+    "theme": "Sports",
+    "letters": [
+      "i",
+      "d",
+      "s",
+      "c",
+      "f",
+      "t",
+      "a",
+      "e",
+      "r",
+      "e",
+      "o",
+      "p"
+    ],
+    "initialIndices": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      8,
+      9,
+      11
+    ],
+    "bonusOrder": [
+      0,
+      7,
+      10
+    ]
+  },
+  {
+    "id": 64,
+    "name": "Goal Kick",
+    "theme": "Sports",
+    "letters": [
+      "n",
+      "l",
+      "s",
+      "g",
+      "p",
+      "a",
+      "a",
+      "o",
+      "e",
+      "l",
+      "i",
+      "r"
+    ],
+    "initialIndices": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      7,
+      9,
+      10,
+      11
+    ],
+    "bonusOrder": [
+      5,
+      6,
+      8
+    ]
+  },
+  {
+    "id": 65,
+    "name": "Javelin Arc",
+    "theme": "Sports",
+    "letters": [
+      "r",
+      "l",
+      "a",
+      "t",
+      "d",
+      "i",
+      "s",
+      "k",
+      "v",
+      "n",
+      "c",
+      "e"
+    ],
+    "initialIndices": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      6,
+      9,
+      10,
+      11
+    ],
+    "bonusOrder": [
+      5,
+      7,
+      8
+    ]
+  },
+  {
+    "id": 66,
+    "name": "Paddle Court",
+    "theme": "Sports",
+    "letters": [
+      "g",
+      "e",
+      "d",
+      "o",
+      "p",
+      "s",
+      "e",
+      "i",
+      "a",
+      "t",
+      "l",
+      "r"
+    ],
+    "initialIndices": [
+      1,
+      2,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "bonusOrder": [
+      0,
+      3,
+      4
+    ]
+  },
+  {
+    "id": 67,
+    "name": "Hurdle Jump",
+    "theme": "Sports",
+    "letters": [
+      "e",
+      "i",
+      "t",
+      "p",
+      "n",
+      "l",
+      "t",
+      "s",
+      "a",
+      "e",
+      "r",
+      "u"
+    ],
+    "initialIndices": [
+      0,
+      1,
+      2,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "bonusOrder": [
+      3,
+      4,
+      11
+    ]
+  },
+  {
+    "id": 68,
+    "name": "Ski Mogul",
+    "theme": "Sports",
+    "letters": [
+      "g",
+      "a",
+      "e",
+      "i",
+      "z",
+      "a",
+      "t",
+      "n",
+      "m",
+      "l",
+      "r",
+      "s"
+    ],
+    "initialIndices": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      7,
+      8,
+      10
+    ],
+    "bonusOrder": [
+      6,
+      9,
+      11
+    ]
+  },
+  {
+    "id": 69,
+    "name": "Anchor Lift",
+    "theme": "Sports",
+    "letters": [
+      "u",
+      "o",
+      "t",
+      "s",
+      "p",
+      "a",
+      "m",
+      "r",
+      "i",
+      "d",
+      "c",
+      "n"
+    ],
+    "initialIndices": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      9,
+      10,
+      11
+    ],
+    "bonusOrder": [
+      0,
+      7,
+      8
+    ]
+  },
+  {
+    "id": 70,
+    "name": "Fencing Lunge",
+    "theme": "Sports",
+    "letters": [
+      "c",
+      "a",
+      "e",
+      "i",
+      "e",
+      "t",
+      "s",
+      "p",
+      "d",
+      "r",
+      "n",
+      "s"
+    ],
+    "initialIndices": [
+      0,
+      1,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      11
+    ],
+    "bonusOrder": [
+      2,
+      3,
+      10
+    ]
+  },
+  {
+    "id": 71,
+    "name": "Storm Surge",
+    "theme": "Weather",
+    "letters": [
+      "s",
+      "u",
+      "m",
+      "e",
+      "i",
+      "t",
+      "a",
+      "o",
+      "r",
+      "o",
+      "l",
+      "n"
+    ],
+    "initialIndices": [
+      0,
+      1,
+      3,
+      4,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "bonusOrder": [
+      2,
+      5,
+      11
+    ]
+  },
+  {
+    "id": 72,
+    "name": "Frost Bite",
+    "theme": "Weather",
+    "letters": [
+      "a",
+      "i",
+      "a",
+      "o",
+      "s",
+      "n",
+      "u",
+      "t",
+      "m",
+      "e",
+      "r",
+      "t"
+    ],
+    "initialIndices": [
+      0,
+      2,
+      4,
+      5,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "bonusOrder": [
+      1,
+      3,
+      6
+    ]
+  },
+  {
+    "id": 73,
+    "name": "Thunder Bolt",
+    "theme": "Weather",
+    "letters": [
+      "u",
+      "e",
+      "e",
+      "l",
+      "n",
+      "d",
+      "s",
+      "t",
+      "a",
+      "a",
+      "c",
+      "i"
+    ],
+    "initialIndices": [
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "bonusOrder": [
+      0,
+      1,
+      11
+    ]
+  },
+  {
+    "id": 74,
+    "name": "Wind Gust",
+    "theme": "Weather",
+    "letters": [
+      "g",
+      "b",
+      "n",
+      "q",
+      "o",
+      "a",
+      "s",
+      "e",
+      "j",
+      "i",
+      "t",
+      "r"
+    ],
+    "initialIndices": [
+      0,
+      1,
+      2,
+      3,
+      5,
+      6,
+      7,
+      9,
+      11
+    ],
+    "bonusOrder": [
+      4,
+      8,
+      10
+    ]
+  },
+  {
+    "id": 75,
+    "name": "Hail Shaft",
+    "theme": "Weather",
+    "letters": [
+      "a",
+      "e",
+      "s",
+      "i",
+      "s",
+      "t",
+      "i",
+      "r",
+      "h",
+      "d",
+      "n",
+      "o"
+    ],
+    "initialIndices": [
+      0,
+      1,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "bonusOrder": [
+      2,
+      10,
+      11
+    ]
+  },
+  {
+    "id": 76,
+    "name": "Mist Veil",
+    "theme": "Weather",
+    "letters": [
+      "a",
+      "n",
+      "m",
+      "o",
+      "t",
+      "c",
+      "l",
+      "e",
+      "i",
+      "s",
+      "r",
+      "s"
+    ],
+    "initialIndices": [
+      0,
+      1,
+      2,
+      5,
+      6,
+      7,
+      9,
+      10,
+      11
+    ],
+    "bonusOrder": [
+      3,
+      4,
+      8
+    ]
+  },
+  {
+    "id": 77,
+    "name": "Blaze Heat",
+    "theme": "Weather",
+    "letters": [
+      "e",
+      "l",
+      "t",
+      "o",
+      "u",
+      "l",
+      "b",
+      "i",
+      "r",
+      "a",
+      "o",
+      "s"
+    ],
+    "initialIndices": [
+      0,
+      1,
+      2,
+      3,
+      5,
+      6,
+      9,
+      10,
+      11
+    ],
+    "bonusOrder": [
+      4,
+      7,
+      8
+    ]
+  },
+  {
+    "id": 78,
+    "name": "Dew Point",
+    "theme": "Weather",
+    "letters": [
+      "o",
+      "s",
+      "e",
+      "o",
+      "r",
+      "g",
+      "e",
+      "i",
+      "a",
+      "n",
+      "t",
+      "d"
+    ],
+    "initialIndices": [
+      1,
+      2,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      11
+    ],
+    "bonusOrder": [
+      0,
+      3,
+      10
+    ]
+  },
+  {
+    "id": 79,
+    "name": "Sleet Cloud",
+    "theme": "Weather",
+    "letters": [
+      "e",
+      "a",
+      "o",
+      "l",
+      "d",
+      "t",
+      "i",
+      "o",
+      "r",
+      "n",
+      "s",
+      "s"
+    ],
+    "initialIndices": [
+      0,
+      1,
+      3,
+      4,
+      5,
+      8,
+      9,
+      10,
+      11
+    ],
+    "bonusOrder": [
+      2,
+      6,
+      7
+    ]
+  },
+  {
+    "id": 80,
+    "name": "Gale Force",
+    "theme": "Weather",
+    "letters": [
+      "n",
+      "l",
+      "g",
+      "f",
+      "t",
+      "f",
+      "e",
+      "i",
+      "s",
+      "e",
+      "o",
+      "a"
+    ],
+    "initialIndices": [
+      1,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      11
+    ],
+    "bonusOrder": [
+      0,
+      2,
+      10
+    ]
+  },
+  {
+    "id": 81,
+    "name": "Attic Chest",
+    "theme": "Home",
+    "letters": [
+      "r",
+      "e",
+      "t",
+      "t",
+      "a",
+      "i",
+      "c",
+      "o",
+      "s",
+      "h",
+      "g",
+      "i"
+    ],
+    "initialIndices": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      6,
+      8,
+      9,
+      10
+    ],
+    "bonusOrder": [
+      5,
+      7,
+      11
+    ]
+  },
+  {
+    "id": 82,
+    "name": "Brick Hearth",
+    "theme": "Home",
+    "letters": [
+      "e",
+      "c",
+      "s",
+      "o",
+      "n",
+      "c",
+      "d",
+      "t",
+      "u",
+      "r",
+      "r",
+      "a"
+    ],
+    "initialIndices": [
+      0,
+      2,
+      4,
+      5,
+      6,
+      7,
+      9,
+      10,
+      11
+    ],
+    "bonusOrder": [
+      1,
+      3,
+      8
+    ]
+  },
+  {
+    "id": 83,
+    "name": "Tool Bench",
+    "theme": "Home",
+    "letters": [
+      "c",
+      "i",
+      "o",
+      "a",
+      "e",
+      "m",
+      "n",
+      "s",
+      "r",
+      "o",
+      "n",
+      "t"
+    ],
+    "initialIndices": [
+      0,
+      2,
+      4,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "bonusOrder": [
+      1,
+      3,
+      5
+    ]
+  },
+  {
+    "id": 84,
+    "name": "Garden Shed",
+    "theme": "Home",
+    "letters": [
+      "i",
+      "e",
+      "e",
+      "u",
+      "g",
+      "s",
+      "a",
+      "t",
+      "l",
+      "l",
+      "n",
+      "r"
+    ],
+    "initialIndices": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      7,
+      10,
+      11
+    ],
+    "bonusOrder": [
+      6,
+      8,
+      9
+    ]
+  },
+  {
+    "id": 85,
+    "name": "Copper Kettle",
+    "theme": "Home",
+    "letters": [
+      "o",
+      "e",
+      "d",
+      "n",
+      "s",
+      "e",
+      "i",
+      "r",
+      "l",
+      "a",
+      "u",
+      "v"
+    ],
+    "initialIndices": [
+      1,
+      2,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      11
+    ],
+    "bonusOrder": [
+      0,
+      3,
+      10
+    ]
+  },
+  {
+    "id": 86,
+    "name": "Wax Candle",
+    "theme": "Home",
+    "letters": [
+      "o",
+      "c",
+      "u",
+      "s",
+      "d",
+      "t",
+      "e",
+      "n",
+      "d",
+      "a",
+      "r",
+      "b"
+    ],
+    "initialIndices": [
+      1,
+      3,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "bonusOrder": [
+      0,
+      2,
+      4
+    ]
+  },
+  {
+    "id": 87,
+    "name": "Quilt Patch",
+    "theme": "Home",
+    "letters": [
+      "p",
+      "n",
+      "s",
+      "p",
+      "t",
+      "e",
+      "q",
+      "r",
+      "o",
+      "u",
+      "a",
+      "l"
+    ],
+    "initialIndices": [
+      0,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      11
+    ],
+    "bonusOrder": [
+      1,
+      9,
+      10
+    ]
+  },
+  {
+    "id": 88,
+    "name": "Iron Bolt",
+    "theme": "Home",
+    "letters": [
+      "r",
+      "t",
+      "x",
+      "s",
+      "e",
+      "n",
+      "i",
+      "b",
+      "r",
+      "o",
+      "a",
+      "d"
+    ],
+    "initialIndices": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      7,
+      8,
+      10,
+      11
+    ],
+    "bonusOrder": [
+      0,
+      6,
+      9
+    ]
+  },
+  {
+    "id": 89,
+    "name": "Fabric Loom",
+    "theme": "Home",
+    "letters": [
+      "s",
+      "m",
+      "t",
+      "n",
+      "i",
+      "e",
+      "r",
+      "u",
+      "i",
+      "v",
+      "o",
+      "c"
+    ],
+    "initialIndices": [
+      0,
+      1,
+      2,
+      3,
+      5,
+      6,
+      9,
+      10,
+      11
+    ],
+    "bonusOrder": [
+      4,
+      7,
+      8
+    ]
+  },
+  {
+    "id": 90,
+    "name": "Dust Vault",
+    "theme": "Home",
+    "letters": [
+      "p",
+      "r",
+      "i",
+      "t",
+      "z",
+      "a",
+      "n",
+      "m",
+      "g",
+      "s",
+      "h",
+      "e"
+    ],
+    "initialIndices": [
+      0,
+      1,
+      2,
+      3,
+      6,
+      8,
+      9,
+      10,
+      11
+    ],
+    "bonusOrder": [
+      4,
+      5,
+      7
+    ]
+  },
+  {
+    "id": 91,
+    "name": "Pirate Cove",
+    "theme": "Adventure",
+    "letters": [
+      "l",
+      "o",
+      "o",
+      "e",
+      "i",
+      "t",
+      "h",
+      "c",
+      "s",
+      "a",
+      "r",
+      "e"
+    ],
+    "initialIndices": [
+      0,
+      3,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "bonusOrder": [
+      1,
+      2,
+      4
+    ]
+  },
+  {
+    "id": 92,
+    "name": "Dragon Lair",
+    "theme": "Adventure",
+    "letters": [
+      "c",
+      "a",
+      "r",
+      "o",
+      "e",
+      "h",
+      "n",
+      "s",
+      "v",
+      "i",
+      "o",
+      "t"
+    ],
+    "initialIndices": [
+      0,
+      1,
+      2,
+      4,
+      5,
+      6,
+      7,
+      8,
+      11
+    ],
+    "bonusOrder": [
+      3,
+      9,
+      10
+    ]
+  },
+  {
+    "id": 93,
+    "name": "Temple Ruin",
+    "theme": "Adventure",
+    "letters": [
+      "l",
+      "t",
+      "t",
+      "i",
+      "o",
+      "e",
+      "p",
+      "r",
+      "e",
+      "a",
+      "s",
+      "n"
+    ],
+    "initialIndices": [
+      0,
+      1,
+      2,
+      3,
+      5,
+      7,
+      8,
+      9,
+      10
+    ],
+    "bonusOrder": [
+      4,
+      6,
+      11
+    ]
+  },
+  {
+    "id": 94,
+    "name": "Frozen Tomb",
+    "theme": "Adventure",
+    "letters": [
+      "r",
+      "e",
+      "a",
+      "z",
+      "e",
+      "t",
+      "c",
+      "p",
+      "n",
+      "i",
+      "f",
+      "s"
+    ],
+    "initialIndices": [
+      0,
+      1,
+      2,
+      4,
+      5,
+      6,
+      7,
+      10,
+      11
+    ],
+    "bonusOrder": [
+      3,
+      8,
+      9
+    ]
+  },
+  {
+    "id": 95,
+    "name": "Jungle Trek",
+    "theme": "Adventure",
+    "letters": [
+      "a",
+      "m",
+      "n",
+      "e",
+      "e",
+      "g",
+      "t",
+      "r",
+      "o",
+      "i",
+      "k",
+      "s"
+    ],
+    "initialIndices": [
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      9,
+      10,
+      11
+    ],
+    "bonusOrder": [
+      0,
+      1,
+      8
+    ]
+  },
+  {
+    "id": 96,
+    "name": "Sunken Ship",
+    "theme": "Adventure",
+    "letters": [
+      "e",
+      "e",
+      "a",
+      "v",
+      "s",
+      "r",
+      "n",
+      "l",
+      "h",
+      "t",
+      "n",
+      "i"
+    ],
+    "initialIndices": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      7,
+      8,
+      9
+    ],
+    "bonusOrder": [
+      6,
+      10,
+      11
+    ]
+  },
+  {
+    "id": 97,
+    "name": "Wizard Keep",
+    "theme": "Adventure",
+    "letters": [
+      "u",
+      "i",
+      "e",
+      "o",
+      "r",
+      "t",
+      "a",
+      "l",
+      "a",
+      "i",
+      "n",
+      "s"
+    ],
+    "initialIndices": [
+      1,
+      2,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      11
+    ],
+    "bonusOrder": [
+      0,
+      3,
+      10
+    ]
+  },
+  {
+    "id": 98,
+    "name": "Lava Forge",
+    "theme": "Adventure",
+    "letters": [
+      "t",
+      "r",
+      "i",
+      "r",
+      "k",
+      "u",
+      "s",
+      "c",
+      "e",
+      "a",
+      "n",
+      "d"
+    ],
+    "initialIndices": [
+      0,
+      3,
+      4,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "bonusOrder": [
+      1,
+      2,
+      5
+    ]
+  },
+  {
+    "id": 99,
+    "name": "Mystic Glyph",
+    "theme": "Adventure",
+    "letters": [
+      "i",
+      "s",
+      "r",
+      "e",
+      "a",
+      "b",
+      "t",
+      "r",
+      "o",
+      "c",
+      "j",
+      "m"
+    ],
+    "initialIndices": [
+      1,
+      2,
+      3,
+      4,
+      6,
+      7,
+      9,
+      10,
+      11
+    ],
+    "bonusOrder": [
+      0,
+      5,
+      8
+    ]
+  },
+  {
+    "id": 100,
+    "name": "Exodus Gate",
+    "theme": "Adventure",
+    "letters": [
+      "o",
+      "e",
+      "s",
+      "e",
+      "l",
+      "t",
+      "r",
+      "u",
+      "n",
+      "u",
+      "i",
+      "a"
+    ],
+    "initialIndices": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      9,
+      11
+    ],
+    "bonusOrder": [
+      0,
+      8,
+      10
+    ]
+  },
+  {
+    "id": "sp-daily-2026-03-25",
+    "name": "Daily - 2026-03-25",
+    "theme": "Daily",
+    "letters": [
+      "y",
+      "d",
+      "k",
+      "l",
+      "v",
+      "j",
+      "i",
+      "q",
+      "x",
+      "z",
+      "o",
+      "f",
+      "a",
+      "w",
+      "g"
+    ],
+    "initialIndices": [
+      1,
+      2,
+      3,
+      5,
+      7,
+      8,
+      9,
+      10,
+      11,
+      13,
+      14
+    ],
+    "bonusOrder": [
+      0,
+      4,
+      6,
+      12
+    ],
+    "date": "2026-03-25"
+  },
+  {
+    "id": "sp-daily-2026-03-26",
+    "name": "Daily - 2026-03-26",
+    "theme": "Daily",
+    "letters": [
+      "k",
+      "t",
+      "p",
+      "o",
+      "q",
+      "x",
+      "a",
+      "l",
+      "z",
+      "j",
+      "w",
+      "v",
+      "f",
+      "n",
+      "e"
+    ],
+    "initialIndices": [
+      0,
+      1,
+      3,
+      4,
+      5,
+      7,
+      10,
+      11,
+      12,
+      13,
+      14
+    ],
+    "bonusOrder": [
+      2,
+      6,
+      8,
+      9
+    ],
+    "date": "2026-03-26"
+  },
+  {
+    "id": "sp-daily-2026-04-09",
+    "name": "Daily - 2026-04-09",
+    "theme": "Daily",
+    "letters": [
+      "h",
+      "f",
+      "n",
+      "b",
+      "e",
+      "t",
+      "k",
+      "g",
+      "o",
+      "j",
+      "v",
+      "z",
+      "d",
+      "q",
+      "x"
+    ],
+    "initialIndices": [
+      0,
+      1,
+      2,
+      4,
+      5,
+      6,
+      8,
+      9,
+      10,
+      13,
+      14
+    ],
+    "bonusOrder": [
+      3,
+      7,
+      11,
+      12
+    ],
+    "date": "2026-04-09"
+  },
+  {
+    "id": "sp-daily-2026-04-11",
+    "name": "Daily - 2026-04-11",
+    "theme": "Daily",
+    "letters": [
+      "n",
+      "x",
+      "g",
+      "a",
+      "q",
+      "o",
+      "j",
+      "k",
+      "w",
+      "s",
+      "l",
+      "y",
+      "z",
+      "i",
+      "e"
+    ],
+    "initialIndices": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      11,
+      14
+    ],
+    "bonusOrder": [
+      9,
+      10,
+      12,
+      13
+    ],
+    "date": "2026-04-11"
+  },
+  {
+    "id": "sp-weekly-2026-04-06",
+    "name": "Weekly - 2026-04-06",
+    "theme": "Weekly",
+    "letters": [
+      "x",
+      "e",
+      "n",
+      "w",
+      "j",
+      "a",
+      "q",
+      "m",
+      "r",
+      "y",
+      "t",
+      "k",
+      "z",
+      "o",
+      "i"
+    ],
+    "initialIndices": [
+      0,
+      2,
+      3,
+      4,
+      6,
+      7,
+      8,
+      10,
+      11,
+      12,
+      13
+    ],
+    "bonusOrder": [
+      1,
+      5,
+      9,
+      14
+    ],
+    "date": "2026-04-06"
+  },
+  {
+    "id": "sp-daily-2026-04-14",
+    "name": "Daily - 2026-04-14",
+    "theme": "Daily",
+    "letters": [
+      "g",
+      "e",
+      "w",
+      "s",
+      "x",
+      "q",
+      "m",
+      "z",
+      "c",
+      "k",
+      "v",
+      "j",
+      "f",
+      "a",
+      "l"
+    ],
+    "initialIndices": [
+      0,
+      1,
+      2,
+      4,
+      6,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13
+    ],
+    "bonusOrder": [
+      3,
+      5,
+      7,
+      14
+    ],
+    "date": "2026-04-14"
+  }
+]

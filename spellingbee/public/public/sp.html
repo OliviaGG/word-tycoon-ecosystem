@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <meta name="theme-color" content="#151a22"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="Spelling Bee"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="description" content="Install Spelling Bee for solo daily and practice hive puzzles."/>
+  <title>Spelling Bee</title>
+  <link rel="manifest" href="manifest.webmanifest"/>
+  <link rel="icon" type="image/svg+xml" href="app-icon.svg"/>
+  <link rel="apple-touch-icon" href="app-icon.svg"/>
+  <link rel="stylesheet" href="css/spellingbee-play.css"/>
+</head>
+<body>
+  <!-- Login banner (dismissable) -->
+  <div id="login-banner" class="login-banner">
+      <span>&#128279; <a href="https://wordtycoon.live/api/auth/sso-check?returnTo=https%3A%2F%2Fwordtycoon.live%2Fspellingbee%2Fsolo%2F">Log in with Discord</a> to track stats across devices</span>
+    <button id="dismiss-banner" class="dismiss-btn">&times;</button>
+  </div>
+
+  <!-- Puzzle selector screen -->
+  <div id="puzzle-selector" class="puzzle-selector">
+    <h2>Choose a Puzzle</h2>
+    <button id="random-puzzle-btn" class="random-puzzle-btn">&#127922; Random Puzzle</button>
+    <div id="puzzle-grid" class="puzzle-grid"></div>
+  </div>
+
+  <!-- Game screen (hidden until puzzle is chosen) -->
+  <div id="game-screen" style="display:none">
+    <header class="game-header">
+      <a href="/portal/" class="hub-link" title="Hub">&#127968;</a>
+      <button id="back-to-puzzles" class="back-btn" title="Back to Puzzles">&#9664; Puzzles</button>
+      <h1 class="game-title">
+        <span class="letter" style="color:#ffc970">S</span>
+        <span class="letter" style="color:#7ee8a0">P</span>
+        <span class="letter" style="color:#7eb8ff">E</span>
+        <span class="letter" style="color:#ffc970">L</span>
+        <span class="letter" style="color:#c98aff">L</span>
+        <span class="letter" style="color:#f08090">I</span>
+        <span class="letter" style="color:#7ee8a0">N</span>
+        <span class="letter" style="color:#7eb8ff">G</span>
+        <span class="letter" style="color:#ffc970"> </span>
+        <span class="letter" style="color:#f08090">B</span>
+        <span class="letter" style="color:#7ee8a0">E</span>
+        <span class="letter" style="color:#ffc970">E</span>
+      </h1>
+      <div class="header-controls">
+        <div class="word-counter"><span id="found-count">0</span>/<span id="total-count">0</span></div>
+        <span id="rare-count" class="rare-counter hidden">+0 rare</span>
+        <button id="stats-toggle" class="icon-btn" title="Stats">&#128202;</button>
+      </div>
+    </header>
+
+    <!-- Puzzle info badge -->
+    <div id="puzzle-info" class="puzzle-info hidden">
+      <span id="puzzle-num" class="puzzle-num"></span>
+      <span id="puzzle-name" class="puzzle-name"></span>
+      <span id="puzzle-theme-badge" class="puzzle-theme-badge"></span>
+    </div>
+
+    <!-- Stats dropdown -->
+    <div id="stats-dropdown" class="stats-dropdown hidden">
+      <div class="stats-grid">
+        <div class="stat-item"><div class="stat-val" id="stat-played">0</div><div class="stat-label">Played</div></div>
+        <div class="stat-item"><div class="stat-val" id="stat-completed">0</div><div class="stat-label">Completed</div></div>
+        <div class="stat-item"><div class="stat-val" id="stat-words">0</div><div class="stat-label">Words Found</div></div>
+        <div class="stat-item"><div class="stat-val" id="stat-best">0%</div><div class="stat-label">Best</div></div>
+      </div>
+    </div>
+
+    <!-- Progress bar -->
+    <div class="progress-container">
+      <div id="progress-bar" class="progress-bar"></div>
+    </div>
+
+    <!-- Score -->
+    <div class="score-area">
+      Score: <span id="score-val" class="score-val">0</span>
+    </div>
+
+    <!-- Current word display -->
+    <div class="current-word-area">
+      <div id="current-word" class="current-word"></div>
+    </div>
+
+    <!-- Honeycomb -->
+    <div id="honeycomb-area" class="honeycomb-area">
+      <div class="hex-row" id="hex-row-top"></div>
+      <div class="hex-row" id="hex-row-mid"></div>
+      <div class="hex-row" id="hex-row-bot"></div>
+    </div>
+
+    <!-- Action buttons -->
+    <div class="action-buttons">
+      <button id="btn-delete" class="action-btn">Delete</button>
+      <button id="btn-shuffle" class="action-btn">&#128260;</button>
+      <button id="btn-submit" class="action-btn submit">Enter</button>
+    </div>
+
+    <!-- Incorrect guesses area -->
+    <div id="incorrect-area" class="incorrect-area"></div>
+
+    <!-- Found words -->
+    <div class="found-wrapper">
+      <div class="found-section">
+        <h3 class="found-header">Found Words <span id="found-label">0</span></h3>
+        <div id="found-words" class="found-words-list"></div>
+      </div>
+      <div class="found-section rare-section" id="rare-section">
+        <h3 class="rare-header">&#11088; <span>Rare Words</span> <span id="rare-label">0</span></h3>
+        <div id="rare-words" class="found-words-list"></div>
+      </div>
+    </div>
+
+    <!-- Completion overlay -->
+    <div id="win-overlay" class="win-overlay hidden">
+      <div class="win-content">
+        <h2>&#127881; All Words Found!</h2>
+        <p id="win-stats"></p>
+        <p id="win-rare-stats" class="win-rare-stats"></p>
+        <button id="new-game-btn" class="new-game-btn">Choose Another Puzzle</button>
+      </div>
+    </div>
+
+    <!-- Error toast -->
+    <div id="error-toast" class="error-toast hidden"></div>
+  </div>
+
+  <script src="js/sp-engine.js?v=6"></script>
+  <script src="pwa-install.js"></script>
+</body>
+</html>

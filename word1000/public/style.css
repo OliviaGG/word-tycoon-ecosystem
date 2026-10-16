@@ -1,0 +1,736 @@
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --bg-tile: #252540;
+  --border: #3a3a55;
+  --text: #e8e8f0;
+  --text-dim: #6a6a88;
+  --red: #e74c3c;
+  --red-glow: rgba(231, 76, 60, 0.3);
+  --red-bg: rgba(231, 76, 60, 0.15);
+  --green: #4ade80;
+  --green-glow: rgba(74, 222, 128, 0.3);
+  --yellow: #f1c40f;
+  --yellow-glow: rgba(241, 196, 15, 0.3);
+  --accent: #8b5cf6;
+  --accent-glow: rgba(139, 92, 246, 0.4);
+  --neon-purple: #b44aff;
+  --neon-purple-glow: rgba(180, 74, 255, 0.6);
+  --neon-purple-glow-soft: rgba(180, 74, 255, 0.3);
+  --game-bg: #15202b;
+  --row-bg: rgba(17, 27, 36, 0.9);
+  --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+html {
+  height: 100vh;
+}
+
+body {
+  font-family: var(--font);
+  background: transparent;
+  color: var(--text);
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+}
+
+.game-container {
+  width: 100%;
+  max-width: 560px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 8px 8px 8px;
+}
+
+/* === Game Area (unified border) === */
+.game-area {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  border: 2px solid var(--neon-purple);
+  border-radius: 16px;
+  background: rgba(21, 32, 43, 0.9);
+  box-shadow: inset 0 0 10px var(--neon-purple-glow-soft);
+  overflow: hidden;
+  filter:
+    drop-shadow(0 0 6px var(--neon-purple-glow))
+    drop-shadow(0 0 14px var(--neon-purple-glow-soft))
+    drop-shadow(0 0 30px var(--neon-purple-glow-soft));
+}
+
+/* === Top Tabs (jackpot left, last winner right) === */
+.top-tabs {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0;
+  z-index: 2;
+}
+
+/* Top corners stay rounded — no zeroing for tab connection */
+
+/* === Last Winner Tab === */
+.last-winner {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.last-winner-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: rgba(21, 32, 43, 0.6);
+  border: none;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.last-winner-pic-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.last-winner-pic {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.last-winner-pic-fb {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.last-winner-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.2;
+}
+
+.last-winner-name {
+  color: var(--neon-purple);
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 120px;
+}
+
+.last-winner-word {
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--green);
+  font-weight: 800;
+  font-size: 12px;
+}
+
+/* === Win Badge (shared by last-winner and win-overlay) === */
+.win-badge {
+  position: absolute;
+  bottom: -3px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #facc15;
+  color: #1a1a2e;
+  font-size: 10px;
+  font-weight: 800;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  box-shadow: 0 0 6px rgba(250, 204, 21, 0.5);
+  border: 1.5px solid var(--game-bg);
+  line-height: 1;
+}
+
+/* === Game Frame (bordered area) === */
+.game-frame {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  padding: 4px 8px 6px;
+  overflow: hidden;
+}
+
+/* === Jackpot Tab === */
+#jackpot-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  box-shadow: none;
+  flex-shrink: 0;
+}
+
+#jackpot-bar::before {
+  display: none;
+}
+
+.jackpot-icon {
+  font-size: 16px;
+  filter: drop-shadow(0 0 4px rgba(255, 215, 0, 0.5));
+}
+
+.jackpot-label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: rgba(255, 215, 0, 0.85);
+  text-transform: uppercase;
+  text-shadow: 0 0 6px rgba(255, 215, 0, 0.25);
+}
+
+.jackpot-amount {
+  font-size: 18px;
+  font-weight: 900;
+  color: #ffd700;
+  text-shadow: 0 0 8px rgba(255, 215, 0, 0.45), 0 0 20px rgba(255, 215, 0, 0.15);
+  font-family: 'Segoe UI', system-ui, monospace;
+  letter-spacing: 1px;
+  transition: transform 0.15s ease;
+}
+
+#jackpot-bar.bump .jackpot-amount {
+  animation: jackpot-bump 0.3s ease;
+}
+
+@keyframes jackpot-bump {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+
+/* === Guess History === */
+.guesses-wrapper {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.guesses-wrapper::-webkit-scrollbar { display: none; }
+.guesses-wrapper { -ms-overflow-style: none; scrollbar-width: none; }
+
+#guesses {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 2px 0;
+}
+
+/* === Guess Row === */
+.guess-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 8px;
+  border-radius: 8px;
+  background: var(--row-bg);
+  animation: rowIn 0.3s ease;
+}
+
+/* Player info (pic only) */
+.guess-player {
+  flex-shrink: 0;
+}
+
+.player-pic,
+.player-pic-fb {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  flex-shrink: 0;
+  display: block;
+}
+
+.player-pic-fb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  object-fit: initial;
+}
+
+.player-pic-fb {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+/* Letter tiles */
+.guess-letters {
+  display: flex;
+  gap: 3px;
+  flex: 1;
+  justify-content: center;
+}
+
+.letter-tile {
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  font-weight: 800;
+  border-radius: 6px;
+  background: var(--bg-tile);
+  border: 2px solid var(--border);
+  color: var(--text);
+  text-transform: uppercase;
+}
+
+.letter-tile.neutral {
+  color: var(--text);
+  border-color: var(--border);
+}
+
+.letter-tile.absent {
+  color: var(--red);
+  border-color: var(--red);
+  background: var(--red-bg);
+}
+
+.guess-row.all-absent .letter-tile.absent {
+  box-shadow: 0 0 8px var(--red-glow);
+}
+
+/* Count indicators */
+.guess-counts {
+  display: flex;
+  gap: 3px;
+  flex-shrink: 0;
+}
+
+.count {
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 800;
+  border-radius: 5px;
+}
+
+.count-correct {
+  background: var(--green);
+  color: #1a1a2e;
+  box-shadow: 0 0 8px var(--green-glow);
+}
+
+.count-present {
+  background: var(--yellow);
+  color: #1a1a2e;
+  box-shadow: 0 0 8px var(--yellow-glow);
+}
+
+.count-absent {
+  background: var(--red);
+  color: #fff;
+  box-shadow: 0 0 8px var(--red-glow);
+}
+
+.count.zero {
+  opacity: 0.25;
+  box-shadow: none;
+}
+
+/* === Keyboard === */
+#keyboard {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  width: 100%;
+  max-width: 520px;
+  margin: 4px auto 0;
+  flex-shrink: 0;
+}
+
+.keyboard-row {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+}
+
+.key {
+  flex: 1;
+  max-width: 42px;
+  height: 36px;
+  padding: 0 2px;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: var(--font);
+  border: 1px solid rgba(139, 92, 246, 0.35);
+  border-radius: 6px;
+  background: rgba(55, 55, 95, 0.95);
+  color: #f0f0ff;
+  cursor: default;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  transition: all 0.2s ease;
+  text-shadow: 0 0 8px rgba(200, 200, 255, 0.25);
+  box-shadow: 0 0 4px rgba(139, 92, 246, 0.12);
+}
+
+.key.absent {
+  background: rgba(40, 30, 35, 0.6);
+  color: rgba(231, 76, 60, 0.35);
+  border: 1px solid rgba(231, 76, 60, 0.12);
+  text-shadow: none;
+  box-shadow: none;
+}
+
+.key.inword {
+  background: rgba(74, 222, 128, 0.25);
+  color: var(--green);
+  border: 1px solid rgba(74, 222, 128, 0.4);
+  text-shadow: 0 0 8px rgba(74, 222, 128, 0.4);
+  box-shadow: 0 0 6px rgba(74, 222, 128, 0.15);
+}
+
+/* === Win Overlay (within game frame) === */
+#win-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  border-radius: 16px;
+  animation: fadeIn 0.3s ease;
+}
+
+#win-overlay.hidden {
+  display: none;
+}
+
+.win-bubble {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  background: var(--game-bg);
+  padding: 28px 36px;
+  border-radius: 20px;
+  border: 2px solid var(--green);
+  box-shadow: 0 0 40px var(--green-glow);
+  animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  max-width: 90%;
+  text-align: center;
+}
+
+.win-pic {
+  position: relative;
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  border: 3px solid var(--green);
+  box-shadow: 0 0 30px var(--green-glow);
+  background: rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+.win-pic img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.win-badge-lg {
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 16px;
+  min-width: 28px;
+  height: 28px;
+  border-radius: 14px;
+  padding: 0 8px;
+  border-width: 2px;
+}
+
+.win-pic .placeholder-letter {
+  font-size: 64px;
+  font-weight: 800;
+  color: var(--green);
+}
+
+.win-name {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--green);
+  text-shadow: 0 0 30px var(--green-glow);
+  letter-spacing: 2px;
+}
+
+.win-word {
+  font-size: 42px;
+  font-weight: 900;
+  letter-spacing: 6px;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+.win-detail {
+  font-size: 14px;
+  color: var(--text-dim);
+  letter-spacing: 2px;
+}
+
+/* === Animations === */
+@keyframes rowIn {
+  from { opacity: 0; transform: translateY(-12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes popIn {
+  0% { transform: scale(0.5); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* === Landscape / short viewport compacting === */
+@media (max-height: 560px) {
+  .game-container {
+    padding: 4px 32px;
+    max-width: 520px;
+  }
+
+  .game-frame {
+    padding: 4px 6px;
+    border-radius: 12px;
+  }
+
+  .top-tabs {
+    margin-bottom: -14px;
+  }
+
+  .last-winner-info {
+    padding: 3px 8px;
+    font-size: 10px;
+    gap: 5px;
+    border-radius: 8px;
+  }
+
+  .last-winner-pic,
+  .last-winner-pic-fb {
+    width: 20px;
+    height: 20px;
+    font-size: 9px;
+  }
+
+  .last-winner-name {
+    max-width: 80px;
+  }
+
+  .last-winner-word {
+    font-size: 10px;
+  }
+
+
+  #jackpot-bar {
+    padding: 4px 10px;
+    gap: 6px;
+    border-radius: 12px;
+  }
+
+  .jackpot-icon {
+    font-size: 14px;
+  }
+
+  .jackpot-label {
+    font-size: 9px;
+    letter-spacing: 2px;
+  }
+
+  .jackpot-amount {
+    font-size: 16px;
+  }
+
+  #guesses {
+    gap: 2px;
+    padding: 2px 0;
+  }
+
+  .guess-row {
+    padding: 3px 6px;
+    gap: 5px;
+    border-radius: 6px;
+  }
+
+  .player-pic,
+  .player-pic-fb {
+    width: 24px;
+    height: 24px;
+    font-size: 11px;
+  }
+
+  .guess-letters {
+    gap: 2px;
+  }
+
+  .letter-tile {
+    width: 28px;
+    height: 28px;
+    font-size: 13px;
+    border-radius: 4px;
+    border-width: 1.5px;
+  }
+
+  .guess-counts {
+    gap: 2px;
+  }
+
+  .count {
+    width: 22px;
+    height: 22px;
+    font-size: 11px;
+    border-radius: 4px;
+  }
+
+  #keyboard {
+    gap: 4px;
+    margin-top: 3px;
+  }
+
+  .keyboard-row {
+    gap: 3px;
+  }
+
+  .key {
+    height: 38px;
+    font-size: 12px;
+    padding: 0 2px;
+    border-radius: 5px;
+  }
+
+  .win-word {
+    font-size: 40px;
+    margin-bottom: 8px;
+  }
+
+  .win-text {
+    font-size: 24px;
+    margin-bottom: 8px;
+  }
+
+  .win-user {
+    font-size: 14px;
+  }
+}
+
+/* ===== Cosmetic Animations ===== */
+.cosmetic-title { font-size: 10px; font-weight: 600; letter-spacing: 0.5px; margin-left: 4px; opacity: 0.9; }
+@keyframes cosmetic-prismatic { 0% { filter: hue-rotate(0deg); } 100% { filter: hue-rotate(360deg); } }
+@keyframes cosmetic-void-pulse { 0%, 100% { opacity: 0.9; } 50% { opacity: 1; } }
+@keyframes cosmetic-border-rotate { 0% { filter: hue-rotate(0deg); } 100% { filter: hue-rotate(360deg); } }
+@keyframes cosmetic-inferno-pulse { 0%, 100% { box-shadow: 0 0 10px rgba(255,69,0,0.6), 0 0 20px rgba(255,69,0,0.3); } 50% { box-shadow: 0 0 15px rgba(255,69,0,0.8), 0 0 30px rgba(255,69,0,0.5); } }
+@keyframes cosmetic-supernova { 0%, 100% { box-shadow: 0 0 15px rgba(255,200,0,0.7), 0 0 30px rgba(255,100,0,0.4); } 50% { box-shadow: 0 0 20px rgba(255,200,0,0.9), 0 0 40px rgba(255,100,0,0.6); } }
+@keyframes cosmetic-cosmic { 0% { box-shadow: 0 0 15px rgba(100,0,255,0.7), 0 0 30px rgba(200,0,255,0.4); } 33% { box-shadow: 0 0 15px rgba(255,0,200,0.7), 0 0 30px rgba(255,0,100,0.4); } 66% { box-shadow: 0 0 15px rgba(0,200,255,0.7), 0 0 30px rgba(0,100,255,0.4); } 100% { box-shadow: 0 0 15px rgba(100,0,255,0.7), 0 0 30px rgba(200,0,255,0.4); } }
+@keyframes cosmetic-legendary-glow { 0%, 100% { text-shadow: 0 0 8px rgba(255,215,0,0.8), 0 0 16px rgba(255,180,0,0.5); } 50% { text-shadow: 0 0 12px rgba(255,215,0,1), 0 0 24px rgba(255,180,0,0.7); } }
+@keyframes cosmetic-chromatic { 0% { color: #ff0000; } 16% { color: #ff8800; } 33% { color: #ffff00; } 50% { color: #00ff00; } 66% { color: #0088ff; } 83% { color: #8800ff; } 100% { color: #ff0000; } }
+@keyframes cosmetic-god-pulse { 0%, 100% { opacity: 0.9; text-shadow: 0 0 10px rgba(255,68,68,0.7); } 50% { opacity: 1; text-shadow: 0 0 15px rgba(255,68,68,0.9), 0 0 30px rgba(255,68,68,0.4); } }
+@keyframes cosmetic-glitch { 0% { transform: translate(0); } 20% { transform: translate(-2px, 1px); } 40% { transform: translate(2px, -1px); } 60% { transform: translate(-1px, -1px); } 80% { transform: translate(1px, 2px); } 100% { transform: translate(0); } }
+@keyframes cosmetic-glitch-text { 0%, 100% { text-shadow: 2px 0 #ff0040, -2px 0 #00ffff; } 25% { text-shadow: -2px 0 #ff0040, 2px 0 #00ffff; } 50% { text-shadow: 2px 1px #ff0040, -2px -1px #00ffff; } 75% { text-shadow: -1px -1px #ff0040, 1px 1px #00ffff; } }
+@keyframes cosmetic-plasma-border { 0%, 100% { box-shadow: 0 0 10px rgba(124,58,237,0.6), 0 0 20px rgba(124,58,237,0.3); } 50% { box-shadow: 0 0 15px rgba(168,85,247,0.8), 0 0 30px rgba(124,58,237,0.5); } }
+@keyframes cosmetic-void-ring { 0%, 100% { box-shadow: 0 0 12px rgba(45,27,105,0.8), 0 0 24px rgba(100,0,255,0.4); } 50% { box-shadow: 0 0 18px rgba(100,0,255,0.9), 0 0 36px rgba(180,74,255,0.5); } }
+@keyframes cosmetic-celestial { 0% { filter: hue-rotate(0deg); box-shadow: 0 0 15px rgba(255,215,0,0.6), 0 0 30px rgba(255,150,0,0.3); } 50% { box-shadow: 0 0 20px rgba(255,215,0,0.8), 0 0 40px rgba(255,150,0,0.5); } 100% { filter: hue-rotate(360deg); box-shadow: 0 0 15px rgba(255,215,0,0.6), 0 0 30px rgba(255,150,0,0.3); } }
+@keyframes cosmetic-electric-aura { 0%, 100% { box-shadow: 0 0 12px rgba(34,211,238,0.6), 0 0 24px rgba(34,211,238,0.3); } 33% { box-shadow: 0 0 16px rgba(34,211,238,0.8), 0 0 32px rgba(34,211,238,0.4); } 66% { box-shadow: 0 0 10px rgba(34,211,238,0.5), 0 0 20px rgba(34,211,238,0.25); } }
+@keyframes cosmetic-void-aura { 0%, 100% { box-shadow: 0 0 15px rgba(45,27,105,0.8), 0 0 30px rgba(100,0,255,0.5); } 50% { box-shadow: 0 0 20px rgba(100,0,255,0.9), 0 0 40px rgba(180,74,255,0.6), 0 0 60px rgba(180,74,255,0.3); } }
+@keyframes cosmetic-divine-glow { 0%, 100% { text-shadow: 0 0 10px rgba(255,255,255,0.9), 0 0 20px rgba(255,215,0,0.6); } 50% { text-shadow: 0 0 15px rgba(255,255,255,1), 0 0 30px rgba(255,215,0,0.8), 0 0 45px rgba(255,180,0,0.4); } }
+@keyframes cosmetic-neon-flicker { 0%, 100% { opacity: 1; } 92% { opacity: 1; } 93% { opacity: 0.6; } 94% { opacity: 1; } 96% { opacity: 0.7; } 97% { opacity: 1; } }
+@keyframes cosmetic-supreme-pulse { 0%, 100% { text-shadow: 0 0 10px rgba(255,255,255,0.8), 0 0 20px rgba(255,215,0,0.4); opacity: 0.9; } 50% { text-shadow: 0 0 15px rgba(255,255,255,1), 0 0 30px rgba(255,215,0,0.6), 0 0 45px rgba(255,100,0,0.3); opacity: 1; } }
+/* Word Glow animations */
+@keyframes cosmetic-wg-fire { 0%, 100% { text-shadow: 0 0 8px rgba(255,100,0,0.7), 0 0 16px rgba(255,50,0,0.4); } 50% { text-shadow: 0 0 12px rgba(255,100,0,0.9), 0 0 24px rgba(255,50,0,0.6); } }
+@keyframes cosmetic-wg-frost { 0%, 100% { text-shadow: 0 0 8px rgba(103,232,249,0.6), 0 0 16px rgba(103,232,249,0.3); } 50% { text-shadow: 0 0 12px rgba(103,232,249,0.8), 0 0 24px rgba(103,232,249,0.5); } }
+@keyframes cosmetic-wg-bloodmoon { 0%, 100% { text-shadow: 0 0 8px rgba(220,38,38,0.7), 0 0 16px rgba(180,0,0,0.4); } 50% { text-shadow: 0 0 12px rgba(220,38,38,0.9), 0 0 24px rgba(180,0,0,0.6), 0 0 32px rgba(120,0,0,0.3); } }
+@keyframes cosmetic-wg-galaxy { 0%, 100% { text-shadow: 0 0 10px rgba(180,74,255,0.7), 0 0 20px rgba(100,0,200,0.4); } 50% { text-shadow: 0 0 14px rgba(180,74,255,0.9), 0 0 28px rgba(100,0,200,0.6), 0 0 36px rgba(50,0,150,0.3); } }
+@keyframes cosmetic-wg-golden { 0%, 100% { text-shadow: 0 0 8px rgba(255,215,0,0.8), 0 0 16px rgba(255,180,0,0.5); } 50% { text-shadow: 0 0 12px rgba(255,215,0,1), 0 0 24px rgba(255,180,0,0.7); } }
+@keyframes cosmetic-wg-aurora { 0% { text-shadow: 0 0 8px rgba(0,255,135,0.7), 0 0 16px rgba(0,188,212,0.5); } 33% { text-shadow: 0 0 8px rgba(0,188,212,0.7), 0 0 16px rgba(124,77,255,0.5); } 66% { text-shadow: 0 0 8px rgba(124,77,255,0.7), 0 0 16px rgba(224,64,251,0.5); } 100% { text-shadow: 0 0 8px rgba(0,255,135,0.7), 0 0 16px rgba(0,188,212,0.5); } }
+@keyframes cosmetic-wg-divine { 0%, 100% { text-shadow: 0 0 10px rgba(255,255,255,0.9), 0 0 20px rgba(255,215,0,0.6); } 50% { text-shadow: 0 0 15px rgba(255,255,255,1), 0 0 30px rgba(255,215,0,0.8), 0 0 45px rgba(255,180,0,0.4); } }
+@keyframes cosmetic-wg-void { 0%, 100% { text-shadow: 0 0 10px rgba(180,74,255,0.8), 0 0 20px rgba(100,0,255,0.5); } 50% { text-shadow: 0 0 15px rgba(180,74,255,1), 0 0 30px rgba(100,0,255,0.7), 0 0 40px rgba(50,0,200,0.4); } }
+
+/* === Three.js Background Canvas (Word500 2.0) === */
+#three-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* Ensure game elements sit above Three.js canvas */
+.game-container {
+  position: relative;
+  z-index: 1;
+}
+
+/* Performance monitor styling override */
+#perf-monitor {
+  z-index: 100001;
+}

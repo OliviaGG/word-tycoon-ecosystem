@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">erecTangled app icon</title>
+  <desc id="desc">A rounded square app icon for erecTangled with bright brand lettering above a dark word-grid background.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#19263f"/>
+      <stop offset="100%" stop-color="#080d16"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="18%" r="78%">
+      <stop offset="0%" stop-color="#37d59a" stop-opacity="0.28"/>
+      <stop offset="100%" stop-color="#37d59a" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="14" stdDeviation="16" flood-color="#03050a" flood-opacity="0.44"/>
+    </filter>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <rect width="512" height="512" rx="112" fill="url(#glow)"/>
+  <g opacity="0.92">
+    <rect x="72" y="294" width="78" height="78" rx="20" fill="#10182b" stroke="#213657" stroke-width="6"/>
+    <rect x="164" y="294" width="78" height="78" rx="20" fill="#10182b" stroke="#213657" stroke-width="6"/>
+    <rect x="256" y="294" width="78" height="78" rx="20" fill="#10182b" stroke="#213657" stroke-width="6"/>
+    <rect x="348" y="294" width="78" height="78" rx="20" fill="#10182b" stroke="#213657" stroke-width="6"/>
+    <rect x="118" y="386" width="78" height="78" rx="20" fill="#10182b" stroke="#213657" stroke-width="6"/>
+    <rect x="210" y="386" width="78" height="78" rx="20" fill="#10182b" stroke="#213657" stroke-width="6"/>
+    <rect x="302" y="386" width="78" height="78" rx="20" fill="#10182b" stroke="#213657" stroke-width="6"/>
+  </g>
+  <g filter="url(#softShadow)" font-family="Fredoka, Arial Rounded MT Bold, Trebuchet MS, sans-serif" font-size="150" font-weight="700" text-anchor="middle">
+    <text x="122" y="240" fill="#42d87f">e</text>
+    <text x="208" y="240" fill="#39cfe8">r</text>
+    <text x="294" y="240" fill="#f39b13">e</text>
+    <text x="380" y="240" fill="#f0c31a">c</text>
+  </g>
+</svg>

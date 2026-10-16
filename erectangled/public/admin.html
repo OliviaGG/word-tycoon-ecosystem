@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>eRecTangled Admin</title>
+    <link rel="icon" type="image/svg+xml" href="/icon.svg"/>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #1a1a2e;
+            --surface: #16213e;
+            --surface-light: #0f3460;
+            --primary: #e94560;
+            --primary-light: #ff6b81;
+            --accent: #53d769;
+            --text: #eee;
+            --text-dim: #888;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 40px 20px;
+        }
+
+        .admin-container {
+            width: 100%;
+            max-width: 450px;
+            background: var(--surface);
+            border: 1px solid var(--surface-light);
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            margin-bottom: 28px;
+        }
+
+        .setting-group {
+            margin-bottom: 24px;
+        }
+
+        .setting-group label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .range-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .range-row input[type="range"] {
+            flex: 1;
+            accent-color: var(--primary);
+        }
+
+        .range-val {
+            width: 30px;
+            text-align: center;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .text-input {
+            width: 100%;
+            padding: 10px 12px;
+            font-size: 0.95rem;
+            background: var(--bg);
+            border: 1px solid var(--surface-light);
+            border-radius: 6px;
+            color: var(--text);
+            outline: none;
+            font-family: monospace;
+        }
+
+        .text-input:focus {
+            border-color: var(--primary);
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 12px;
+            margin-top: 32px;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s, transform 0.1s;
+            font-family: inherit;
+            flex: 1;
+        }
+
+        .btn:active { transform: scale(0.97); }
+
+        .btn-primary {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .btn-primary:hover { background: var(--primary-light); }
+
+        .btn-secondary {
+            background: var(--surface-light);
+            color: var(--text);
+        }
+
+        .btn-secondary:hover { background: #164a7a; }
+
+        .toggle-group {
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .toggle-group label {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 44px;
+            height: 24px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            inset: 0;
+            background: var(--bg);
+            border-radius: 24px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .toggle-slider::before {
+            content: '';
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            left: 3px;
+            bottom: 3px;
+            background: var(--text-dim);
+            border-radius: 50%;
+            transition: transform 0.2s, background 0.2s;
+        }
+
+        .toggle-switch input:checked + .toggle-slider {
+            background: var(--primary);
+        }
+
+        .toggle-switch input:checked + .toggle-slider::before {
+            transform: translateX(20px);
+            background: #fff;
+        }
+
+        .status-msg {
+            margin-top: 16px;
+            font-size: 0.85rem;
+            color: var(--accent);
+            text-align: center;
+            min-height: 20px;
+        }
+        .status-msg.error { color: #ff8c8c; }
+        .status-msg.loading { color: var(--text-dim); }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <h1>eRecTangled Admin</h1>
+        <p class="subtitle">Settings are applied when you click "New Game".</p>
+
+        <div class="setting-group">
+            <label>Rows</label>
+            <div class="range-row">
+                <input type="range" id="setting-rows" min="2" max="20" value="9">
+                <span class="range-val" id="setting-rows-val">9</span>
+            </div>
+        </div>
+
+        <div class="setting-group">
+            <label>Columns</label>
+            <div class="range-row">
+                <input type="range" id="setting-cols" min="2" max="20" value="7">
+                <span class="range-val" id="setting-cols-val">7</span>
+            </div>
+        </div>
+
+        <div class="setting-group">
+            <label>Minimum Word Length</label>
+            <div class="range-row">
+                <input type="range" id="setting-min-length" min="3" max="6" value="3">
+                <span class="range-val" id="setting-min-length-val">3</span>
+            </div>
+        </div>
+
+        <div class="setting-group">
+            <label>WebSocket URL</label>
+            <input type="text" class="text-input" id="setting-ws-url" value="http://localhost:3000">
+        </div>
+
+        <div class="toggle-group">
+            <label>Show Manual Input</label>
+            <label class="toggle-switch">
+                <input type="checkbox" id="toggle-manual-input" checked>
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
+
+        <div class="toggle-group">
+            <label>Show Found Words</label>
+            <label class="toggle-switch">
+                <input type="checkbox" id="toggle-found-words" checked>
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
+
+        <div class="toggle-group">
+            <label>Light Letters (OBS)</label>
+            <label class="toggle-switch">
+                <input type="checkbox" id="toggle-light-mode">
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
+
+        <div class="setting-group">
+            <label>Letter Size (OBS)</label>
+            <div class="range-row">
+                <input type="range" id="setting-letter-scale" min="0.1" max="3.0" step="0.1" value="0.5">
+                <span class="range-val" id="setting-letter-scale-val" style="width:40px">0.5×</span>
+            </div>
+        </div>
+
+        <div class="setting-group">
+            <label>Number Size (OBS)</label>
+            <div class="range-row">
+                <input type="range" id="setting-number-scale" min="0.1" max="3.0" step="0.1" value="0.3">
+                <span class="range-val" id="setting-number-scale-val" style="width:40px">0.3×</span>
+            </div>
+        </div>
+
+        <div class="btn-row">
+            <button class="btn btn-primary" id="btn-new-game">New Game</button>
+            <button class="btn btn-secondary" id="btn-start-daily">Start Daily</button>
+        </div>
+
+        <div class="status-msg" id="status-msg"></div>
+    </div>
+
+    <script>
+        const SETTINGS_KEY = 'erectangled_settings';
+        const GAME_STATE_KEY = 'erectangled_game_state';
+        const NEW_GAME_KEY = 'erectangled_new_game';
+        const DISPLAY_KEY = 'erectangled_display';
+        const DEFAULT = { rows: 9, cols: 7, minWordLength: 3, wsUrl: 'http://localhost:3000', showManualInput: true, showFoundWords: true, lightMode: false, letterScale: 0.5, numberScale: 0.3 };
+
+        const rowsInput = document.getElementById('setting-rows');
+        const rowsVal = document.getElementById('setting-rows-val');
+        const colsInput = document.getElementById('setting-cols');
+        const colsVal = document.getElementById('setting-cols-val');
+        const minLenInput = document.getElementById('setting-min-length');
+        const minLenVal = document.getElementById('setting-min-length-val');
+        const wsUrlInput = document.getElementById('setting-ws-url');
+        const manualInputToggle = document.getElementById('toggle-manual-input');
+        const foundWordsToggle = document.getElementById('toggle-found-words');
+        const lightModeToggle = document.getElementById('toggle-light-mode');
+        const letterScaleInput = document.getElementById('setting-letter-scale');
+        const letterScaleVal = document.getElementById('setting-letter-scale-val');
+        const numberScaleInput = document.getElementById('setting-number-scale');
+        const numberScaleVal = document.getElementById('setting-number-scale-val');
+        const statusMsg = document.getElementById('status-msg');
+
+        // Load saved settings
+        function loadSettings() {
+            try {
+                const saved = localStorage.getItem(SETTINGS_KEY);
+                if (saved) return { ...DEFAULT, ...JSON.parse(saved) };
+            } catch (e) {}
+            return { ...DEFAULT };
+        }
+
+        function applyToForm(s) {
+            rowsInput.value = s.rows;
+            rowsVal.textContent = s.rows;
+            colsInput.value = s.cols;
+            colsVal.textContent = s.cols;
+            minLenInput.value = s.minWordLength;
+            minLenVal.textContent = s.minWordLength;
+            wsUrlInput.value = s.wsUrl;
+            manualInputToggle.checked = s.showManualInput !== false;
+            foundWordsToggle.checked = s.showFoundWords !== false;
+            lightModeToggle.checked = s.lightMode === true;
+            const ls = s.letterScale !== undefined ? s.letterScale : 1.0;
+            letterScaleInput.value = ls;
+            letterScaleVal.textContent = parseFloat(ls).toFixed(1) + '×';
+            const ns = s.numberScale !== undefined ? s.numberScale : 1.0;
+            numberScaleInput.value = ns;
+            numberScaleVal.textContent = parseFloat(ns).toFixed(1) + '×';
+        }
+
+        function getFormSettings() {
+            return {
+                rows: parseInt(rowsInput.value, 10),
+                cols: parseInt(colsInput.value, 10),
+                minWordLength: parseInt(minLenInput.value, 10),
+                wsUrl: wsUrlInput.value.trim() || DEFAULT.wsUrl,
+                showManualInput: manualInputToggle.checked,
+                showFoundWords: foundWordsToggle.checked,
+                lightMode: lightModeToggle.checked,
+                letterScale: parseFloat(letterScaleInput.value),
+                numberScale: parseFloat(numberScaleInput.value)
+            };
+        }
+
+        function showStatus(text, kind) {
+            statusMsg.textContent = text;
+            statusMsg.className = 'status-msg' + (kind ? ' ' + kind : '');
+            setTimeout(() => { statusMsg.textContent = ''; }, 3000);
+        }
+
+        // Initialize form
+        applyToForm(loadSettings());
+
+        // Admin key: supplied via ?key= URL param, sessionStorage, or prompt. No hardcoded fallback.
+        const ADMIN_KEY = (function () {
+            var k = new URLSearchParams(window.location.search).get('key')
+                || sessionStorage.getItem('erectangled_admin_key');
+            if (!k) {
+                k = window.prompt('Admin key required:') || '';
+                if (k) sessionStorage.setItem('erectangled_admin_key', k);
+            }
+            return k;
+        })();
+
+        async function requestJson(url, options) {
+            const response = await fetch(url, options);
+            const text = await response.text();
+            let payload = {};
+            try { payload = text ? JSON.parse(text) : {}; } catch (e) {}
+            if (!response.ok) {
+                throw new Error(payload.error || payload.message || ('Request failed (' + response.status + ')'));
+            }
+            return payload;
+        }
+
+        // Send command to server (for OBS overlay control)
+        async function sendCommand(type, data) {
+            return requestJson('api/command', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'x-api-key': ADMIN_KEY },
+                body: JSON.stringify({ type, data })
+            });
+        }
+
+        async function loadServerState() {
+            try {
+                showStatus('Loading current server state...', 'loading');
+                const [state, jackpot] = await Promise.all([
+                    requestJson('api/game/state'),
+                    requestJson('api/jackpot/settings')
+                ]);
+                rowsInput.value = state.rows || rowsInput.value;
+                rowsVal.textContent = rowsInput.value;
+                colsInput.value = state.cols || colsInput.value;
+                colsVal.textContent = colsInput.value;
+                minLenInput.value = state.minWordLength || minLenInput.value;
+                minLenVal.textContent = minLenInput.value;
+                lightModeToggle.checked = !!getFormSettings().lightMode;
+                if (state.displaySettings) {
+                    const letterScale = state.displaySettings.letterScale ?? getFormSettings().letterScale;
+                    const numberScale = state.displaySettings.numberScale ?? getFormSettings().numberScale;
+                    letterScaleInput.value = letterScale;
+                    letterScaleVal.textContent = parseFloat(letterScale).toFixed(1) + '×';
+                    numberScaleInput.value = numberScale;
+                    numberScaleVal.textContent = parseFloat(numberScale).toFixed(1) + '×';
+                }
+                showStatus((state.isDaily ? 'Daily game' : 'MP game') + ' live • Jackpot ' + (jackpot.current || 0), '');
+            } catch (err) {
+                showStatus(err.message, 'error');
+            }
+        }
+
+        // Save all settings to localStorage + notify server
+        function saveAllSettings() {
+            const settings = getFormSettings();
+            localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+        }
+
+        // Save and signal display change to game page (local + remote)
+        function saveDisplaySettings() {
+            saveAllSettings();
+            localStorage.setItem(DISPLAY_KEY, Date.now().toString());
+            sendCommand('display', getFormSettings()).catch((err) => {
+                showStatus(err.message, 'error');
+            });
+        }
+
+        // Live value updates - save on every change
+        rowsInput.addEventListener('input', () => { rowsVal.textContent = rowsInput.value; saveAllSettings(); });
+        colsInput.addEventListener('input', () => { colsVal.textContent = colsInput.value; saveAllSettings(); });
+        minLenInput.addEventListener('input', () => { minLenVal.textContent = minLenInput.value; saveAllSettings(); });
+        wsUrlInput.addEventListener('input', saveAllSettings);
+
+        // Toggle changes save and signal display update to game page
+        manualInputToggle.addEventListener('change', saveDisplaySettings);
+        foundWordsToggle.addEventListener('change', saveDisplaySettings);
+        lightModeToggle.addEventListener('change', saveDisplaySettings);
+
+        // Letter/number scale — live update display value and push to OBS
+        letterScaleInput.addEventListener('input', () => {
+            letterScaleVal.textContent = parseFloat(letterScaleInput.value).toFixed(1) + '×';
+            saveDisplaySettings();
+        });
+        numberScaleInput.addEventListener('input', () => {
+            numberScaleVal.textContent = parseFloat(numberScaleInput.value).toFixed(1) + '×';
+            saveDisplaySettings();
+        });
+
+        // New Game button
+        document.getElementById('btn-new-game').addEventListener('click', async () => {
+            const settings = getFormSettings();
+            localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+            localStorage.removeItem(GAME_STATE_KEY);
+            localStorage.setItem(NEW_GAME_KEY, Date.now().toString());
+            try {
+                await sendCommand('new-game', settings);
+                showStatus('New game triggered.');
+            } catch (err) {
+                showStatus(err.message, 'error');
+            }
+        });
+
+        document.getElementById('btn-start-daily').addEventListener('click', async () => {
+            try {
+                const result = await requestJson('api/game/start-daily', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'x-api-key': ADMIN_KEY }
+                });
+                showStatus('Daily started' + (result.word ? ': ' + result.word.toUpperCase() : '.') );
+            } catch (err) {
+                showStatus(err.message, 'error');
+            }
+        });
+
+        loadServerState();
+    </script>
+</body>
+</html>

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>404 — Page Not Found | Word Tycoon</title>
+  <meta name="description" content="The page you're looking for doesn't exist on Word Tycoon. Head back to the hub or browse our word game lineup.">
+  <meta name="robots" content="noindex,follow">
+  <meta name="theme-color" content="#0d1320">
+  <link rel="icon" href="/portal/img/logo.png">
+  <link rel="apple-touch-icon" href="/portal/img/logo.png">
+  <style>
+    :root {
+      color-scheme: dark light;
+      --bg: #06080e;
+      --surface: rgba(14, 18, 28, 0.78);
+      --border: rgba(255, 255, 255, 0.08);
+      --glass-border: rgba(255, 255, 255, 0.12);
+      --text: #edf0f7;
+      --text-dim: #94a0b8;
+      --accent: #a5e1ff;
+      --accent-warm: #fda4af;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      color: var(--text);
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background:
+        radial-gradient(ellipse at 10% 0%, rgba(165, 225, 255, 0.10) 0%, transparent 40%),
+        radial-gradient(ellipse at 90% 5%, rgba(240, 171, 252, 0.08) 0%, transparent 35%),
+        radial-gradient(ellipse at 20% 55%, rgba(134, 239, 172, 0.07) 0%, transparent 35%),
+        linear-gradient(180deg, #05070c 0%, var(--bg) 52%, #060a11 100%);
+      background-attachment: fixed;
+    }
+    .card {
+      width: min(560px, 100%);
+      padding: 44px 36px 36px;
+      border: 1px solid var(--glass-border);
+      background: var(--surface);
+      box-shadow: 0 22px 54px rgba(0,0,0,0.25);
+      border-radius: 28px;
+      text-align: center;
+    }
+    .logo {
+      width: 64px; height: 64px;
+      margin: 0 auto 20px;
+      display: block;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 999px;
+      background: rgba(253, 164, 175, 0.14);
+      border: 1px solid rgba(253, 164, 175, 0.32);
+      color: var(--accent-warm);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+      margin-bottom: 18px;
+    }
+    .code {
+      font-size: clamp(72px, 14vw, 132px);
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: -3px;
+      margin: 0 0 12px;
+      background: linear-gradient(135deg, #a5e1ff 0%, #f0abfc 60%, #fda4af 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(20px, 3vw, 26px);
+      font-weight: 700;
+    }
+    p {
+      margin: 0 0 28px;
+      color: var(--text-dim);
+      font-size: 15px;
+      line-height: 1.55;
+    }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 0 20px;
+      border-radius: 12px;
+      border: 1px solid var(--glass-border);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+      transition: background 150ms ease, transform 80ms ease, border-color 150ms ease;
+    }
+    .btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.22);
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn.primary {
+      background: linear-gradient(135deg, rgba(165, 225, 255, 0.22), rgba(240, 171, 252, 0.18));
+      border-color: rgba(165, 225, 255, 0.4);
+      color: var(--accent);
+    }
+    .btn.primary:hover {
+      background: linear-gradient(135deg, rgba(165, 225, 255, 0.32), rgba(240, 171, 252, 0.26));
+      border-color: rgba(165, 225, 255, 0.55);
+    }
+    .footer-note {
+      margin-top: 22px;
+      font-size: 12px;
+      color: var(--text-dim);
+      opacity: 0.7;
+    }
+    .footer-note a { color: var(--text-dim); text-decoration: underline; text-underline-offset: 2px; }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <img src="/portal/img/logo.png" alt="Word Tycoon" class="logo" onerror="this.style.display='none'">
+    <div class="badge">Page not found</div>
+    <div class="code">404</div>
+    <h1>This page wandered off.</h1>
+    <p>The link you followed might be broken, or the page may have moved. Head back to the hub or browse the games.</p>
+    <div class="actions">
+      <a href="/portal" class="btn primary">Go to Hub</a>
+      <a href="/hub" class="btn">Browse Games</a>
+    </div>
+    <div class="footer-note">
+      Lost looking for something specific? <a href="https://wordtycoon.live">Start over →</a>
+    </div>
+  </main>
+  <footer class="wt-legal-footer">
+    <a href="/privacy">Privacy</a> &middot; <a href="/terms">Terms</a> &middot; <a href="https://discord.gg/C8Nm2jEZFC" target="_blank" rel="noopener">Discord</a> &middot; <a href="https://www.jorry.live" target="_blank" rel="noopener">jorry.live</a> &middot; <span>&copy; 2026 Word Tycoon</span>
+  </footer>
+  <style>
+    .wt-legal-footer{padding:14px 16px 18px;text-align:center;font:12px/1.4 "Segoe UI",Tahoma,sans-serif;color:#7a8a9b;opacity:.75}
+    .wt-legal-footer a{color:inherit;text-decoration:none;margin:0 2px}
+    .wt-legal-footer a:hover{text-decoration:underline;opacity:1}
+  </style>
+</body>
+</html>

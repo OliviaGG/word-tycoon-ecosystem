@@ -1,0 +1,2782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sassie — Live2D Overlay</title>
+<style>
+  * { margin: 0; padding: 0; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: transparent; }
+  canvas { display: block; }
+  #status { position: fixed; bottom: 4px; left: 4px; color: rgba(255,255,255,0.3); font: 10px monospace; pointer-events: none; z-index: 10; }
+  #sassie-debug { position: fixed; top: 4px; right: 4px; color: #0f0; font: 11px monospace; pointer-events: none; z-index: 10; text-align: right; line-height: 1.5; text-shadow: 0 0 3px #000; white-space: pre; display: none; }
+  /* Hide any injected chat/help widgets */
+  .chat-toggle, .chat-panel, .chat-btn, .chat-widget,
+  [class*="chat"], [id*="chat"], [class*="game-help"],
+  [id*="game-help"], iframe { display: none !important; visibility: hidden !important; }
+</style>
+<script>
+// Remove injected chat/help widgets as soon as they appear
+new MutationObserver(function(muts) {
+  muts.forEach(function(m) {
+    m.addedNodes.forEach(function(n) {
+      if (n.nodeType !== 1) return;
+      var s = (n.id || '') + (n.className || '') + (n.src || '');
+      if (/chat|game-help/i.test(s)) n.remove();
+    });
+  });
+}).observe(document.documentElement, { childList: true, subtree: true });
+</script>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+<div id="status">loading...</div>
+<div id="sassie-debug"></div>
+<div id="sassie-unlock" style="display:none; position:fixed; bottom:10px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.85); color:#0f0; font:14px monospace; padding:10px 20px; border-radius:8px; border:1px solid #0f0; cursor:pointer; z-index:20; pointer-events:auto;" onclick="document.getElementById('sassie-unlock').style.display='none'">Click anywhere to enable Sassie audio</div>
+
+<!-- Cubism 4 Core (MUST load first) -->
+<script src="https://cubism.live2d.com/sdk-web/cubismcore/live2dcubismcore.min.js"></script>
+<!-- PixiJS v6 -->
+<script src="https://cdn.jsdelivr.net/npm/pixi.js@6.5.2/dist/browser/pixi.min.js"></script>
+<!-- pixi-live2d-display (Cubism 4) -->
+<script src="https://cdn.jsdelivr.net/npm/pixi-live2d-display/dist/cubism4.min.js"></script>
+
+<script>
+(function () {
+'use strict';
+
+// ─── Config ──────────────────────────────────────────────────────────────────
+var MODEL_PATH = 'live2d/FlyingRobot.model3.json';
+var prm = new URLSearchParams(location.search);
+var W = parseInt(prm.get('w')) || 1080;
+var H = parseInt(prm.get('h')) || 1920;
+var SCALE = parseFloat(prm.get('scale')) || 0.21;
+var QUERY_STREAM_GAME = resolveStreamGame(
+  prm.get('stream') ||
+  prm.get('streamMode') ||
+  prm.get('mode') ||
+  prm.get('game') ||
+  prm.get('focus') ||
+  ''
+);
+var RUNTIME_STREAM_GAME = null;
+var ACTIVE_STREAM_GAME = QUERY_STREAM_GAME;
+var SEARCHLE_STREAM_SAFE_ZONE = {
+  minX: 720,
+  maxX: 1000,
+  minY: 1280,
+  maxY: 1824
+};
+var SHOW_OVERLAY_DEBUG = prm.get('debug') === '1' || prm.get('sdebug') === '1';
+
+// ─── Game Regions (1080x1920 portrait layout) ───────────────────────────────
+// Center point of each game area — robot flies here on events
+var GAME_REGIONS = {
+  searchle:     { x: 250, y: 960 },    // adjusted by stream mode below
+  erectangled:  { x: 770,  y: 450 },   // top-right
+  betweenly:    { x: 770,  y: 1300 }   // bottom-right
+};
+// Default home position (bottom-right corner)
+var HOME = { x: 770, y: 1650 };
+var IDLE_CENTER = HOME;
+var streamDiagnostics = {
+  lastConstraintSource: 'boot',
+  lastConstraintApplied: false,
+  lastTargetRawX: HOME.x,
+  lastTargetRawY: HOME.y,
+  lastTargetX: HOME.x,
+  lastTargetY: HOME.y,
+  lastWarning: ''
+};
+
+// ─── Movement Modes ─────────────────────────────────────────────────────────
+// Classic: existing free-flight.
+// avoid-grid: uses live board state to bias Sassie toward safe areas that do
+// not cover active gameplay cells.
+var DEFAULT_MOVEMENT_MODE = prm.get('move') || 'classic';
+var GAME_MOVEMENT_MODES = {
+  searchle: prm.get('searchleMove') || DEFAULT_MOVEMENT_MODE,
+  erectangled: prm.get('erectMove') || 'avoid-grid',
+  betweenly: prm.get('betweenlyMove') || DEFAULT_MOVEMENT_MODE
+};
+var BOARD_SAFE_RADIUS = parseInt(prm.get('avoidRadius') || '170', 10);
+var BOARD_STATE_STALE_MS = 6000;
+var BOARD_REFRESH_MS = 1400;
+var BOARD_FORCE_MOVE_RADIUS = parseInt(prm.get('avoidForceRadius') || '118', 10);
+var BOARD_SWITCH_MARGIN = parseInt(prm.get('avoidSwitchMargin') || '46', 10);
+var BOARD_ANCHOR_MIN_HOLD_MS = parseInt(prm.get('avoidHoldMin') || '9000', 10);
+var BOARD_ANCHOR_MAX_HOLD_MS = parseInt(prm.get('avoidHoldMax') || '17000', 10);
+var BOARD_ROAM_RADIUS = parseInt(prm.get('avoidRoamRadius') || '92', 10);
+var GAME_LAYOUTS = {
+  erectangled: {
+    leftPct: 0.105,
+    topPct: 0.182,
+    widthPct: 0.73,
+    heightPct: 0.69,
+    gapPct: 0.0125,
+    hudBottom: 300,
+    sidePad: 120,
+    bottomPad: 145
+  }
+};
+var boardAwareState = {
+  erectangled: {
+    hasState: false,
+    rows: 0,
+    cols: 0,
+    activeCells: new Set(),
+    revealedCells: new Set(),
+    rotation: 0,
+    layout: null,
+    cellRects: null,
+    version: 0,
+    lastUpdated: 0,
+    fetching: false,
+    lastFetchAt: 0,
+    currentAnchor: null,
+    recentAnchorTags: [],
+    currentAnchorSince: 0,
+    holdUntil: 0,
+    roamUntil: 0,
+    roamTarget: null,
+    lastVersionHandled: 0
+  }
+};
+
+function getMovementMode(gameName) {
+  return GAME_MOVEMENT_MODES[gameName] || DEFAULT_MOVEMENT_MODE;
+}
+
+function normalizeGameName(gameName) {
+  var name = String(gameName || '').trim().toLowerCase();
+  if (!name) return '';
+  if (name === 'searchable') return 'searchle';
+  if (name === 'wikisearchle') return 'searchle';
+  if (name === 'rectangled') return 'erectangled';
+  if (name === 'betweenle') return 'betweenly';
+  return name;
+}
+
+function resolveStreamGame(rawValue) {
+  var gameName = normalizeGameName(rawValue);
+  return gameName || null;
+}
+
+function updateStreamGameLayout() {
+  GAME_REGIONS.searchle = ACTIVE_STREAM_GAME === 'searchle'
+    ? { x: 865, y: 1500 }
+    : { x: 250, y: 960 };
+  HOME = ACTIVE_STREAM_GAME === 'searchle'
+    ? { x: 900, y: 1650 }
+    : { x: 770, y: 1650 };
+  IDLE_CENTER = HOME;
+
+  if (!ACTIVE_STREAM_GAME) {
+    streamDiagnostics.lastWarning = 'No explicit stream mode set; Searchable safe zone is inactive.';
+  } else {
+    streamDiagnostics.lastWarning = '';
+  }
+}
+
+function applyActiveStreamGame(gameName, source) {
+  ACTIVE_STREAM_GAME = gameName || null;
+  updateStreamGameLayout();
+  streamDiagnostics.lastConstraintSource = source || 'stream-context';
+
+  if (typeof hideSeek !== 'undefined' && hideSeek) hideSeek.active = false;
+  if (typeof wrapAnim !== 'undefined' && wrapAnim) wrapAnim.active = false;
+  if (typeof zoomCam !== 'undefined' && zoomCam) {
+    zoomCam.active = false;
+    zoomCam.phase = 'idle';
+    zoomCam.timer = 0;
+  }
+  if (typeof danceState !== 'undefined' && danceState) {
+    danceState.isWandering = false;
+    danceState.wanderTimer = 0;
+  }
+
+  if (typeof flyState !== 'undefined' && flyState) {
+    flyState.flyingToGame = false;
+    flyState.targetGame = ACTIVE_STREAM_GAME || null;
+    if (!(ACTIVE_STREAM_GAME === 'erectangled' && retargetBoardAware('erectangled', { force: true, markGame: true }))) {
+      setFlyTarget(HOME.x, HOME.y, { source: 'stream-game:' + (ACTIVE_STREAM_GAME || 'default'), insetX: 16, insetY: 20 });
+    }
+  }
+
+  if (!ACTIVE_STREAM_GAME) {
+    console.warn('[Live2D] No explicit stream mode active. Searchable safe zone is inactive.');
+  } else {
+    console.log('[Live2D] Active stream game set to', ACTIVE_STREAM_GAME, 'via', source || 'runtime');
+  }
+  _sassieUpdateDebug();
+}
+
+function applyRuntimeStreamContext(payload, source) {
+  var nextOverride = resolveStreamGame(payload && payload.activeGame ? payload.activeGame : '');
+  RUNTIME_STREAM_GAME = nextOverride;
+  applyActiveStreamGame(RUNTIME_STREAM_GAME || QUERY_STREAM_GAME || null, source || 'runtime-context');
+}
+
+updateStreamGameLayout();
+if (!ACTIVE_STREAM_GAME) {
+  console.warn('[Live2D] No explicit stream mode query set. Searchable safe zone is inactive.');
+}
+
+function getBoardAwareBucket(gameName) {
+  if (!gameName) return null;
+  return boardAwareState[gameName] || null;
+}
+
+function hasFreshBoardState(gameName) {
+  var bucket = getBoardAwareBucket(gameName);
+  return !!(bucket && bucket.hasState && (Date.now() - bucket.lastUpdated) < BOARD_STATE_STALE_MS);
+}
+
+function shouldUseBoardAware(gameName) {
+  return getMovementMode(gameName) === 'avoid-grid' && hasFreshBoardState(gameName) && !!GAME_LAYOUTS[gameName];
+}
+
+function clamp(v, min, max) {
+  return Math.max(min, Math.min(max, v));
+}
+
+function getActiveStreamSafeZone() {
+  if (ACTIVE_STREAM_GAME === 'searchle') return SEARCHLE_STREAM_SAFE_ZONE;
+  return null;
+}
+
+function clampPointToStreamSafeZone(x, y, insetX, insetY) {
+  var zone = getActiveStreamSafeZone();
+  if (!zone) return { x: x, y: y };
+  insetX = insetX || 0;
+  insetY = insetY || 0;
+  return {
+    x: clamp(x, zone.minX + insetX, zone.maxX - insetX),
+    y: clamp(y, zone.minY + insetY, zone.maxY - insetY)
+  };
+}
+
+function applyStreamMovementConstraint(x, y, options) {
+  options = options || {};
+  var rawX = x;
+  var rawY = y;
+  var constrained = clampPointToStreamSafeZone(rawX, rawY, options.insetX || 0, options.insetY || 0);
+  streamDiagnostics.lastConstraintSource = options.source || 'unspecified';
+  streamDiagnostics.lastConstraintApplied = constrained.x !== rawX || constrained.y !== rawY;
+  streamDiagnostics.lastTargetRawX = rawX;
+  streamDiagnostics.lastTargetRawY = rawY;
+  streamDiagnostics.lastTargetX = constrained.x;
+  streamDiagnostics.lastTargetY = constrained.y;
+  return constrained;
+}
+
+function setFlyTarget(x, y, options) {
+  var constrained = applyStreamMovementConstraint(x, y, options);
+  flyState.tx = constrained.x;
+  flyState.ty = constrained.y;
+  _sassieUpdateDebug();
+  return constrained;
+}
+
+function getActiveMovementSystemLabel() {
+  if (hideSeek && hideSeek.active) return 'hide-seek:' + hideSeek.phase;
+  if (wrapAnim && wrapAnim.active) return 'wrap:' + wrapAnim.phase;
+  if (zoomCam && zoomCam.active) return 'zoom:' + zoomCam.phase;
+  if (danceState && danceState.isWandering) return 'dance-wander';
+  if (flyState && flyState.flyingToGame) return 'fly';
+  return 'idle';
+}
+
+function getWrapTravelBounds() {
+  var zone = getActiveStreamSafeZone();
+  if (!zone) {
+    return { minX: -130, maxX: W + 130 };
+  }
+  return {
+    minX: zone.minX - 130,
+    maxX: zone.maxX + 130
+  };
+}
+
+function distanceToRect(x, y, rect) {
+  var dx = x < rect.left ? rect.left - x : (x > rect.right ? x - rect.right : 0);
+  var dy = y < rect.top ? rect.top - y : (y > rect.bottom ? y - rect.bottom : 0);
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
+function getBoardLayout(gameName, bucket) {
+  var cfg = GAME_LAYOUTS[gameName];
+  var rows = bucket && bucket.rows;
+  var cols = bucket && bucket.cols;
+  if (!cfg || !rows || !cols) return null;
+
+  if (bucket && bucket.layout && typeof bucket.layout.leftPct === 'number') {
+    var left = W * bucket.layout.leftPct;
+    var top = H * bucket.layout.topPct;
+    var width = W * bucket.layout.widthPct;
+    var height = H * bucket.layout.heightPct;
+    var cellRects = Array.isArray(bucket.cellRects) ? bucket.cellRects.map(function(rect) {
+      if (!rect) return null;
+      return {
+        left: W * rect.leftPct,
+        top: H * rect.topPct,
+        right: W * (rect.leftPct + rect.widthPct),
+        bottom: H * (rect.topPct + rect.heightPct),
+        centerX: W * (rect.leftPct + rect.widthPct / 2),
+        centerY: H * (rect.topPct + rect.heightPct / 2),
+        width: W * rect.widthPct,
+        height: H * rect.heightPct
+      };
+    }) : null;
+    return {
+      left: left,
+      top: top,
+      width: width,
+      height: height,
+      right: left + width,
+      bottom: top + height,
+      centerX: left + width / 2,
+      centerY: top + height / 2,
+      cellSize: 0,
+      gap: 0,
+      rows: rows,
+      cols: cols,
+      rotation: bucket.rotation || 0,
+      cellRects: cellRects,
+      cfg: {
+        leftPct: bucket.layout.leftPct,
+        topPct: bucket.layout.topPct,
+        widthPct: bucket.layout.widthPct,
+        heightPct: bucket.layout.heightPct,
+        gapPct: cfg.gapPct,
+        hudBottom: typeof bucket.layout.hudBottomPct === 'number' ? H * bucket.layout.hudBottomPct : cfg.hudBottom,
+        sidePad: cfg.sidePad,
+        bottomPad: cfg.bottomPad
+      }
+    };
+  }
+
+  var frameLeft = W * cfg.leftPct;
+  var frameTop = H * cfg.topPct;
+  var frameWidth = W * cfg.widthPct;
+  var frameHeight = H * cfg.heightPct;
+  var gap = clamp(Math.min(frameWidth, frameHeight) * cfg.gapPct, 10, 18);
+  var cellSize = Math.min(
+    (frameWidth - gap * (cols - 1)) / cols,
+    (frameHeight - gap * (rows - 1)) / rows
+  );
+  var boardWidth = cellSize * cols + gap * (cols - 1);
+  var boardHeight = cellSize * rows + gap * (rows - 1);
+  var left = frameLeft + (frameWidth - boardWidth) / 2;
+  var top = frameTop + (frameHeight - boardHeight) / 2;
+  return {
+    left: left,
+    top: top,
+    width: boardWidth,
+    height: boardHeight,
+    right: left + boardWidth,
+    bottom: top + boardHeight,
+    centerX: left + boardWidth / 2,
+    centerY: top + boardHeight / 2,
+    cellSize: cellSize,
+    gap: gap,
+    rows: rows,
+    cols: cols,
+    cfg: cfg
+  };
+}
+
+function getCellRect(layout, index) {
+  if (layout.cellRects && layout.cellRects[index]) {
+    var live = layout.cellRects[index];
+    return {
+      left: live.left,
+      top: live.top,
+      right: live.right,
+      bottom: live.bottom,
+      centerX: live.centerX,
+      centerY: live.centerY,
+      row: Math.floor(index / layout.cols),
+      col: index % layout.cols,
+      index: index
+    };
+  }
+  var row = Math.floor(index / layout.cols);
+  var col = index % layout.cols;
+  var left = layout.left + col * (layout.cellSize + layout.gap);
+  var top = layout.top + row * (layout.cellSize + layout.gap);
+  return {
+    left: left,
+    top: top,
+    right: left + layout.cellSize,
+    bottom: top + layout.cellSize,
+    centerX: left + layout.cellSize / 2,
+    centerY: top + layout.cellSize / 2,
+    row: row,
+    col: col,
+    index: index
+  };
+}
+
+function buildCandidate(x, y, tag, bonus, jitterX, jitterY, roamWidth, roamHeight) {
+  return {
+    x: x,
+    y: y,
+    tag: tag,
+    bonus: bonus || 0,
+    jitterX: jitterX || 0,
+    jitterY: jitterY || 0,
+    roamWidth: roamWidth || 0,
+    roamHeight: roamHeight || 0
+  };
+}
+
+function pushRecentAnchorTag(bucket, tag) {
+  if (!bucket || !tag) return;
+  bucket.recentAnchorTags = (bucket.recentAnchorTags || []).filter(function(t) { return t !== tag; });
+  bucket.recentAnchorTags.unshift(tag);
+  if (bucket.recentAnchorTags.length > 4) bucket.recentAnchorTags.length = 4;
+}
+
+function getRectBounds(list) {
+  if (!list || list.length === 0) return null;
+  var minX = Infinity;
+  var minY = Infinity;
+  var maxX = -Infinity;
+  var maxY = -Infinity;
+  for (var i = 0; i < list.length; i++) {
+    var rect = list[i];
+    minX = Math.min(minX, rect.left);
+    minY = Math.min(minY, rect.top);
+    maxX = Math.max(maxX, rect.right);
+    maxY = Math.max(maxY, rect.bottom);
+  }
+  return {
+    left: minX,
+    top: minY,
+    right: maxX,
+    bottom: maxY,
+    width: Math.max(0, maxX - minX),
+    height: Math.max(0, maxY - minY)
+  };
+}
+
+function averageCandidates(list, tag, bonus, jitterX, jitterY, roamWidth, roamHeight) {
+  if (!list || list.length === 0) return null;
+  var sx = 0;
+  var sy = 0;
+  for (var i = 0; i < list.length; i++) {
+    sx += list[i].centerX;
+    sy += list[i].centerY;
+  }
+  var bounds = getRectBounds(list);
+  return buildCandidate(
+    sx / list.length,
+    sy / list.length,
+    tag,
+    bonus,
+    jitterX,
+    jitterY,
+    roamWidth || clamp(bounds.width * 0.8, 72, 260),
+    roamHeight || clamp(bounds.height * 0.8, 72, 360)
+  );
+}
+
+function getBoardAwareCandidates(gameName, layout, bucket) {
+  var safeRects = [];
+  var activeRects = [];
+  var topSafe = [];
+  var bottomSafe = [];
+  var leftSafe = [];
+  var rightSafe = [];
+  var centerSafe = [];
+  var bottomRightSafe = [];
+  var bottomLeftSafe = [];
+  var yBottom = layout.top + layout.height * 0.55;
+  var yTop = layout.top + layout.height * 0.35;
+  var xLeft = layout.left + layout.width * 0.3;
+  var xRight = layout.left + layout.width * 0.65;
+  var centerTop = layout.top + layout.height * 0.35;
+  var centerBottom = layout.top + layout.height * 0.7;
+  var centerLeft = layout.left + layout.width * 0.28;
+  var centerRight = layout.left + layout.width * 0.72;
+
+  for (var i = 0; i < layout.rows * layout.cols; i++) {
+    var rect = getCellRect(layout, i);
+    if (bucket.activeCells.has(i)) {
+      activeRects.push(rect);
+      continue;
+    }
+    safeRects.push(rect);
+    if (rect.centerY >= yBottom) bottomSafe.push(rect);
+    if (rect.centerY <= yTop) topSafe.push(rect);
+    if (rect.centerX <= xLeft) leftSafe.push(rect);
+    if (rect.centerX >= xRight) rightSafe.push(rect);
+    if (rect.centerY >= yBottom && rect.centerX >= layout.left + layout.width * 0.55) bottomRightSafe.push(rect);
+    if (rect.centerY >= yBottom && rect.centerX <= layout.left + layout.width * 0.35) bottomLeftSafe.push(rect);
+    if (rect.centerY >= centerTop && rect.centerY <= centerBottom
+        && rect.centerX >= centerLeft && rect.centerX <= centerRight) {
+      centerSafe.push(rect);
+    }
+  }
+
+  var cfg = layout.cfg;
+  var candidates = [
+    averageCandidates(bottomRightSafe, 'cells-bottom-right', 56, 70, 56, 120, 120),
+    averageCandidates(bottomSafe, 'cells-bottom-lane', 48, 88, 40, clamp(layout.width * 0.42, 180, 460), 110),
+    averageCandidates(rightSafe, 'cells-right-lane', 38, 28, 48, 112, clamp(layout.height * 0.58, 200, 620)),
+    averageCandidates(centerSafe, 'cells-center', 20, 48, 48, clamp(layout.width * 0.22, 90, 220), clamp(layout.height * 0.22, 90, 220)),
+    averageCandidates(bottomLeftSafe, 'cells-bottom-left', 24, 70, 56, 120, 120),
+    averageCandidates(leftSafe, 'cells-left-lane', 28, 28, 48, 112, clamp(layout.height * 0.58, 200, 620)),
+    averageCandidates(topSafe, 'cells-top-lane', 16, 82, 28, clamp(layout.width * 0.38, 160, 420), 96),
+    buildCandidate(layout.right + cfg.sidePad, clamp(layout.centerY, cfg.hudBottom + 120, H * 0.88), 'outside-right-lane', 18, 16, 80, 54, clamp(layout.height * 0.54, 220, 680)),
+    buildCandidate(layout.left - cfg.sidePad, clamp(layout.centerY, cfg.hudBottom + 120, H * 0.88), 'outside-left-lane', 14, 16, 80, 54, clamp(layout.height * 0.54, 220, 680)),
+    buildCandidate(layout.centerX, Math.min(H * 0.92, layout.bottom + cfg.bottomPad), 'below-board-lane', 26, 84, 20, clamp(layout.width * 0.4, 180, 420), 92),
+    buildCandidate(HOME.x, HOME.y, 'home', 10, 36, 24, 72, 60)
+  ].filter(Boolean);
+
+  return { candidates: candidates, activeRects: activeRects, safeRects: safeRects };
+}
+
+function scoreBoardAwarePoint(point, layout, activeRects, bucket, tag, bonus) {
+  var hudRect = { left: 0, top: 0, right: W, bottom: layout.cfg.hudBottom };
+  var minDist = Infinity;
+  var penalty = 0;
+
+  for (var j = 0; j < activeRects.length; j++) {
+    var dist = distanceToRect(point.x, point.y, activeRects[j]);
+    minDist = Math.min(minDist, dist);
+    if (dist < BOARD_SAFE_RADIUS) penalty += (BOARD_SAFE_RADIUS - dist) * 5;
+    if (dist < BOARD_FORCE_MOVE_RADIUS) penalty += (BOARD_FORCE_MOVE_RADIUS - dist) * 12;
+  }
+
+  var hudDist = distanceToRect(point.x, point.y, hudRect);
+  if (hudDist < 90) penalty += (90 - hudDist) * 8;
+
+  if (point.x < 80 || point.x > W - 80 || point.y < 80 || point.y > H - 70) {
+    penalty += 240;
+  }
+
+  var edgeDist = Math.min(point.x, W - point.x, point.y - layout.cfg.hudBottom, H - point.y);
+  var edgeBias = clamp(160 - edgeDist, 0, 160) * 0.16;
+  if (tag && /center/.test(tag)) edgeBias -= 18;
+  if (tag && /outside|bottom|left|right/.test(tag)) edgeBias += 8;
+  if (tag && /lane/.test(tag)) edgeBias += 10;
+
+  var recentPenalty = 0;
+  if (bucket && bucket.recentAnchorTags && tag) {
+    var idx = bucket.recentAnchorTags.indexOf(tag);
+    if (idx >= 0) recentPenalty += Math.max(0, 18 - idx * 5);
+  }
+
+  var score = (isFinite(minDist) ? minDist : 240) + (bonus || 0) + edgeBias - penalty - recentPenalty;
+  return {
+    score: score,
+    minDist: minDist,
+    forcedUnsafe: isFinite(minDist) && minDist < BOARD_FORCE_MOVE_RADIUS
+  };
+}
+
+function getBoardAwareRoamTarget(anchor) {
+  if (!anchor) return null;
+  var roamWidth = anchor.roamWidth || ((anchor.roamRadius || BOARD_ROAM_RADIUS) * 2);
+  var roamHeight = anchor.roamHeight || ((anchor.roamRadius || BOARD_ROAM_RADIUS) * 2);
+  var dx = (Math.random() - 0.5) * roamWidth;
+  var dy = (Math.random() - 0.5) * roamHeight;
+  return {
+    x: clamp(anchor.baseX + dx, 82, W - 82),
+    y: clamp(anchor.baseY + dy, 82, H - 72),
+    tag: anchor.tag
+  };
+}
+
+function chooseBoardAwareAnchor(gameName, options) {
+  options = options || {};
+  var bucket = getBoardAwareBucket(gameName);
+  if (!bucket || !bucket.hasState) return null;
+  var layout = getBoardLayout(gameName, bucket);
+  if (!layout) return null;
+
+  var details = getBoardAwareCandidates(gameName, layout, bucket);
+  var activeRects = details.activeRects;
+  var ranked = [];
+  var now = Date.now();
+
+  for (var i = 0; i < details.candidates.length; i++) {
+    var c = details.candidates[i];
+    var scored = scoreBoardAwarePoint(c, layout, activeRects, bucket, c.tag, c.bonus);
+    ranked.push({
+      x: c.x,
+      y: c.y,
+      baseX: c.x,
+      baseY: c.y,
+      score: scored.score,
+      minDist: scored.minDist,
+      forcedUnsafe: scored.forcedUnsafe,
+      tag: c.tag,
+      jitterX: c.jitterX || 0,
+      jitterY: c.jitterY || 0,
+      roamWidth: c.roamWidth || 0,
+      roamHeight: c.roamHeight || 0
+    });
+  }
+
+  if (ranked.length === 0) return null;
+  ranked.sort(function(a, b) { return b.score - a.score; });
+  var best = ranked[0];
+  var currentAnchor = bucket.currentAnchor;
+  if (currentAnchor) {
+    var currentEval = scoreBoardAwarePoint(currentAnchor, layout, activeRects, bucket, currentAnchor.tag, currentAnchor.bonus || 0);
+    var canHold = now < (bucket.holdUntil || 0);
+    var clearlyBetter = best && (best.score - currentEval.score) > BOARD_SWITCH_MARGIN;
+    if (!options.force && !currentEval.forcedUnsafe && (canHold || !clearlyBetter)) {
+      return {
+        x: currentAnchor.x,
+        y: currentAnchor.y,
+        baseX: currentAnchor.baseX || currentAnchor.x,
+        baseY: currentAnchor.baseY || currentAnchor.y,
+        score: currentEval.score,
+        tag: currentAnchor.tag,
+        keepCurrent: true,
+        roamRadius: currentAnchor.roamRadius || BOARD_ROAM_RADIUS,
+        roamWidth: currentAnchor.roamWidth || 0,
+        roamHeight: currentAnchor.roamHeight || 0
+      };
+    }
+  }
+
+  var bestScore = best.score;
+  var viable = ranked.filter(function(c) { return c.score >= bestScore - 12; }).slice(0, 4);
+  viable.sort(function(a, b) {
+    var aRecent = bucket.recentAnchorTags ? bucket.recentAnchorTags.indexOf(a.tag) : -1;
+    var bRecent = bucket.recentAnchorTags ? bucket.recentAnchorTags.indexOf(b.tag) : -1;
+    if (aRecent !== bRecent) return (aRecent === -1 ? -1 : aRecent) - (bRecent === -1 ? -1 : bRecent);
+    return b.score - a.score;
+  });
+
+  var chosen = viable[0] || best;
+  var jitterX = chosen.jitterX ? (Math.random() - 0.5) * chosen.jitterX * 0.35 : 0;
+  var jitterY = chosen.jitterY ? (Math.random() - 0.5) * chosen.jitterY * 0.35 : 0;
+  return {
+    x: clamp(chosen.x + jitterX, 82, W - 82),
+    y: clamp(chosen.y + jitterY, 82, H - 72),
+    baseX: chosen.baseX,
+    baseY: chosen.baseY,
+    score: chosen.score,
+    tag: chosen.tag,
+    roamRadius: BOARD_ROAM_RADIUS,
+    roamWidth: chosen.roamWidth || 0,
+    roamHeight: chosen.roamHeight || 0
+  };
+}
+
+function retargetBoardAware(gameName, options) {
+  options = options || {};
+  if (!shouldUseBoardAware(gameName)) return false;
+  if (!options.force && (zoomCam.active || wrapAnim.active || hideSeek.active)) return false;
+
+  var anchor = chooseBoardAwareAnchor(gameName, options);
+  if (!anchor) return false;
+
+  var now = Date.now();
+  var bucket = getBoardAwareBucket(gameName);
+  if (anchor.keepCurrent && bucket && bucket.currentAnchor) {
+    if (!bucket.roamTarget || now >= (bucket.roamUntil || 0) || options.forceRoam) {
+      bucket.roamTarget = getBoardAwareRoamTarget(bucket.currentAnchor);
+      bucket.roamUntil = now + 5500 + Math.random() * 5500;
+    }
+    setFlyTarget(bucket.roamTarget.x, bucket.roamTarget.y, { source: 'board-aware-roam:' + gameName });
+  } else {
+    setFlyTarget(anchor.x, anchor.y, { source: 'board-aware-anchor:' + gameName });
+  }
+  if (options.markGame !== false) flyState.targetGame = gameName;
+  if (bucket && !anchor.keepCurrent) {
+    bucket.currentAnchor = anchor;
+    bucket.currentAnchorSince = now;
+    bucket.holdUntil = now + BOARD_ANCHOR_MIN_HOLD_MS + Math.random() * (BOARD_ANCHOR_MAX_HOLD_MS - BOARD_ANCHOR_MIN_HOLD_MS);
+    bucket.roamUntil = 0;
+    bucket.roamTarget = null;
+    pushRecentAnchorTag(bucket, anchor.tag);
+  }
+  return true;
+}
+
+function refreshBoardAwareState(gameName) {
+  if (!GAME_LAYOUTS[gameName]) return;
+  var bucket = getBoardAwareBucket(gameName);
+  if (!bucket || bucket.fetching) return;
+  bucket.fetching = true;
+
+  fetch('api/board-presentation')
+    .then(function(r) {
+      if (!r.ok) throw new Error('state ' + r.status);
+      return r.json();
+    })
+    .then(function(state) {
+      bucket.rows = state.rows || 0;
+      bucket.cols = state.cols || 0;
+      bucket.activeCells = new Set(state.activeCells || []);
+      bucket.revealedCells = new Set(state.revealedCells || []);
+      bucket.rotation = state.rotation || 0;
+      bucket.layout = state.layout || null;
+      bucket.cellRects = Array.isArray(state.cellRects) ? state.cellRects : null;
+      bucket.version = state.version || 0;
+      bucket.hasState = bucket.rows > 0 && bucket.cols > 0;
+      bucket.lastUpdated = Date.now();
+      bucket.lastFetchAt = bucket.lastUpdated;
+      var versionChanged = bucket.version !== bucket.lastVersionHandled;
+      bucket.lastVersionHandled = bucket.version;
+      if ((!flyState.flyingToGame || flyState.targetGame === gameName) && versionChanged) {
+        retargetBoardAware(gameName, { force: false });
+      }
+    })
+    .catch(function(e) {
+      fetch('api/game/state')
+        .then(function(r) {
+          if (!r.ok) throw new Error('fallback state ' + r.status);
+          return r.json();
+        })
+        .then(function(state) {
+          bucket.rows = state.rows || 0;
+          bucket.cols = state.cols || 0;
+          bucket.activeCells = new Set(state.activeCells || []);
+          bucket.revealedCells = new Set(state.revealedCells || []);
+          bucket.rotation = 0;
+          bucket.layout = null;
+          bucket.cellRects = null;
+          bucket.version = 0;
+          bucket.hasState = bucket.rows > 0 && bucket.cols > 0;
+          bucket.lastUpdated = Date.now();
+          bucket.lastFetchAt = bucket.lastUpdated;
+          if (!flyState.flyingToGame || flyState.targetGame === gameName) {
+            retargetBoardAware(gameName, { force: false });
+          }
+        })
+        .catch(function(fallbackErr) {
+          console.warn('[Live2D] Board-aware state refresh failed:', e.message, '| fallback failed:', fallbackErr.message);
+        });
+    })
+    .finally(function() {
+      bucket.fetching = false;
+    });
+}
+
+// ─── Expression Priority ────────────────────────────────────────────────────
+var PRIORITY = {
+  'game-over': 9, 'game-won': 9,       // flies
+  'hidden': 8,                           // flies
+  'final-ring': 8,                       // flies
+  'ring-advance': 7,                     // flies
+  'searchle-top10': 6,                   // flies
+  'rare': 5, 'frenzy': 4,               // stays
+  'common': 3, 'new-game': 3,           // stays
+  'three-letter': 2,                     // stays
+  'incorrect': 1, 'already-found': 1,   // stays
+  'idle': 0
+};
+
+var model = null;
+var currentPriority = 0;
+var expressionTimer = null;
+var statusEl = document.getElementById('status');
+
+// ─── Gaze Focus System ───────────────────────────────────────────────────────
+// Robot looks at one point, holds it, then smoothly shifts to the next
+var GAZE_POINTS = [
+  { x: -0.4, y:  0.35 },  // upper-left (Searchle area)
+  { x:  0.3, y:  0.3  },  // upper-right (erecTangled area)
+  { x:  0.0, y:  0.1  },  // forward / center (looking at viewer)
+  { x: -0.2, y: -0.1  },  // slight down-left (chat area)
+  { x:  0.0, y:  0.25 },  // slightly up-center
+  { x: -0.5, y:  0.0  },  // hard left (Betweenly)
+  { x:  0.1, y: -0.2  },  // down-right (ground)
+];
+var gazeState = {
+  curX: 0, curY: 0.1,         // current smoothed eye position
+  tgtX: 0, tgtY: 0.1,         // target eye position
+  holdTimer: 3000 + Math.random() * 4000,
+  transitioning: false,
+  transTimer: 0,
+  transDur: 600 + Math.random() * 400
+};
+
+function pickNextGaze() {
+  var pt = GAZE_POINTS[Math.floor(Math.random() * GAZE_POINTS.length)];
+  // Slight random variation so it never lands exactly the same
+  gazeState.tgtX = pt.x + (Math.random() - 0.5) * 0.15;
+  gazeState.tgtY = pt.y + (Math.random() - 0.5) * 0.1;
+  gazeState.transitioning = true;
+  gazeState.transTimer = 0;
+  gazeState.transDur = 400 + Math.random() * 500;
+  gazeState.holdTimer = 2500 + Math.random() * 5000;
+}
+
+function tickGaze(dtMs) {
+  if (gazeState.transitioning) {
+    gazeState.transTimer += dtMs;
+    var p = Math.min(1, gazeState.transTimer / gazeState.transDur);
+    // Smooth ease-in-out
+    var ease = p < 0.5 ? 2 * p * p : -1 + (4 - 2 * p) * p;
+    var fromX = gazeState.curX, fromY = gazeState.curY;
+    // Store start on first frame of transition
+    if (!gazeState._startX) { gazeState._startX = fromX; gazeState._startY = fromY; }
+    gazeState.curX = gazeState._startX + (gazeState.tgtX - gazeState._startX) * ease;
+    gazeState.curY = gazeState._startY + (gazeState.tgtY - gazeState._startY) * ease;
+    if (p >= 1) {
+      gazeState.curX = gazeState.tgtX;
+      gazeState.curY = gazeState.tgtY;
+      gazeState.transitioning = false;
+      gazeState._startX = null;
+      gazeState._startY = null;
+    }
+  } else {
+    gazeState.holdTimer -= dtMs;
+    if (gazeState.holdTimer <= 0) pickNextGaze();
+  }
+}
+
+// ─── Dance State ─────────────────────────────────────────────────────────────
+var danceState = {
+  isPlaying: false,
+  bpm: 120,
+  beatPeriod: 500,
+  energy: 0.5,           // 0-1 from Spotify audio features
+  danceability: 0.5,     // 0-1 from Spotify audio features
+  lastTrack: '',
+  variant: 0,
+  variantTimer: 8000 + Math.random() * 8000,
+  isWandering: false,
+  wanderTimer: 25000 + Math.random() * 35000,
+  wanderReturnTimer: null
+};
+
+// Returns 0.5 (very chill) → 2.5 (absolutely hype) based on BPM + energy + danceability
+function getDanceIntensity() {
+  if (!danceState.isPlaying) return 1;
+  var bpmScore   = Math.min(1, (danceState.bpm || 120) / 140);
+  var energyScore = danceState.energy || 0.5;
+  var danceScore  = danceState.danceability || 0.5;
+  // Weighted combo: BPM 40%, energy 35%, danceability 25%
+  var raw = bpmScore * 0.4 + energyScore * 0.35 + danceScore * 0.25;
+  return Math.max(0.5, Math.min(2.5, raw * 2.8));
+}
+
+function pickDanceWander() {
+  // Drift to a random open spot on the canvas and dance there
+  var wx = W * (0.25 + Math.random() * 0.5);   // 25-75% horizontally
+  var wy = H * (0.3 + Math.random() * 0.45);   // 30-75% vertically (above the HUD)
+  setFlyTarget(wx, wy, { source: 'dance-wander', insetX: 24, insetY: 24 });
+  flyState.flyingToGame = true; // borrow flyToGame locomotion for urgency
+  danceState.isWandering = true;
+  var stayMs = 8000 + Math.random() * 12000;   // stay 8-20s
+  if (danceState.wanderReturnTimer) clearTimeout(danceState.wanderReturnTimer);
+  danceState.wanderReturnTimer = setTimeout(function() {
+    pickIdleWaypoint();
+    flyState.flyingToGame = false;
+    danceState.isWandering = false;
+    danceState.wanderTimer = 30000 + Math.random() * 40000; // 30-70s until next wander
+  }, stayMs);
+}
+
+// ─── Zoom Cam System ─────────────────────────────────────────────────────────
+var ZOOM_FACES = ['Exp-StarEyes', 'Exp-HeartEyes', 'Exp-Angry', 'Exp-Nowords', 'Exp-Question', 'Exp-Drop', 'Exp-Blush', 'Exp-LightEyes'];
+var zoomCam = {
+  active: false,
+  phase: 'idle',    // 'approach' | 'zoom' | 'faces' | 'retreat'
+  timer: 0,
+  phaseDur: 0,
+  faceIndex: 0,
+  faceTimer: 0,
+  faceDur: 0,
+  targetScale: SCALE,
+  nextTrigger: 50 * 60000 + Math.random() * 100 * 60000  // first zoom: 50-150 min
+};
+
+function startZoomCam() {
+  if (zoomCam.active || flyState.flyingToGame) return;
+  zoomCam.active = true;
+  zoomCam.phase = 'approach';
+  zoomCam.timer = 0;
+  zoomCam.phaseDur = 2500;
+  zoomCam.targetScale = SCALE;
+  // Shuffle face list and pick 2-3
+  var shuffled = ZOOM_FACES.slice().sort(function() { return Math.random() - 0.5; });
+  zoomCam.faces = shuffled.slice(0, 2 + Math.floor(Math.random() * 2));
+  zoomCam.faceIndex = 0;
+  zoomCam.faceTimer = 0;
+  zoomCam.faceDur = 2200 + Math.random() * 1200;
+  // Fly to near-center, slightly below middle
+  setFlyTarget(
+    W * (0.42 + Math.random() * 0.16),
+    H * (0.48 + Math.random() * 0.1),
+    { source: 'zoom-cam', insetX: 32, insetY: 48 }
+  );
+  flyState.flyingToGame = true;
+  console.log('[ZoomCam] Approaching camera!');
+}
+
+function tickZoomCam(dtMs) {
+  if (!zoomCam.active) {
+    zoomCam.nextTrigger -= dtMs;
+    if (zoomCam.nextTrigger <= 0) startZoomCam();
+    return SCALE;  // normal scale
+  }
+
+  zoomCam.timer += dtMs;
+  var p = Math.min(1, zoomCam.timer / zoomCam.phaseDur);
+
+  switch (zoomCam.phase) {
+    case 'approach':
+      // Move to center — scale starts growing slightly
+      zoomCam.targetScale = SCALE + (SCALE * 0.22) * p;
+      if (p >= 1) {
+        zoomCam.phase = 'zoom';
+        zoomCam.timer = 0;
+        zoomCam.phaseDur = 1200;
+      }
+      break;
+
+    case 'zoom':
+      // Controlled push-in instead of a giant jump
+      var easeIn = p * p;
+      zoomCam.targetScale = SCALE * 1.15 + (SCALE * 1.1) * easeIn;
+      if (p >= 1) {
+        zoomCam.phase = 'faces';
+        zoomCam.timer = 0;
+        zoomCam.phaseDur = 99999;
+        // First face
+        triggerExpression(zoomCam.faces[0], 10, zoomCam.faceDur);
+        zoomCam.faceTimer = 0;
+        flyState.flyingToGame = false;
+      }
+      break;
+
+    case 'faces':
+      zoomCam.faceTimer += dtMs;
+      if (zoomCam.faceTimer >= zoomCam.faceDur) {
+        zoomCam.faceIndex++;
+        if (zoomCam.faceIndex >= zoomCam.faces.length) {
+          // Done with faces — retreat
+          zoomCam.phase = 'retreat';
+          zoomCam.timer = 0;
+          zoomCam.phaseDur = 2000;
+          currentPriority = 0;
+          try { model.expression(); } catch(e) {}
+          pickIdleWaypoint();
+        } else {
+          zoomCam.faceDur = 2000 + Math.random() * 1200;
+          zoomCam.faceTimer = 0;
+          triggerExpression(zoomCam.faces[zoomCam.faceIndex], 10, zoomCam.faceDur);
+        }
+      }
+      break;
+
+    case 'retreat':
+      // Shrink back down
+      var easeOut = 1 - (1 - p) * (1 - p);
+      zoomCam.targetScale = SCALE * 2.25 * (1 - easeOut) + SCALE * easeOut;
+      if (p >= 1) {
+        zoomCam.active = false;
+        zoomCam.phase = 'idle';
+        zoomCam.targetScale = SCALE;
+        flyState.flyingToGame = false;
+        zoomCam.nextTrigger = 50 * 60000 + Math.random() * 100 * 60000;
+        console.log('[ZoomCam] Done — back to corner');
+      }
+      break;
+  }
+  return zoomCam.targetScale;
+}
+
+// ─── Wrap Anim System ────────────────────────────────────────────────────────
+// Pure velocity model: robot moves at constant speed each pass, teleports at
+// edge, speed increases every round. No easing = perfectly fluid momentum.
+var wrapAnim = {
+  active: false,
+  phase: 'idle',    // 'running' | 'dizzy' | 'recover'
+  timer: 0,
+  phaseDur: 0,
+  round: 0,
+  maxRounds: 300,
+  dir: 1,
+  rawX: 0,
+  rawY: 0,
+  _vel: 0,          // current px/sec — drives tilt
+  _dizzyCenterX: null,
+  _dizzyCenterY: null,
+  nextTrigger: 80 * 60000 + Math.random() * 120 * 60000
+};
+
+// Speed: 800px/s at round 0 → ~15000px/s at round 299
+function getWrapVel(round) {
+  return Math.round(800 * Math.pow(1.0098, round));
+}
+
+function startWrapAnim(force) {
+  if (!force && (wrapAnim.active || zoomCam.active || flyState.flyingToGame)) return;
+  var wrapBounds = getWrapTravelBounds();
+  wrapAnim.active = true;
+  wrapAnim.phase = 'running';
+  wrapAnim.round = 0;
+  wrapAnim.dir = Math.random() < 0.5 ? 1 : -1;
+  wrapAnim.rawX = clamp(smoothPos.x, wrapBounds.minX + 12, wrapBounds.maxX - 12);
+  wrapAnim.rawY = clampPointToStreamSafeZone(HOME.x, HOME.y, 0, 0).y;
+  wrapAnim._vel = getWrapVel(0);
+  wrapAnim.timer = 0;
+  console.log('[WrapAnim] Starting! (100 rounds)');
+}
+
+function tickWrapAnim(dtMs) {
+  if (!wrapAnim.active) {
+    wrapAnim.nextTrigger -= dtMs;
+    if (wrapAnim.nextTrigger <= 0 && !flyState.flyingToGame && !zoomCam.active) {
+      startWrapAnim();
+    }
+    return false;
+  }
+
+  var dt = dtMs / 1000;
+  var wrapBounds = getWrapTravelBounds();
+
+  switch (wrapAnim.phase) {
+    case 'running': {
+      wrapAnim.rawX += wrapAnim.dir * wrapAnim._vel * dt;
+      var offEdge = (wrapAnim.dir > 0 && wrapAnim.rawX > wrapBounds.maxX) ||
+                    (wrapAnim.dir < 0 && wrapAnim.rawX < wrapBounds.minX);
+      if (offEdge) {
+        wrapAnim.round++;
+        if (wrapAnim.round >= wrapAnim.maxRounds) {
+          wrapAnim.phase = 'dizzy';
+          wrapAnim.timer = 0;
+          wrapAnim.phaseDur = 3500;
+          wrapAnim._dizzyCenterX = null;
+          wrapAnim._dizzyCenterY = null;
+          currentPriority = 0;
+          triggerExpression('Exp-Drop', 8, 3800);
+          console.log('[WrapAnim] Dizzy after 100 rounds!');
+        } else {
+          wrapAnim.rawX = wrapAnim.dir > 0 ? wrapBounds.minX : wrapBounds.maxX;
+          wrapAnim._vel = getWrapVel(wrapAnim.round);
+          if (wrapAnim.round <= 3) triggerExpression('Exp-Question', 8, 700);
+          // Notify Sassie at escalating milestones
+          var wrapMsg = null;
+          if (wrapAnim.round === 1)   wrapMsg = 'start';
+          else if (wrapAnim.round === 50)  wrapMsg = 'medium';
+          else if (wrapAnim.round === 150) wrapMsg = 'fast';
+          else if (wrapAnim.round === 270) wrapMsg = 'max';
+          if (wrapMsg) fetch('api/overlay-event', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: wrapMsg }) }).catch(function(){});
+        }
+      }
+      break;
+    }
+    case 'dizzy': {
+      wrapAnim.timer += dtMs;
+      var p = Math.min(1, wrapAnim.timer / wrapAnim.phaseDur);
+      if (!wrapAnim._dizzyCenterX) {
+        wrapAnim._dizzyCenterX = wrapAnim.rawX;
+        wrapAnim._dizzyCenterY = wrapAnim.rawY;
+      }
+      var driftX = wrapAnim._dizzyCenterX + (HOME.x - wrapAnim._dizzyCenterX) * p;
+      var driftY = wrapAnim._dizzyCenterY + (HOME.y - wrapAnim._dizzyCenterY) * p;
+      var wobbleAmt = 45 * (1 - p);
+      wrapAnim.rawX = driftX + Math.sin(wrapAnim.timer * 0.022) * wobbleAmt;
+      wrapAnim.rawY = driftY + Math.sin(wrapAnim.timer * 0.016) * wobbleAmt * 0.45;
+      if (p >= 1) {
+        wrapAnim.phase = 'recover';
+        wrapAnim.timer = 0;
+        wrapAnim.phaseDur = 2000;
+        currentPriority = 0;
+        try { model.expression(); } catch(e) {}
+      }
+      break;
+    }
+    case 'recover': {
+      wrapAnim.timer += dtMs;
+      var p2 = Math.min(1, wrapAnim.timer / wrapAnim.phaseDur);
+      wrapAnim.rawX += (HOME.x - wrapAnim.rawX) * 0.05;
+      wrapAnim.rawY += (HOME.y - wrapAnim.rawY) * 0.05;
+      if (p2 >= 1) {
+        wrapAnim.active = false;
+        wrapAnim.phase = 'idle';
+        pickIdleWaypoint();
+        flyState.x = HOME.x; flyState.y = HOME.y;
+        smoothPos.x = HOME.x; smoothPos.y = HOME.y;
+        wrapAnim.nextTrigger = 80 * 60000 + Math.random() * 120 * 60000;
+        console.log('[WrapAnim] Done');
+      }
+      break;
+    }
+  }
+  return true;
+}
+
+// ─── Quirk System ────────────────────────────────────────────────────────────
+var quirkState = {
+  active: false,
+  type: '',          // 'headshake', 'spin', 'bounce', 'lookaround', 'wiggle'
+  t: 0,
+  duration: 0,
+  nextQuirk: 4000 + Math.random() * 8000
+};
+
+var clumsyState = {
+  active: false,
+  type: '',          // 'bonk_left', 'bonk_right', 'overshoot', 'stumble'
+  t: 0,
+  duration: 0,
+  nextMishap: 18000 + Math.random() * 22000
+};
+
+function triggerRandomQuirk() {
+  if (quirkState.active) return;
+  var types = ['headshake', 'spin', 'bounce', 'lookaround', 'wiggle'];
+  quirkState.type = types[Math.floor(Math.random() * types.length)];
+  quirkState.t = 0;
+  quirkState.active = true;
+  quirkState.duration = 1200 + Math.random() * 1200;
+  var qIntensity = danceState.isPlaying ? getDanceIntensity() : 1;
+  var qBase = danceState.isPlaying ? Math.max(2000, 7000 - qIntensity * 2000) : 10000;
+  quirkState.nextQuirk = qBase + Math.random() * 8000;
+}
+
+function getQuirkOffsets(dt) {
+  if (!quirkState.active) return { ax: 0, ay: 0, az: 0, bz: 0, scaleBonus: 0 };
+  quirkState.t += dt * 1000;
+  if (quirkState.t >= quirkState.duration) { quirkState.active = false; return { ax: 0, ay: 0, az: 0, bz: 0, scaleBonus: 0 }; }
+
+  var p = quirkState.t / quirkState.duration;   // 0→1 progress
+  var env = Math.sin(p * Math.PI);               // smooth bell envelope
+
+  switch (quirkState.type) {
+    case 'headshake':
+      return { ax: 0, ay: 0, az: Math.sin(p * Math.PI * 5) * 11 * env, bz: Math.sin(p * Math.PI * 5) * 4 * env, scaleBonus: 0 };
+    case 'spin':
+      return { ax: 0, ay: 0, az: 0, bz: 0, scaleBonus: 0, rotation: p * Math.PI * 2 };
+    case 'bounce':
+      return { ax: 0, ay: 0, az: 0, bz: 0, bounceY: Math.sin(p * Math.PI * 3) * 8 * env, scaleBonus: Math.abs(Math.sin(p * Math.PI * 3)) * 0.005 };
+    case 'lookaround':
+      return { ax: Math.sin(p * Math.PI * 2) * 14 * env, ay: 0, az: 0, bz: 0, scaleBonus: 0 };
+    case 'wiggle':
+      return { ax: 0, ay: 0, az: Math.sin(p * Math.PI * 4) * 8 * env, bz: Math.sin(p * Math.PI * 4) * 10 * env, scaleBonus: 0 };
+    default:
+      return { ax: 0, ay: 0, az: 0, bz: 0, scaleBonus: 0 };
+  }
+}
+
+function triggerClumsyMishap() {
+  if (clumsyState.active) return;
+  var nearRight = smoothPos.x > W * 0.74;
+  var nearLeft = smoothPos.x < W * 0.26;
+  var roll = Math.random();
+  if (nearRight && roll < 0.38) clumsyState.type = 'bonk_right';
+  else if (nearLeft && roll < 0.38) clumsyState.type = 'bonk_left';
+  else if (roll < 0.7) clumsyState.type = 'overshoot';
+  else clumsyState.type = 'stumble';
+  clumsyState.active = true;
+  clumsyState.t = 0;
+  clumsyState.duration = clumsyState.type.indexOf('bonk') === 0 ? 850 : (clumsyState.type === 'overshoot' ? 1100 : 1250);
+  clumsyState.nextMishap = 22000 + Math.random() * 32000;
+}
+
+function getClumsyOffsets(dtMs) {
+  if (!clumsyState.active) return { x: 0, y: 0, headZ: 0, bodyZ: 0, scale: 0 };
+  clumsyState.t += dtMs;
+  var p = Math.min(1, clumsyState.t / clumsyState.duration);
+  if (p >= 1) {
+    clumsyState.active = false;
+    return { x: 0, y: 0, headZ: 0, bodyZ: 0, scale: 0 };
+  }
+  var env = Math.sin(p * Math.PI);
+  switch (clumsyState.type) {
+    case 'bonk_left':
+      return {
+        x: -22 * env + 10 * Math.sin(p * Math.PI * 3) * (1 - p),
+        y: 4 * env,
+        headZ: -8 * env,
+        bodyZ: -12 * env,
+        scale: -0.003 * env
+      };
+    case 'bonk_right':
+      return {
+        x: 22 * env - 10 * Math.sin(p * Math.PI * 3) * (1 - p),
+        y: 4 * env,
+        headZ: 8 * env,
+        bodyZ: 12 * env,
+        scale: -0.003 * env
+      };
+    case 'overshoot':
+      return {
+        x: Math.sin(p * Math.PI * 2) * 18 * env,
+        y: -6 * Math.sin(p * Math.PI) * env,
+        headZ: Math.sin(p * Math.PI * 2) * 5 * env,
+        bodyZ: Math.sin(p * Math.PI * 2) * 7 * env,
+        scale: 0.004 * Math.sin(p * Math.PI) * env
+      };
+    case 'stumble':
+      return {
+        x: Math.sin(p * Math.PI * 3) * 6 * env,
+        y: 18 * Math.sin(p * Math.PI) * env,
+        headZ: -6 * Math.sin(p * Math.PI * 2) * env,
+        bodyZ: -4 * Math.sin(p * Math.PI * 2) * env,
+        scale: -0.006 * Math.sin(p * Math.PI) * env
+      };
+    default:
+      return { x: 0, y: 0, headZ: 0, bodyZ: 0, scale: 0 };
+  }
+}
+
+// ─── Hide & Seek System ──────────────────────────────────────────────────────
+// Sassie fades out, then pokes her head in from random canvas edges 10-20x.
+var hideSeek = {
+  active: false,
+  phase: 'idle',      // 'hide' | 'peeking' | 'recover'
+  timer: 0,
+  phaseDur: 0,
+  peekCount: 0,
+  maxPeeks: 0,
+  peekPhase: 'in',    // 'in' | 'hold' | 'out' | 'gap'
+  peekTimer: 0,
+  peekInDur: 0,
+  peekHoldDur: 0,
+  peekOutDur: 0,
+  peekStartX: 0, peekStartY: 0,   // off-screen start
+  peekVisX: 0,   peekVisY: 0,     // visible peek position
+  rawX: 0, rawY: 0,
+  hideStartX: 0, hideStartY: 0,
+  nextTrigger: 120 * 60000 + Math.random() * 180 * 60000  // 120-300 min
+};
+
+var PEEK_EXPRS = ['Exp-Question', 'Exp-Blush', 'Exp-StarEyes', 'Exp-Nowords', 'Exp-HeartEyes'];
+
+function _beginPeek() {
+  var streamZone = getActiveStreamSafeZone();
+  var edge;
+  if (streamZone) {
+    var safeEdges = [1, 2, 3]; // keep Searchable peeks off the protected left lane
+    edge = safeEdges[Math.floor(Math.random() * safeEdges.length)];
+  } else {
+    edge = Math.floor(Math.random() * 4); // 0=left 1=right 2=top 3=bottom
+  }
+  var r;
+  var minX = streamZone ? (streamZone.minX + 36) : (W * 0.15);
+  var maxX = streamZone ? (streamZone.maxX - 36) : (W * 0.85);
+  var minY = streamZone ? (streamZone.minY + 36) : (H * 0.15);
+  var maxY = streamZone ? (streamZone.maxY - 36) : (H * 0.85);
+  switch (edge) {
+    case 0:
+      r = minY + Math.random() * Math.max(24, maxY - minY);
+      hideSeek.peekStartX = -240; hideSeek.peekVisX = 75;
+      hideSeek.peekStartY = r;    hideSeek.peekVisY = r;
+      break;
+    case 1:
+      r = minY + Math.random() * Math.max(24, maxY - minY);
+      hideSeek.peekStartX = W + 240; hideSeek.peekVisX = maxX;
+      hideSeek.peekStartY = r;       hideSeek.peekVisY = r;
+      break;
+    case 2:
+      r = minX + Math.random() * Math.max(24, maxX - minX);
+      hideSeek.peekStartX = r;    hideSeek.peekVisX = r;
+      hideSeek.peekStartY = -240; hideSeek.peekVisY = minY;
+      break;
+    case 3:
+      r = minX + Math.random() * Math.max(24, maxX - minX);
+      hideSeek.peekStartX = r;       hideSeek.peekVisX = r;
+      hideSeek.peekStartY = H + 240; hideSeek.peekVisY = maxY;
+      break;
+  }
+  hideSeek.rawX = hideSeek.peekStartX;
+  hideSeek.rawY = hideSeek.peekStartY;
+  hideSeek.peekPhase = 'in';
+  hideSeek.peekTimer = 0;
+  hideSeek.peekInDur   = 140 + Math.random() * 160;  // 140-300ms snap in
+  hideSeek.peekHoldDur = 300 + Math.random() * 600;  // 300-900ms peering
+  hideSeek.peekOutDur  = 100 + Math.random() * 120;  // 100-220ms quick hide
+  var expr = PEEK_EXPRS[Math.floor(Math.random() * PEEK_EXPRS.length)];
+  triggerExpression(expr, 7, hideSeek.peekInDur + hideSeek.peekHoldDur);
+}
+
+function startHideSeek(force) {
+  if (!force && (hideSeek.active || wrapAnim.active || zoomCam.active || flyState.flyingToGame)) return;
+  hideSeek.active = true;
+  hideSeek.phase = 'hide';
+  hideSeek.timer = 0;
+  hideSeek.phaseDur = 350;
+  hideSeek.peekCount = 0;
+  hideSeek.maxPeeks = 10 + Math.floor(Math.random() * 11);  // 10-20
+  hideSeek.hideStartX = smoothPos.x;
+  hideSeek.hideStartY = smoothPos.y;
+  hideSeek.rawX = smoothPos.x;
+  hideSeek.rawY = smoothPos.y;
+  console.log('[HideSeek] Starting! ' + hideSeek.maxPeeks + ' peeks');
+}
+
+function tickHideSeek(dtMs) {
+  if (!hideSeek.active) {
+    hideSeek.nextTrigger -= dtMs;
+    if (hideSeek.nextTrigger <= 0 && !flyState.flyingToGame && !zoomCam.active && !wrapAnim.active) {
+      startHideSeek();
+    }
+    return false;
+  }
+
+  switch (hideSeek.phase) {
+    case 'hide': {
+      hideSeek.timer += dtMs;
+      var p = Math.min(1, hideSeek.timer / hideSeek.phaseDur);
+      // Zip off to bottom quickly
+      hideSeek.rawX = hideSeek.hideStartX;
+      hideSeek.rawY = hideSeek.hideStartY + (H + 250 - hideSeek.hideStartY) * (p * p);
+      if (p >= 1) {
+        hideSeek.phase = 'peeking';
+        _beginPeek();
+      }
+      break;
+    }
+    case 'peeking': {
+      hideSeek.peekTimer += dtMs;
+      switch (hideSeek.peekPhase) {
+        case 'in': {
+          var p2 = Math.min(1, hideSeek.peekTimer / hideSeek.peekInDur);
+          var eIn = 1 - (1 - p2) * (1 - p2);  // ease-out (decelerate in)
+          hideSeek.rawX = hideSeek.peekStartX + (hideSeek.peekVisX - hideSeek.peekStartX) * eIn;
+          hideSeek.rawY = hideSeek.peekStartY + (hideSeek.peekVisY - hideSeek.peekStartY) * eIn;
+          if (p2 >= 1) { hideSeek.peekPhase = 'hold'; hideSeek.peekTimer = 0; }
+          break;
+        }
+        case 'hold': {
+          if (hideSeek.peekTimer >= hideSeek.peekHoldDur) { hideSeek.peekPhase = 'out'; hideSeek.peekTimer = 0; }
+          break;
+        }
+        case 'out': {
+          var p3 = Math.min(1, hideSeek.peekTimer / hideSeek.peekOutDur);
+          var eOut = p3 * p3;  // ease-in (accelerate away)
+          hideSeek.rawX = hideSeek.peekVisX + (hideSeek.peekStartX - hideSeek.peekVisX) * eOut;
+          hideSeek.rawY = hideSeek.peekVisY + (hideSeek.peekStartY - hideSeek.peekVisY) * eOut;
+          if (p3 >= 1) {
+            hideSeek.peekCount++;
+            if (hideSeek.peekCount >= hideSeek.maxPeeks) {
+              hideSeek.phase = 'recover';
+              hideSeek.timer = 0;
+              hideSeek.phaseDur = 700;
+              hideSeek.rawX = HOME.x;
+              hideSeek.rawY = H + 250;
+              currentPriority = 0;
+              try { model.expression(); } catch(e) {}
+            } else {
+              // Brief gap before next peek (80-250ms)
+              hideSeek.peekPhase = 'gap';
+              hideSeek.peekTimer = 0;
+              hideSeek.peekInDur = 80 + Math.random() * 170;  // reuse as gap duration
+              hideSeek.rawX = -300; hideSeek.rawY = -300;     // park off canvas
+            }
+          }
+          break;
+        }
+        case 'gap': {
+          if (hideSeek.peekTimer >= hideSeek.peekInDur) { _beginPeek(); }
+          break;
+        }
+      }
+      break;
+    }
+    case 'recover': {
+      hideSeek.timer += dtMs;
+      var p4 = Math.min(1, hideSeek.timer / hideSeek.phaseDur);
+      var eRecover = 1 - (1 - p4) * (1 - p4);
+      hideSeek.rawX = HOME.x;
+      hideSeek.rawY = H + 250 + (HOME.y - (H + 250)) * eRecover;
+      if (p4 >= 1) {
+        hideSeek.active = false;
+        hideSeek.phase = 'idle';
+        pickIdleWaypoint();
+        flyState.x = HOME.x; flyState.y = HOME.y;
+        smoothPos.x = HOME.x; smoothPos.y = HOME.y;
+        hideSeek.nextTrigger = 120 * 60000 + Math.random() * 180 * 60000;
+        console.log('[HideSeek] Done');
+      }
+      break;
+    }
+  }
+  return true;
+}
+
+// ─── PixiJS App ──────────────────────────────────────────────────────────────
+var app = new PIXI.Application({
+  view: document.getElementById('canvas'),
+  width: W, height: H,
+  backgroundAlpha: 0,
+  antialias: true,
+  autoDensity: true,
+  resolution: window.devicePixelRatio || 1
+});
+
+// ─── Load Model ──────────────────────────────────────────────────────────────
+async function init() {
+  try {
+    statusEl.textContent = 'loading model...';
+    model = await PIXI.live2d.Live2DModel.from(MODEL_PATH);
+    model.scale.set(SCALE);
+    model.anchor.set(0.5, 0.5);
+    model.x = IDLE_CENTER.x;
+    model.y = IDLE_CENTER.y;
+    flyState.x = IDLE_CENTER.x;
+    flyState.y = IDLE_CENTER.y;
+    app.stage.addChild(model);
+    // Play idle motion (spins propellers)
+    try { model.motion('Idle', 0); } catch (e) {}
+    startIdleAnimation();
+    statusEl.textContent = 'connecting...';
+    connectErecTangledSSE();
+    connectBetweenlySSE();
+    connectSearchleSSE();
+    refreshBoardAwareState('erectangled');
+    setInterval(function() {
+      refreshBoardAwareState('erectangled');
+    }, BOARD_REFRESH_MS);
+    window.triggerWrapAnim = function() { startWrapAnim(true); };
+    window.triggerZoomCam = function() { startZoomCam(); };
+    window.triggerHideSeek = function() { startHideSeek(true); };
+    statusEl.textContent = 'ready';
+    setTimeout(function() { statusEl.style.display = 'none'; }, 3000);
+  } catch (e) {
+    statusEl.textContent = 'error: ' + e.message;
+    console.error('[Live2D] Load error:', e);
+  }
+}
+
+// ─── Flying System ───────────────────────────────────────────────────────────
+// Smoothed display position + angles — lerp toward targets each frame
+var smoothPos = { x: HOME.x, y: HOME.y };
+var smoothAngles = { ax: 0, ay: 0, az: 0, bz: 0, sc: 1 };  // head/body angles + scale
+
+var flyState = {
+  x: W / 2, y: H / 2,
+  tx: W / 2, ty: H / 2,
+  vx: 0, vy: 0,
+  nextWaypoint: 0,
+  flyingToGame: false,   // true when zooming to a game
+  returnTimer: null,
+  targetGame: null
+};
+
+function pickIdleWaypoint() {
+  if (ACTIVE_STREAM_GAME !== 'searchle' && retargetBoardAware('erectangled', { force: false })) {
+    flyState.nextWaypoint = 8000 + Math.random() * 12000;
+    flyState.flyingToGame = false;
+    return;
+  }
+  // Tiny drift around home corner
+  var idleX = HOME.x + (Math.random() - 0.5) * 48;
+  var idleY = HOME.y + (Math.random() - 0.5) * 36;
+  if (ACTIVE_STREAM_GAME === 'searchle') {
+    idleX = Math.max(W * 0.65, Math.min(W * 0.92, idleX));
+    idleY = Math.max(H * 0.68, Math.min(H * 0.94, idleY));
+  } else {
+    idleX = Math.max(W * 0.6, Math.min(W * 0.88, idleX));
+    idleY = Math.max(H * 0.85, Math.min(H * 0.97, idleY));
+  }
+  setFlyTarget(idleX, idleY, { source: 'idle-waypoint', insetX: 10, insetY: 18 });
+  flyState.nextWaypoint = 10000 + Math.random() * 15000;
+  flyState.flyingToGame = false;
+  flyState.targetGame = null;
+}
+
+function flyToGame(gameName, durationMs) {
+  var region = GAME_REGIONS[gameName];
+  if (!region) return;
+  flyState.targetGame = gameName;
+  if (!retargetBoardAware(gameName, { force: true })) {
+    // Set target to game region with slight randomness
+    var rawTargetX = region.x + (Math.random() - 0.5) * 80;
+    var rawTargetY = region.y + (Math.random() - 0.5) * 80;
+    setFlyTarget(rawTargetX, rawTargetY, { source: 'fly-to-game:' + gameName, insetX: 16, insetY: 20 });
+  }
+  flyState.flyingToGame = true;
+  // After duration, return to idle roaming
+  if (flyState.returnTimer) clearTimeout(flyState.returnTimer);
+  flyState.returnTimer = setTimeout(function() {
+    pickIdleWaypoint();
+  }, durationMs);
+  console.log('[Live2D] Flying to', gameName);
+}
+
+function startIdleAnimation() {
+  var t = 0;
+  pickIdleWaypoint();
+  var waypointTimer = flyState.nextWaypoint;
+
+  app.ticker.add(function() {
+    if (!model || !model.internalModel) return;
+    var dt = app.ticker.deltaMS / 1000;
+    t += dt;
+    var core = model.internalModel.coreModel;
+
+    // ── Waypoint timer (only when idle roaming) ──
+    if (!flyState.flyingToGame) {
+      waypointTimer -= app.ticker.deltaMS;
+      if (waypointTimer <= 0) { pickIdleWaypoint(); waypointTimer = flyState.nextWaypoint; }
+    }
+
+    // ── Smooth flight toward target ──
+    var dx = flyState.tx - flyState.x;
+    var dy = flyState.ty - flyState.y;
+    // Gentle when flying to game, very gentle when idle
+    var accel = flyState.flyingToGame ? 0.08 : 0.03;
+    flyState.vx += dx * accel * dt;
+    flyState.vy += dy * accel * dt;
+    // Heavy damping for slow lazy drift
+    var damp = flyState.flyingToGame ? 0.99 : 0.995;
+    flyState.vx *= damp;
+    flyState.vy *= damp;
+    // Low max speed
+    var maxSpd = flyState.flyingToGame ? 25 : 12;
+    var spd = Math.sqrt(flyState.vx * flyState.vx + flyState.vy * flyState.vy);
+    if (spd > maxSpd) { flyState.vx *= maxSpd / spd; flyState.vy *= maxSpd / spd; }
+    // Apply
+    flyState.x += flyState.vx * dt * 60;
+    flyState.y += flyState.vy * dt * 60;
+    // Clamp
+    flyState.x = Math.max(W * 0.05, Math.min(W * 0.95, flyState.x));
+    flyState.y = Math.max(H * 0.05, Math.min(H * 0.95, flyState.y));
+    var streamSafeZone = getActiveStreamSafeZone();
+    if (streamSafeZone) {
+      flyState.tx = clamp(flyState.tx, streamSafeZone.minX, streamSafeZone.maxX);
+      flyState.ty = clamp(flyState.ty, streamSafeZone.minY, streamSafeZone.maxY);
+      flyState.x = clamp(flyState.x, streamSafeZone.minX, streamSafeZone.maxX);
+      flyState.y = clamp(flyState.y, streamSafeZone.minY, streamSafeZone.maxY);
+    }
+
+    // ── Zoom cam ──
+    var zoomScale = tickZoomCam(app.ticker.deltaMS);
+
+    // ── Wrap anim ──
+    var wrapActive = tickWrapAnim(app.ticker.deltaMS);
+
+    // ── Hide & seek ──
+    var hideSeekActive = tickHideSeek(app.ticker.deltaMS);
+
+    // ── Quirk system (suppressed during zoom cam, wrap anim, hide & seek, dance) ──
+    var anySpecial = zoomCam.active || wrapActive || hideSeekActive;
+    var suppressQuirks = anySpecial || danceState.isPlaying;
+    if (!suppressQuirks) quirkState.nextQuirk -= app.ticker.deltaMS;
+    if (!quirkState.active && quirkState.nextQuirk <= 0 && !suppressQuirks) triggerRandomQuirk();
+    var quirk = getQuirkOffsets(dt);
+
+    // ── Clumsy mishaps — occasional bonks / overshoots / stumbles ──
+    if (!anySpecial) clumsyState.nextMishap -= app.ticker.deltaMS;
+    if (!clumsyState.active && clumsyState.nextMishap <= 0 && !anySpecial) triggerClumsyMishap();
+    var clumsy = getClumsyOffsets(app.ticker.deltaMS);
+
+    // ── Dance variant timer + wander trigger ──
+    var danceBob = 0, danceSway = 0, danceScale = 1, danceBodyZ = 0, danceHeadZ = 0;
+    if (danceState.isPlaying) {
+      danceState.variantTimer -= app.ticker.deltaMS;
+      if (danceState.variantTimer <= 0) {
+        danceState.variant = (danceState.variant + 1) % 4;
+        danceState.variantTimer = 8000 + Math.random() * 10000;
+      }
+      danceState.wanderTimer -= app.ticker.deltaMS;
+      if (danceState.wanderTimer <= 0 && !danceState.isWandering && !flyState.flyingToGame) {
+        pickDanceWander();
+      }
+    }
+
+    // ── Dance motion — intensity scales with BPM + energy + danceability ──
+    if (danceState.isPlaying && danceState.beatPeriod > 0) {
+      var intensity = getDanceIntensity();
+      // Favor phrase-level movement over per-beat jitter so the motion reads like dancing.
+      var periodMult = Math.max(1.2, 2.7 - intensity * 0.6);
+      var activePeriod = danceState.beatPeriod * periodMult;
+      var beatPhase = (Date.now() % activePeriod) / activePeriod;
+      var phrasePhase = (Date.now() % (activePeriod * 2)) / (activePeriod * 2);
+      var phraseWave = Math.sin(phrasePhase * Math.PI * 2);
+      var beatLift = Math.max(0, Math.sin(beatPhase * Math.PI));
+      var amp = 0.9 + intensity * 0.55;
+      switch (danceState.variant) {
+        case 0: // Two-step sway
+          danceSway  = phraseWave * 24 * amp;
+          danceBob   = -beatLift * 6 * amp;
+          danceBodyZ = phraseWave * 7 * amp;
+          danceHeadZ = phraseWave * 2.8 * amp;
+          break;
+        case 1: // Groove bounce
+          danceSway  = Math.sin(phrasePhase * Math.PI * 4) * 14 * amp;
+          danceBob   = -beatLift * 9 * amp + Math.sin(phrasePhase * Math.PI * 2) * 2.5 * amp;
+          danceBodyZ = Math.sin(phrasePhase * Math.PI * 2) * 5.5 * amp;
+          danceHeadZ = Math.sin(phrasePhase * Math.PI * 2 + 0.6) * 2.6 * amp;
+          break;
+        case 2: // Slide and return
+          danceSway  = Math.sin(phrasePhase * Math.PI * 2) * 22 * amp;
+          danceBob   = -Math.abs(Math.sin(phrasePhase * Math.PI * 2)) * 5 * amp;
+          danceBodyZ = Math.sin(phrasePhase * Math.PI * 2) * 8 * amp;
+          danceHeadZ = Math.sin(phrasePhase * Math.PI * 2) * 3 * amp;
+          break;
+        case 3: // Chorus lift
+          var halfPhrase = Math.sin(phrasePhase * Math.PI * 2);
+          danceSway  = halfPhrase * 16 * amp;
+          danceBob   = -beatLift * 8 * amp;
+          danceBodyZ = halfPhrase * 9 * amp;
+          danceHeadZ = Math.sin(phrasePhase * Math.PI * 4) * 2.2 * amp;
+          break;
+      }
+      danceScale = 1 + beatLift * (0.011 + intensity * 0.005);
+    }
+
+    // ── Subtle depth motion — small breathing-style push/pull with matching Y shift ──
+    var depthPulse = 0, depthYOffset = 0;
+    if (!zoomCam.active && !wrapActive && !hideSeekActive) {
+      var depthPhase = Date.now() * 0.0011;
+      var idleDepthAmp = danceState.isPlaying ? (0.005 + getDanceIntensity() * 0.0025) : 0.0035;
+      var gesturePush = Math.max(0, sassieGesture.scaleBonus || 0) * 0.35;
+      depthPulse = Math.sin(depthPhase) * idleDepthAmp + gesturePush;
+      depthYOffset = -depthPulse * 260;
+    }
+
+    // ── Sassie gesture tick (suppressed during special systems) ──
+    if (!anySpecial) {
+      tickSassieGesture(app.ticker.deltaMS);
+    } else if (sassieGesture.active) {
+      // During special systems, fade gesture offsets toward zero
+      var fadeRate = 0.15;
+      sassieGesture.headX *= (1 - fadeRate);
+      sassieGesture.headY *= (1 - fadeRate);
+      sassieGesture.headZ *= (1 - fadeRate);
+      sassieGesture.bodyX *= (1 - fadeRate);
+      sassieGesture.bodyY *= (1 - fadeRate);
+      sassieGesture.bodyZ *= (1 - fadeRate);
+      sassieGesture.browLY *= (1 - fadeRate);
+      sassieGesture.browRY *= (1 - fadeRate);
+      sassieGesture.eyeSmileL *= (1 - fadeRate);
+      sassieGesture.eyeSmileR *= (1 - fadeRate);
+      sassieGesture.cheek *= (1 - fadeRate);
+      sassieGesture.posOffsetX *= (1 - fadeRate);
+      sassieGesture.posOffsetY *= (1 - fadeRate);
+      sassieGesture.scaleBonus *= (1 - fadeRate);
+    }
+
+    // Lerp display position toward target — smooths out jitter from all sources
+    if (wrapActive || hideSeekActive) {
+      var activeAnim = wrapActive ? wrapAnim : hideSeek;
+      model.x = activeAnim.rawX;
+      model.y = activeAnim.rawY;
+      smoothPos.x = activeAnim.rawX;
+      smoothPos.y = activeAnim.rawY;
+    } else {
+      var targetX = flyState.x + danceSway + sassieGesture.posOffsetX + clumsy.x;
+      var targetY = flyState.y + danceBob + (quirk.bounceY || 0) + sassieGesture.posOffsetY + depthYOffset + clumsy.y;
+      var lerpSpeed = flyState.flyingToGame ? 0.14 : 0.09;
+      smoothPos.x += (targetX - smoothPos.x) * lerpSpeed;
+      smoothPos.y += (targetY - smoothPos.y) * lerpSpeed;
+      model.x = smoothPos.x;
+      model.y = smoothPos.y;
+    }
+    model.rotation = quirk.rotation || 0;
+
+    // ── Tilt ──
+    // During wrap, velocity can be huge — clamp but allow dramatic lean
+    var wrapVelContrib = wrapActive ? wrapAnim._vel * 0.012 : 0;
+    var tiltX = Math.max(-30, Math.min(30, flyState.vx * 0.2 + wrapVelContrib));
+    var tiltY = Math.max(-3, Math.min(3, flyState.vy * 0.15));
+
+    // When idling in corner, look up toward the games above; stop when flying
+    var baseLookX = flyState.flyingToGame ? 0 : -5;
+    var baseLookY = flyState.flyingToGame ? 0 : 15;
+
+    // ── Gaze focus system — looks at one point then calmly shifts ──
+    tickGaze(app.ticker.deltaMS);
+    var eyeBallX = flyState.flyingToGame ? 0 : gazeState.curX;
+    var eyeBallY = flyState.flyingToGame ? 0 : gazeState.curY;
+
+    // ── Compute target angles then lerp smoothAngles toward them ──
+    // Sassie gesture offsets are additive on head angles
+    var tgtAx = baseLookX + tiltX * 0.3 + (quirk.ax || 0) + sassieGesture.headX;
+    var tgtAy = baseLookY + tiltY * 0.2 + (quirk.ay || 0) + sassieGesture.headY;
+    var tgtAz = danceHeadZ + (quirk.az || 0) + sassieGesture.headZ + clumsy.headZ;
+    var tgtBz = danceBodyZ + (quirk.bz || 0) + sassieGesture.bodyZ + clumsy.bodyZ;
+    var tgtSc = zoomCam.active ? zoomScale : (SCALE + (quirk.scaleBonus || 0) + sassieGesture.scaleBonus + depthPulse + clumsy.scale) * danceScale;
+
+    var aLerp = 0.055;  // angle lerp — softer for less jitter
+    smoothAngles.ax += (tgtAx - smoothAngles.ax) * aLerp;
+    smoothAngles.ay += (tgtAy - smoothAngles.ay) * aLerp;
+    smoothAngles.az += (tgtAz - smoothAngles.az) * aLerp;
+    smoothAngles.bz += (tgtBz - smoothAngles.bz) * aLerp;
+    smoothAngles.sc += (tgtSc - smoothAngles.sc) * 0.1;
+
+    model.scale.set(smoothAngles.sc);
+
+    // ── Hide & seek alpha fade ──
+    if (hideSeek.active && hideSeek.phase === 'hide') {
+      model.alpha = Math.max(0, 1 - (hideSeek.timer / hideSeek.phaseDur));
+    } else if (hideSeek.active && hideSeek.phase === 'recover') {
+      model.alpha = Math.min(1, hideSeek.timer / hideSeek.phaseDur);
+    } else {
+      model.alpha = 1;
+    }
+
+    // ── Apply smoothed params (weight 1.0 beats idle motion, keeps propellers) ──
+    try { core.setParameterValueById('ParamBreath', 0, 1); } catch(e) {}
+    try { core.setParameterValueById('ParamBodyAngleX', tiltX * 0.1 + (quirk.ax || 0) * 0.05 + sassieGesture.bodyX, 1); } catch(e) {}
+    try { core.setParameterValueById('ParamBodyAngleY', tiltY * 0.1 + danceBob * 0.3 + sassieGesture.bodyY, 1); } catch(e) {}
+    try { core.setParameterValueById('ParamBodyAngleZ', smoothAngles.bz, 1); } catch(e) {}
+    try { core.setParameterValueById('ParamAngleX', smoothAngles.ax, 1); } catch(e) {}
+    try { core.setParameterValueById('ParamAngleY', smoothAngles.ay, 1); } catch(e) {}
+    try { core.setParameterValueById('ParamAngleZ', smoothAngles.az, 1); } catch(e) {}
+    try { core.setParameterValueById('ParamEyeBallX', eyeBallX + (quirk.ax || 0) * 0.05, 1); } catch(e) {}
+    try { core.setParameterValueById('ParamEyeBallY', eyeBallY, 1); } catch(e) {}
+    // ── Sassie gesture face params (additive, only when gesture active) ──
+    if (sassieGesture.eyeSmileL || sassieGesture.eyeSmileR || sassieGesture.browLY || sassieGesture.browRY || sassieGesture.cheek) {
+      try { core.setParameterValueById('ParamEyeLSmile', sassieGesture.eyeSmileL, 1); } catch(e) {}
+      try { core.setParameterValueById('ParamEyeRSmile', sassieGesture.eyeSmileR, 1); } catch(e) {}
+      try { core.setParameterValueById('ParamBrowLY', sassieGesture.browLY, 1); } catch(e) {}
+      try { core.setParameterValueById('ParamBrowRY', sassieGesture.browRY, 1); } catch(e) {}
+      try { core.setParameterValueById('ParamCheek', sassieGesture.cheek, 1); } catch(e) {}
+    }
+  });
+}
+
+// ─── Expression System ───────────────────────────────────────────────────────
+function triggerExpression(name, priority, durationMs) {
+  if (priority < currentPriority) return;
+  currentPriority = priority;
+  if (expressionTimer) clearTimeout(expressionTimer);
+  try {
+    if (model && model.internalModel && model.internalModel.motionManager.expressionManager) {
+      var idx = model.internalModel.motionManager.expressionManager.definitions.findIndex(
+        function(d) { return d.Name === name; }
+      );
+      if (idx >= 0) {
+        model.expression(idx);
+        console.log('[Live2D] Expression:', name);
+      }
+    }
+  } catch(e) {}
+  expressionTimer = setTimeout(function() {
+    currentPriority = 0;
+    try { model.expression(); } catch(e) {}
+  }, durationMs);
+}
+
+// Combined: fly to game + trigger expression
+// Only flies to game for priority >= 6 (hidden, ring, final-ring, game-over, game-won, searchle top-10)
+// Lower events just change expression from home corner
+function reactToGame(gameName, exprName, priority, durationMs) {
+  if (priority >= 6) {
+    flyToGame(gameName, durationMs + 2000);
+  }
+  triggerExpression(exprName, priority, durationMs);
+}
+
+// ─── erecTangled SSE ─────────────────────────────────────────────────────────
+function connectErecTangledSSE() {
+  var evtSource = new EventSource('api/events');
+  refreshBoardAwareState('erectangled');
+
+  evtSource.addEventListener('word-found', function(e) {
+    var d = JSON.parse(e.data);
+    refreshBoardAwareState('erectangled');
+    if (d.isFinalRing) {
+      reactToGame('erectangled', 'Exp-LightEyes', PRIORITY['final-ring'], 5000);
+    } else if (d.ringAdvanced) {
+      reactToGame('erectangled', 'Exp-Charging', PRIORITY['ring-advance'], 4000);
+    } else if (d.isHidden) {
+      reactToGame('erectangled', 'Exp-HeartEyes', PRIORITY['hidden'], 5000);
+    } else if (d.isRare) {
+      reactToGame('erectangled', 'Exp-StarEyes', PRIORITY['rare'], 4000);
+    } else if (d.isThreeLetter) {
+      reactToGame('erectangled', 'Exp-Nowords', PRIORITY['three-letter'], 2000);
+    } else {
+      reactToGame('erectangled', 'Exp-Blush', PRIORITY['common'], 3000);
+    }
+  });
+
+  evtSource.addEventListener('chat-guess', function(e) {
+    var d = JSON.parse(e.data);
+    refreshBoardAwareState('erectangled');
+    if (d.result === 'incorrect') reactToGame('erectangled', 'Exp-Question', PRIORITY['incorrect'], 2000);
+    else if (d.result === 'already_found') reactToGame('erectangled', 'Exp-Drop', PRIORITY['already-found'], 2000);
+  });
+
+  evtSource.addEventListener('game-over', function() {
+    refreshBoardAwareState('erectangled');
+    reactToGame('erectangled', 'Exp-StarEyes', PRIORITY['game-over'], 8000);
+  });
+
+  evtSource.addEventListener('new-game', function() {
+    refreshBoardAwareState('erectangled');
+    reactToGame('erectangled', 'Exp-Charging', PRIORITY['new-game'], 3000);
+  });
+
+  evtSource.addEventListener('frenzy-update', function(e) {
+    var d = JSON.parse(e.data);
+    if (d.multiplier > 1) reactToGame('erectangled', 'Exp-Angry', PRIORITY['frenzy'], 10000);
+  });
+
+  evtSource.addEventListener('spotify-now-playing', function(e) {
+    try {
+      var d = JSON.parse(e.data);
+      danceState.isPlaying = d.isPlaying;
+      if (d.tempo && d.tempo > 0) {
+        danceState.bpm = d.tempo;
+        danceState.beatPeriod = 60000 / d.tempo;
+      }
+      if (d.energy      != null) danceState.energy      = d.energy;
+      if (d.danceability != null) danceState.danceability = d.danceability;
+      // New track → expression scaled to grooviness
+      if (d.isPlaying && d.track && d.track !== danceState.lastTrack) {
+        danceState.lastTrack = d.track;
+        var intensity = getDanceIntensity();
+        if (intensity >= 2.0)      triggerExpression('Exp-StarEyes',  PRIORITY['common'], 4000);
+        else if (intensity >= 1.4) triggerExpression('Exp-Charging',  PRIORITY['common'], 3000);
+        else                       triggerExpression('Exp-Blush',     PRIORITY['common'], 2500);
+      }
+    } catch(ex) {}
+  });
+
+  evtSource.onerror = function() {
+    if (evtSource.readyState === EventSource.CLOSED) setTimeout(connectErecTangledSSE, 3000);
+  };
+}
+
+// ─── Betweenly SSE ───────────────────────────────────────────────────────────
+function connectBetweenlySSE() {
+  // Betweenly runs on port 3012, proxied at /game/betweenly/
+  var baseUrl = location.origin.replace(/\/game\/sproutle\/?$/, '') + '/game/betweenly/';
+  var evtSource;
+  try { evtSource = new EventSource(baseUrl + 'api/events'); } catch(e) { return; }
+
+  evtSource.addEventListener('guess', function(e) {
+    try {
+      var d = JSON.parse(e.data);
+      if (d.correct || d.won) {
+        reactToGame('betweenly', 'Exp-StarEyes', PRIORITY['game-won'], 5000);
+      } else if (d.close) {
+        reactToGame('betweenly', 'Exp-Charging', PRIORITY['common'], 3000);
+      }
+    } catch(ex) {}
+  });
+
+  evtSource.addEventListener('game-won', function() {
+    reactToGame('betweenly', 'Exp-HeartEyes', PRIORITY['game-won'], 6000);
+  });
+
+  evtSource.onerror = function() {
+    if (evtSource.readyState === EventSource.CLOSED) setTimeout(connectBetweenlySSE, 5000);
+  };
+}
+
+// ─── Searchle SSE ────────────────────────────────────────────────────────────
+function connectSearchleSSE() {
+  // Searchle runs on port 3015, proxied at /game/searchle/
+  var baseUrl = location.origin.replace(/\/game\/sproutle\/?$/, '') + '/game/searchle/';
+  var evtSource;
+  try { evtSource = new EventSource(baseUrl + 'api/events'); } catch(e) { return; }
+
+  evtSource.addEventListener('guess', function(e) {
+    try {
+      var d = JSON.parse(e.data);
+      // High similarity guess
+      if (d.rank && d.rank <= 10) {
+        reactToGame('searchle', 'Exp-StarEyes', PRIORITY['searchle-top10'], 4000);
+      } else if (d.rank && d.rank <= 50) {
+        reactToGame('searchle', 'Exp-Charging', PRIORITY['common'], 3000);
+      }
+    } catch(ex) {}
+  });
+
+  evtSource.addEventListener('game-won', function() {
+    reactToGame('searchle', 'Exp-HeartEyes', PRIORITY['game-won'], 6000);
+  });
+
+  evtSource.onerror = function() {
+    if (evtSource.readyState === EventSource.CLOSED) setTimeout(connectSearchleSSE, 5000);
+  };
+}
+
+// ─── Mouth Animation (lip sync for Sassie TTS) ──────────────────────────────
+var _mouthActive = false;
+var _mouthTimer = null;
+
+function startMouthFlap(durationMs) {
+  _mouthActive = true;
+  if (_mouthTimer) clearTimeout(_mouthTimer);
+  _mouthTimer = setTimeout(function() { _mouthActive = false; }, durationMs);
+}
+
+function initMouthTicker() {
+  var mouthT = 0;
+  app.ticker.add(function() {
+    if (!model || !model.internalModel) return;
+    var core = model.internalModel.coreModel;
+    if (_mouthActive) {
+      mouthT += 0.06;
+      var v = Math.abs(Math.sin(mouthT * 8)) * (0.5 + Math.sin(mouthT * 3) * 0.3);
+      try { core.setParameterValueById('ParamMouthOpenY', Math.min(v, 1)); } catch(e) {}
+      try { core.setParameterValueById('ParamMouthForm', 0.3 + Math.sin(mouthT * 5) * 0.2); } catch(e) {}
+    } else {
+      mouthT = 0;
+      try { core.setParameterValueById('ParamMouthOpenY', 0); } catch(e) {}
+    }
+  });
+}
+
+// The retired EventSub listener was removed. Sassie now drives this overlay
+// through the runtime SSE connection defined below.
+
+// ─── Sassie Motion Gesture System ────────────────────────────────────────────
+// Procedural parameter-driven gestures triggered by mapped motion IDs.
+// Each gesture is a sequence of keyframes that manipulate model parameters
+// over time, layered on top of the existing idle/gaze/dance system.
+
+var sassieGesture = {
+  active: false,
+  motion: null,
+  timer: 0,
+  duration: 0,
+  intensity: 0.5,
+  // Current parameter offsets (applied additively in ticker)
+  headX: 0, headY: 0, headZ: 0,
+  bodyX: 0, bodyY: 0, bodyZ: 0,
+  browLY: 0, browRY: 0,
+  eyeSmileL: 0, eyeSmileR: 0,
+  cheek: 0,
+  posOffsetX: 0, posOffsetY: 0,
+  scaleBonus: 0
+};
+
+// Gesture definitions: each returns parameter targets at progress p (0..1)
+// Intensity scales the amplitude
+var GESTURE_DEFS = {
+  'idle_variation_01': function(p, amp) {
+    // Gentle sway — subtle head tilt cycle
+    return {
+      headZ: Math.sin(p * Math.PI * 4) * 4 * amp,
+      bodyZ: Math.sin(p * Math.PI * 2) * 2 * amp
+    };
+  },
+  'wave_small': function(p, amp) {
+    // Wave: head tilts side, body sways, slight bounce
+    var wave = Math.sin(p * Math.PI * 6) * amp;  // 3 wave cycles
+    var ramp = p < 0.15 ? p / 0.15 : (p > 0.8 ? (1 - p) / 0.2 : 1); // ease in/out
+    return {
+      headZ: wave * 8 * ramp,
+      headX: Math.sin(p * Math.PI * 3) * 5 * amp * ramp,
+      bodyZ: wave * 4 * ramp,
+      posOffsetX: wave * 6 * ramp,
+      posOffsetY: -Math.abs(Math.sin(p * Math.PI * 6)) * 8 * amp * ramp,
+      eyeSmileL: 0.4 * amp * ramp,
+      eyeSmileR: 0.4 * amp * ramp
+    };
+  },
+  'smile_pose': function(p, amp) {
+    // Smile: eyes squint, cheeks up, slight head tilt, settle
+    var ramp = p < 0.2 ? p / 0.2 : (p > 0.7 ? (1 - p) / 0.3 : 1);
+    return {
+      eyeSmileL: 0.7 * amp * ramp,
+      eyeSmileR: 0.7 * amp * ramp,
+      cheek: 0.6 * amp * ramp,
+      headZ: 5 * amp * ramp,
+      headY: 3 * amp * ramp,
+      browLY: 0.2 * amp * ramp,
+      browRY: 0.2 * amp * ramp
+    };
+  },
+  'laugh_small': function(p, amp) {
+    // Laugh: rapid head bobbing, eye squint, body bounce
+    var ramp = p < 0.1 ? p / 0.1 : (p > 0.7 ? (1 - p) / 0.3 : 1);
+    var bounce = Math.abs(Math.sin(p * Math.PI * 8)) * ramp;
+    return {
+      posOffsetY: -bounce * 12 * amp,
+      headY: -bounce * 6 * amp,
+      headZ: Math.sin(p * Math.PI * 5) * 4 * amp * ramp,
+      bodyZ: Math.sin(p * Math.PI * 4) * 3 * amp * ramp,
+      eyeSmileL: 0.6 * amp * ramp,
+      eyeSmileR: 0.6 * amp * ramp,
+      cheek: 0.5 * amp * ramp
+    };
+  },
+  'blink_slow': function(p, amp) {
+    // Slow deliberate blink with slight head lower
+    var blinkCurve = 0;
+    if (p >= 0.3 && p <= 0.5) blinkCurve = Math.sin((p - 0.3) / 0.2 * Math.PI);
+    return {
+      headY: -3 * amp * blinkCurve,
+      browLY: -0.3 * amp * blinkCurve,
+      browRY: -0.3 * amp * blinkCurve
+    };
+  },
+  'head_tilt': function(p, amp) {
+    // Playful head tilt — tilts to one side and holds
+    var ramp = p < 0.2 ? p / 0.2 : (p > 0.75 ? (1 - p) / 0.25 : 1);
+    var side = (Math.random() > 0.5 ? 1 : -1); // randomized on creation, but we use consistent
+    return {
+      headZ: 12 * amp * ramp,
+      headX: -6 * amp * ramp,
+      browLY: 0.3 * amp * ramp,
+      browRY: -0.1 * amp * ramp,
+      eyeSmileL: 0.2 * amp * ramp,
+      eyeSmileR: 0.2 * amp * ramp
+    };
+  },
+  'surprised_react': function(p, amp) {
+    // Surprised: quick recoil back, brows up, eyes wide, then settle
+    var shock = p < 0.15 ? p / 0.15 : Math.max(0, 1 - (p - 0.15) / 0.85);
+    var recoil = p < 0.1 ? p / 0.1 : (p < 0.3 ? 1 : Math.max(0, 1 - (p - 0.3) / 0.7));
+    return {
+      posOffsetY: recoil * 15 * amp,
+      headY: recoil * 8 * amp,
+      headX: -recoil * 4 * amp,
+      browLY: 0.6 * amp * shock,
+      browRY: 0.6 * amp * shock,
+      bodyZ: -recoil * 5 * amp,
+      scaleBonus: recoil * 0.012 * amp
+    };
+  },
+  'nod_small': function(p, amp) {
+    // Nod: 2-3 small head dips
+    var ramp = p < 0.1 ? p / 0.1 : (p > 0.8 ? (1 - p) / 0.2 : 1);
+    return {
+      headY: Math.sin(p * Math.PI * 6) * 6 * amp * ramp,
+      bodyY: Math.sin(p * Math.PI * 6) * 2 * amp * ramp,
+      eyeSmileL: 0.15 * amp * ramp,
+      eyeSmileR: 0.15 * amp * ramp
+    };
+  },
+  'pout_pose': function(p, amp) {
+    // Pout: head tilts down, slight side tilt, brows furrowed
+    var ramp = p < 0.25 ? p / 0.25 : (p > 0.7 ? (1 - p) / 0.3 : 1);
+    return {
+      headY: -5 * amp * ramp,
+      headZ: -6 * amp * ramp,
+      browLY: -0.4 * amp * ramp,
+      browRY: -0.4 * amp * ramp,
+      bodyZ: -3 * amp * ramp
+    };
+  },
+  'celebrate_short': function(p, amp) {
+    // Celebrate: bouncy up-down with sway, big smile, scale pulse
+    var ramp = p < 0.1 ? p / 0.1 : (p > 0.75 ? (1 - p) / 0.25 : 1);
+    var bounce = Math.abs(Math.sin(p * Math.PI * 10)) * ramp;
+    return {
+      posOffsetY: -bounce * 18 * amp,
+      posOffsetX: Math.sin(p * Math.PI * 6) * 10 * amp * ramp,
+      headZ: Math.sin(p * Math.PI * 5) * 8 * amp * ramp,
+      bodyZ: Math.sin(p * Math.PI * 4) * 5 * amp * ramp,
+      eyeSmileL: 0.7 * amp * ramp,
+      eyeSmileR: 0.7 * amp * ramp,
+      cheek: 0.6 * amp * ramp,
+      scaleBonus: bounce * 0.016 * amp
+    };
+  },
+  // Fallback motions from emotion map
+  'bounce_01': function(p, amp) {
+    // Quick bounce — like celebrate but shorter cycle
+    var ramp = p < 0.1 ? p / 0.1 : (p > 0.8 ? (1 - p) / 0.2 : 1);
+    var bounce = Math.abs(Math.sin(p * Math.PI * 8)) * ramp;
+    return {
+      posOffsetY: -bounce * 14 * amp,
+      headY: -bounce * 4 * amp,
+      eyeSmileL: 0.5 * amp * ramp,
+      eyeSmileR: 0.5 * amp * ramp,
+      scaleBonus: bounce * 0.012 * amp
+    };
+  },
+  'look_side': function(p, amp) {
+    // Look to side — thinking gesture
+    var ramp = p < 0.2 ? p / 0.2 : (p > 0.75 ? (1 - p) / 0.25 : 1);
+    return {
+      headX: 10 * amp * ramp,
+      headZ: 4 * amp * ramp,
+      browLY: 0.2 * amp * ramp,
+      browRY: -0.1 * amp * ramp
+    };
+  },
+  'recoil_small': function(p, amp) {
+    // Small recoil — lighter version of surprised
+    var shock = p < 0.2 ? p / 0.2 : Math.max(0, 1 - (p - 0.2) / 0.8);
+    return {
+      posOffsetY: shock * 10 * amp,
+      headY: shock * 5 * amp,
+      browLY: 0.4 * amp * shock,
+      browRY: 0.4 * amp * shock,
+      bodyZ: -shock * 3 * amp
+    };
+  },
+  'chin_up': function(p, amp) {
+    // Chin up — confident pose
+    var ramp = p < 0.25 ? p / 0.25 : (p > 0.7 ? (1 - p) / 0.3 : 1);
+    return {
+      headY: 6 * amp * ramp,
+      headX: -2 * amp * ramp,
+      browLY: 0.15 * amp * ramp,
+      browRY: 0.15 * amp * ramp,
+      eyeSmileL: 0.3 * amp * ramp,
+      eyeSmileR: 0.3 * amp * ramp,
+      scaleBonus: 0.006 * amp * ramp
+    };
+  },
+  'look_forward_hold': function(p, amp) {
+    // Firm forward look — head straightens and holds
+    var ramp = p < 0.3 ? p / 0.3 : (p > 0.8 ? (1 - p) / 0.2 : 1);
+    return {
+      headX: -2 * amp * ramp,
+      headY: 2 * amp * ramp,
+      headZ: 0,
+      browLY: -0.2 * amp * ramp,
+      browRY: -0.2 * amp * ramp
+    };
+  }
+};
+
+function triggerSassieGesture(motionId, duration, intensity) {
+  if (!GESTURE_DEFS[motionId]) {
+    console.log('[Live2D] Unknown gesture motion:', motionId, '— skipping');
+    return;
+  }
+  sassieGesture.active = true;
+  sassieGesture.motion = motionId;
+  sassieGesture.timer = 0;
+  sassieGesture.duration = duration || 3000;
+  sassieGesture.intensity = Math.max(0.2, Math.min(1.2, intensity || 0.5));
+  console.log('[Live2D] Gesture:', motionId, 'dur=' + sassieGesture.duration + 'ms', 'amp=' + sassieGesture.intensity.toFixed(2));
+}
+
+function tickSassieGesture(dtMs) {
+  if (!sassieGesture.active) return;
+  sassieGesture.timer += dtMs;
+  var p = Math.min(1, sassieGesture.timer / sassieGesture.duration);
+
+  var def = GESTURE_DEFS[sassieGesture.motion];
+  if (!def) { sassieGesture.active = false; return; }
+
+  var vals = def(p, sassieGesture.intensity);
+
+  // Lerp current offsets toward target values for smooth transitions
+  var lerp = 0.12;
+  sassieGesture.headX     += ((vals.headX     || 0) - sassieGesture.headX)     * lerp;
+  sassieGesture.headY     += ((vals.headY     || 0) - sassieGesture.headY)     * lerp;
+  sassieGesture.headZ     += ((vals.headZ     || 0) - sassieGesture.headZ)     * lerp;
+  sassieGesture.bodyX     += ((vals.bodyX     || 0) - sassieGesture.bodyX)     * lerp;
+  sassieGesture.bodyY     += ((vals.bodyY     || 0) - sassieGesture.bodyY)     * lerp;
+  sassieGesture.bodyZ     += ((vals.bodyZ     || 0) - sassieGesture.bodyZ)     * lerp;
+  sassieGesture.browLY    += ((vals.browLY    || 0) - sassieGesture.browLY)    * lerp;
+  sassieGesture.browRY    += ((vals.browRY    || 0) - sassieGesture.browRY)    * lerp;
+  sassieGesture.eyeSmileL += ((vals.eyeSmileL || 0) - sassieGesture.eyeSmileL) * lerp;
+  sassieGesture.eyeSmileR += ((vals.eyeSmileR || 0) - sassieGesture.eyeSmileR) * lerp;
+  sassieGesture.cheek     += ((vals.cheek     || 0) - sassieGesture.cheek)     * lerp;
+  sassieGesture.posOffsetX+= ((vals.posOffsetX|| 0) - sassieGesture.posOffsetX)* lerp;
+  sassieGesture.posOffsetY+= ((vals.posOffsetY|| 0) - sassieGesture.posOffsetY)* lerp;
+  sassieGesture.scaleBonus+= ((vals.scaleBonus|| 0) - sassieGesture.scaleBonus)* lerp;
+
+  if (p >= 1) {
+    // Fade out: lerp all offsets back to 0
+    sassieGesture.active = false;
+    sassieGesture.motion = null;
+  }
+}
+
+// ─── Sassie Runtime SSE ──────────────────────────────────────────────────────
+// Connects to Sassie runtime consumer for AI-driven expression commands.
+// Falls back gracefully if the runtime is offline.
+//
+// URL resolution:
+//   - Default: http://localhost:3036 (Sassie runtime is always local)
+//   - Override: ?sassie=host:port in the overlay URL
+//   - The runtime is a local dev service, not deployed to production CDN,
+//     so location.hostname-based URLs don't work when served via proxy.
+
+var _sassieConnected = false;
+var _sassieActions = 0;
+var _sassieAudioPlayed = 0;
+var _sassieAudioFailed = 0;
+var _sassieAudioInterrupted = 0;
+var _sassieLastAudioUrl = '';
+var _sassieLastAudioState = '';
+var _sassieLastAudioError = '';
+var _sassieLastAudioDebugId = '';
+var _sassieLastInterruptedBy = '';
+var _sassieDebugEl = null;
+var _sassieDebugVisible = false;
+var _sassiePageLoadedAt = new Date().toLocaleTimeString();
+
+// ── Sassie Voice FX v1 ─────────────────────────────────────────────────
+// Post-processing chain via Web Audio API for warm synthetic character.
+// Presets: dry (bypass), light (subtle polish), medium (analog-synth feel)
+// Select via URL param: ?sfx=dry|light|medium  (default: light)
+
+var _sassieFxPreset = (function() {
+  var p = new URLSearchParams(location.search).get('sfx');
+  if (p === 'dry' || p === 'light' || p === 'medium') return p;
+  return 'light'; // default
+})();
+var _sassieFxCtx = null;    // AudioContext (created once, reused across reconnects)
+var _sassieFxActive = false; // true if FX chain is connected
+
+var _SASSIE_FX_PRESETS = {
+  dry: null, // no processing — raw TTS
+  light: {
+    // v2: cleaner, more premium. Polish without gimmick.
+    hpFreq: 100,          // high-pass: just sub-rumble removal
+    bodyCutFreq: 350,     // body thin: barely there
+    bodyCutGain: -1,
+    presenceFreq: 3200,   // presence: subtle forward push
+    presenceGain: 2,
+    airFreq: 6500,        // air: light sparkle
+    airGain: 1,
+    saturation: 0.8,      // very gentle warmth, barely audible
+    compThreshold: -20,   // compression: smooth leveling only
+    compRatio: 2.5,
+    compKnee: 12,
+    compAttack: 0.005,
+    compRelease: 0.2,
+    chorusEnabled: false,
+    lpFreq: 11000,        // low-pass: keep most highs, just tame edge
+    outputGain: 1.1
+  },
+  warm: {
+    // previous "light" — more noticeable analog character
+    hpFreq: 120,
+    bodyCutFreq: 350,
+    bodyCutGain: -2,
+    presenceFreq: 3200,
+    presenceGain: 3.5,
+    airFreq: 6000,
+    airGain: 2,
+    saturation: 1.8,
+    compThreshold: -18,
+    compRatio: 3,
+    compKnee: 10,
+    compAttack: 0.003,
+    compRelease: 0.15,
+    chorusEnabled: false,
+    lpFreq: 10000,
+    outputGain: 1.15
+  },
+  medium: {
+    // synth character — chorus + stronger saturation
+    hpFreq: 150,
+    bodyCutFreq: 350,
+    bodyCutGain: -4,
+    presenceFreq: 3000,
+    presenceGain: 5.5,
+    airFreq: 5500,
+    airGain: 3.5,
+    saturation: 3.5,
+    compThreshold: -15,
+    compRatio: 4,
+    compKnee: 8,
+    compAttack: 0.003,
+    compRelease: 0.12,
+    chorusEnabled: true,
+    chorusDelayMs: 22,
+    chorusLfoHz: 0.4,
+    chorusDepth: 0.004,
+    chorusWetMix: 0.25,
+    lpFreq: 9000,
+    outputGain: 1.2
+  }
+};
+
+/**
+ * Soft-clip saturation curve for WaveShaperNode.
+ * amount=0 is linear, higher values add more harmonic warmth.
+ */
+function _sassieMakeSaturationCurve(amount) {
+  var n = 512;
+  var curve = new Float32Array(n);
+  for (var i = 0; i < n; i++) {
+    var x = (i * 2) / n - 1;
+    curve[i] = (Math.PI + amount) * x / (Math.PI + amount * Math.abs(x));
+  }
+  return curve;
+}
+
+/**
+ * Build the Voice FX Web Audio chain for an audio element.
+ * Called once per connectSassieSSE() invocation.
+ * Returns true if FX is active, false if dry/failed.
+ */
+function _sassieInitFx(audioEl) {
+  _sassieFxActive = false;
+  if (_sassieFxPreset === 'dry') {
+    console.log('[Live2D] Voice FX: dry (bypass)');
+    return false;
+  }
+
+  var p = _SASSIE_FX_PRESETS[_sassieFxPreset];
+  if (!p) {
+    console.warn('[Live2D] Voice FX: unknown preset "' + _sassieFxPreset + '", using dry');
+    return false;
+  }
+
+  try {
+    var ctx = _sassieFxCtx || new (window.AudioContext || window.webkitAudioContext)();
+    _sassieFxCtx = ctx;
+
+    var source = ctx.createMediaElementSource(audioEl);
+
+    // 1. High-pass filter — remove low rumble
+    var hp = ctx.createBiquadFilter();
+    hp.type = 'highpass';
+    hp.frequency.value = p.hpFreq;
+    hp.Q.value = 0.707;
+
+    // 2. Body cut — thin out low-mids for synthetic character
+    var bodyCut = ctx.createBiquadFilter();
+    bodyCut.type = 'peaking';
+    bodyCut.frequency.value = p.bodyCutFreq;
+    bodyCut.gain.value = p.bodyCutGain;
+    bodyCut.Q.value = 1.0;
+
+    // 3. Presence boost — forward clarity
+    var presence = ctx.createBiquadFilter();
+    presence.type = 'peaking';
+    presence.frequency.value = p.presenceFreq;
+    presence.gain.value = p.presenceGain;
+    presence.Q.value = 1.2;
+
+    // 4. Air boost — high-end sparkle
+    var air = ctx.createBiquadFilter();
+    air.type = 'peaking';
+    air.frequency.value = p.airFreq;
+    air.gain.value = p.airGain;
+    air.Q.value = 0.8;
+
+    // 5. Saturation — warm harmonic distortion via soft-clip waveshaper
+    var saturator = ctx.createWaveShaper();
+    saturator.curve = _sassieMakeSaturationCurve(p.saturation);
+    saturator.oversample = '2x';
+
+    // 6. Compressor — even out dynamic range
+    var comp = ctx.createDynamicsCompressor();
+    comp.threshold.value = p.compThreshold;
+    comp.ratio.value = p.compRatio;
+    comp.knee.value = p.compKnee;
+    comp.attack.value = p.compAttack;
+    comp.release.value = p.compRelease;
+
+    // 7. Low-pass filter — roll off harsh highs
+    var lp = ctx.createBiquadFilter();
+    lp.type = 'lowpass';
+    lp.frequency.value = p.lpFreq;
+    lp.Q.value = 0.707;
+
+    // 8. Output gain — compensate for processing
+    var output = ctx.createGain();
+    output.gain.value = p.outputGain;
+
+    // Connect chain: source → hp → bodyCut → presence → air → saturator → comp
+    source.connect(hp);
+    hp.connect(bodyCut);
+    bodyCut.connect(presence);
+    presence.connect(air);
+    air.connect(saturator);
+    saturator.connect(comp);
+
+    // Optional chorus (medium preset) — short modulated delay mixed with dry
+    if (p.chorusEnabled) {
+      var chorusDry = ctx.createGain();
+      chorusDry.gain.value = 1.0 - p.chorusWetMix;
+      var chorusWet = ctx.createGain();
+      chorusWet.gain.value = p.chorusWetMix;
+      var chorusDelay = ctx.createDelay(0.1);
+      chorusDelay.delayTime.value = p.chorusDelayMs / 1000;
+
+      // LFO modulates delay time for subtle movement
+      var chorusLFO = ctx.createOscillator();
+      chorusLFO.type = 'sine';
+      chorusLFO.frequency.value = p.chorusLfoHz;
+      var chorusDepthGain = ctx.createGain();
+      chorusDepthGain.gain.value = p.chorusDepth;
+      chorusLFO.connect(chorusDepthGain);
+      chorusDepthGain.connect(chorusDelay.delayTime);
+      chorusLFO.start();
+
+      var chorusMerge = ctx.createGain();
+      chorusMerge.gain.value = 1.0;
+
+      // Split: comp → dry path + wet (delayed) path → merge
+      comp.connect(chorusDry);
+      comp.connect(chorusDelay);
+      chorusDelay.connect(chorusWet);
+      chorusDry.connect(chorusMerge);
+      chorusWet.connect(chorusMerge);
+      chorusMerge.connect(lp);
+    } else {
+      comp.connect(lp);
+    }
+
+    lp.connect(output);
+    output.connect(ctx.destination);
+
+    // Volume is now handled by the FX chain output gain
+    audioEl.volume = 1.0;
+
+    _sassieFxActive = true;
+    console.log('[Live2D] Voice FX initialized: preset=' + _sassieFxPreset +
+      ' (HP ' + p.hpFreq + 'Hz, presence +' + p.presenceGain + 'dB@' + p.presenceFreq +
+      'Hz, sat=' + p.saturation + ', comp ' + p.compThreshold + 'dB/' + p.compRatio + ':1' +
+      (p.chorusEnabled ? ', chorus' : '') + ', LP ' + p.lpFreq + 'Hz)');
+    return true;
+  } catch(e) {
+    console.warn('[Live2D] Voice FX init failed (falling back to dry):', e.message);
+    _sassieFxActive = false;
+    return false;
+  }
+}
+
+// Show debug overlay: ?debug=1 or ?sdebug=1 in URL, or call window.sassieDebug() from console
+function _sassieShowDebug() {
+  _sassieDebugVisible = true;
+  if (_sassieDebugEl) _sassieDebugEl.style.display = 'block';
+  _sassieUpdateDebug();
+}
+
+function _sassieUpdateDebug() {
+  if (!_sassieDebugVisible || !_sassieDebugEl) return;
+  var zone = getActiveStreamSafeZone();
+  var targetGame = flyState && flyState.targetGame ? flyState.targetGame : '-';
+  var targetX = flyState ? Math.round(flyState.tx) : '-';
+  var targetY = flyState ? Math.round(flyState.ty) : '-';
+  var currentX = flyState ? Math.round(flyState.x) : '-';
+  var currentY = flyState ? Math.round(flyState.y) : '-';
+  var fxLabel = _sassieFxPreset + (_sassieFxActive ? ' (active)' : _sassieFxPreset === 'dry' ? '' : ' (failed)');
+  var lines = [
+    'SASSIE OVERLAY DEBUG  (loaded ' + _sassiePageLoadedAt + ')',
+    'stream: ' + (ACTIVE_STREAM_GAME || 'default') + '  safe-zone: ' + (zone ? 'ON' : 'off'),
+    zone ? ('zone: x' + zone.minX + '-' + zone.maxX + '  y' + zone.minY + '-' + zone.maxY) : 'zone: none',
+    'system: ' + getActiveMovementSystemLabel() + '  targetGame: ' + targetGame,
+    'target: ' + targetX + ',' + targetY + '  current: ' + currentX + ',' + currentY,
+    'constraint: ' + (streamDiagnostics.lastConstraintSource || 'none') + '  ' + (streamDiagnostics.lastConstraintApplied ? 'CLAMPED' : 'direct'),
+    'raw target: ' + Math.round(streamDiagnostics.lastTargetRawX) + ',' + Math.round(streamDiagnostics.lastTargetRawY) + ' -> ' + Math.round(streamDiagnostics.lastTargetX) + ',' + Math.round(streamDiagnostics.lastTargetY),
+    streamDiagnostics.lastWarning ? 'WARN: ' + streamDiagnostics.lastWarning : '',
+    'sse: ' + (_sassieConnected ? 'CONNECTED' : 'disconnected') + '  fx: ' + fxLabel,
+    'actions: ' + _sassieActions,
+    'audio played: ' + _sassieAudioPlayed + '  failed: ' + _sassieAudioFailed + '  interrupted: ' + _sassieAudioInterrupted,
+    'last url: ' + (_sassieLastAudioUrl ? _sassieLastAudioUrl.split('/').pop() : 'none'),
+    'debugId: ' + (_sassieLastAudioDebugId || 'none'),
+    'state: ' + _sassieLastAudioState,
+    _sassieLastInterruptedBy ? 'INTERRUPTED BY: ' + _sassieLastInterruptedBy : '',
+    _sassieLastAudioError ? 'ERROR: ' + _sassieLastAudioError : ''
+  ].filter(Boolean);
+  _sassieDebugEl.textContent = lines.join('\n');
+}
+
+function _getSassieBaseUrl() {
+  // Check URL param override: ?sassie=host:port
+  var params = new URLSearchParams(location.search);
+  var override = params.get('sassie');
+  if (override) return 'http://' + override;
+  // Production: Sassie runtime runs on the Droplet, proxied via nginx at /api/runtime/*
+  // Use same origin (HTTPS) so SSE and audio requests go through nginx to port 3036.
+  // Local dev: use localhost:3036 directly.
+  if (location.hostname === 'wordtycoon.live') {
+    return 'https://wordtycoon.live';
+  }
+  return 'http://localhost:3036';
+}
+
+function connectSassieSSE() {
+  var baseUrl = _getSassieBaseUrl();
+  var sassieUrl = baseUrl + '/api/runtime/events';
+  var evtSource;
+
+  console.log('[Live2D] Sassie SSE connecting to', sassieUrl);
+
+  try { evtSource = new EventSource(sassieUrl); } catch(e) {
+    console.error('[Live2D] Sassie SSE EventSource failed:', e.message);
+    _sassieConnected = false;
+    setTimeout(connectSassieSSE, 10000);
+    return;
+  }
+
+  fetch(baseUrl + '/api/runtime/stream-context')
+    .then(function(r) { return r.ok ? r.json() : null; })
+    .then(function(d) {
+      if (d && d.ok && d.streamContext) {
+        applyRuntimeStreamContext(d.streamContext, 'runtime-bootstrap');
+      }
+    })
+    .catch(function() {});
+
+  // Shared audio element for TTS playback
+  var sassieAudio = document.createElement('audio');
+  sassieAudio.volume = 0.85;
+
+  // Initialize Voice FX chain (if not dry preset)
+  // Must happen before any play() calls — MediaElementSource takes over routing.
+  var fxActive = _sassieInitFx(sassieAudio);
+  if (!fxActive && _sassieFxPreset !== 'dry') {
+    // FX init failed, volume stays at 0.85 (element-level)
+  }
+
+  var sassieAudioUnlocked = false;
+  var sassieBlockedAudioUrl = null;   // stores URL of audio blocked by autoplay
+  var sassieBlockedDuration = 0;
+  var pendingMouthFlap = null;  // debugId of action waiting for TTS audio
+
+  // Chrome autoplay policy: audio.play() fails until user interacts with the page.
+  // OBS browser sources bypass this automatically.
+  // For Chrome tabs: we store the blocked audio URL and replay it on first click.
+  function unlockAndReplay() {
+    if (sassieAudioUnlocked) return;
+    sassieAudioUnlocked = true;
+    console.log('[Live2D] Audio unlocked by user interaction');
+    // Resume Web Audio context (Chrome suspends until user gesture)
+    if (_sassieFxCtx && _sassieFxCtx.state === 'suspended') {
+      _sassieFxCtx.resume().then(function() {
+        console.log('[Live2D] AudioContext resumed');
+      }).catch(function() {});
+    }
+    var prompt = document.getElementById('sassie-unlock');
+    if (prompt) prompt.style.display = 'none';
+    // Replay the last blocked audio if any
+    if (sassieBlockedAudioUrl) {
+      console.log('[Live2D] Replaying blocked audio:', sassieBlockedAudioUrl);
+      sassieAudio.src = sassieBlockedAudioUrl;
+      sassieAudio.currentTime = 0;
+      if (sassieBlockedDuration > 0) startMouthFlap(sassieBlockedDuration);
+      sassieAudio.play().then(function() {
+        _sassieAudioPlayed++;
+        _sassieLastAudioState = 'playing (vol=' + sassieAudio.volume + ' muted=' + sassieAudio.muted + ')';
+        _sassieUpdateDebug();
+      }).catch(function() {});
+      sassieBlockedAudioUrl = null;
+      sassieBlockedDuration = 0;
+    }
+    _sassieUpdateDebug();
+  }
+  document.addEventListener('click', unlockAndReplay);
+  document.addEventListener('touchstart', unlockAndReplay);
+  // Try to auto-unlock (works in OBS browser source, fails silently in Chrome tabs)
+  try {
+    sassieAudio.play().then(function() {
+      sassieAudioUnlocked = true;
+      sassieAudio.pause();
+      // Also resume AudioContext for FX chain
+      if (_sassieFxCtx && _sassieFxCtx.state === 'suspended') {
+        _sassieFxCtx.resume().catch(function() {});
+      }
+      console.log('[Live2D] Audio auto-unlocked (OBS/permissive env)');
+    }).catch(function() {
+      console.log('[Live2D] Autoplay blocked — click page to enable Sassie audio');
+    });
+  } catch(e) {}
+
+    evtSource.addEventListener('sassie-action', function(e) {
+      try {
+        var d = JSON.parse(e.data);
+        _sassieActions++;
+        console.log('[Live2D] Sassie action #' + _sassieActions + ':', d.expression, d.motion, 'p' + d.priority, d.duration + 'ms', d.debugId);
+
+      // Trigger the expression on the model
+      triggerExpression(d.expression, d.priority || 4, d.duration || 3500);
+
+      // Trigger the motion gesture
+      if (d.motion) {
+        triggerSassieGesture(d.motion, d.duration || 3500, d.intensity || 0.5);
+      }
+
+      // Mouth flap: if TTS is expected (reply text exists), start with estimate
+      // and let sassie-audio event resync with actual duration when audio arrives
+        if (d.mouthFlapMs && d.mouthFlapMs > 0) {
+          startMouthFlap(d.mouthFlapMs);
+          pendingMouthFlap = d.debugId;
+        } else {
+          pendingMouthFlap = null;
+        }
+        _sassieUpdateDebug();
+      } catch(ex) {
+        console.warn('[Live2D] Sassie action parse error:', ex);
+      }
+    });
+
+  evtSource.addEventListener('sassie-audio', function(e) {
+    try {
+      var d = JSON.parse(e.data);
+      if (!d.audioUrl) return;
+
+      // Build full audio URL using same base as SSE connection
+      var fullUrl = baseUrl + d.audioUrl;
+
+      // Check if we're replacing active audio (indicates a server-side interrupt/promote)
+      var wasPlaying = !sassieAudio.paused && sassieAudio.currentTime > 0;
+      if (wasPlaying) {
+        console.warn('[Live2D] New audio replacing active playback:', _sassieLastAudioDebugId, '→', d.debugId);
+        _sassieAudioInterrupted++;
+        _sassieLastInterruptedBy = d.debugId;
+      } else {
+        _sassieLastInterruptedBy = '';
+      }
+
+      _sassieLastAudioUrl = fullUrl;
+      _sassieLastAudioDebugId = d.debugId || '';
+      _sassieLastAudioState = 'loading';
+      _sassieLastAudioError = '';
+
+      console.log('[Live2D] Sassie TTS audio:', d.debugId, d.durationMs + 'ms', d.bytes + 'b', fullUrl);
+
+      // Play the audio — wait for buffer before playing to prevent cutouts.
+      // Use canplaythrough event to ensure the browser has enough data buffered.
+      sassieAudio.preload = 'auto';
+      sassieAudio.src = fullUrl;
+      sassieAudio.currentTime = 0;
+      _sassieLastAudioState = 'buffering';
+      _sassieUpdateDebug();
+
+      var playAttempted = false;
+      function attemptPlay() {
+        if (playAttempted) return;
+        playAttempted = true;
+        // Start mouth flap when audio actually starts (not before)
+        if (d.durationMs && d.durationMs > 0) {
+          startMouthFlap(d.durationMs);
+        }
+        sassieAudio.play().then(function() {
+          _sassieAudioPlayed++;
+          _sassieLastAudioState = 'playing (vol=' + sassieAudio.volume + ' muted=' + sassieAudio.muted + ')';
+          console.log('[Live2D] Sassie audio playing #' + _sassieAudioPlayed, d.debugId);
+          _sassieUpdateDebug();
+        }).catch(function(err) {
+          var isAutoplayBlock = err.message && err.message.indexOf('interact') !== -1;
+          if (isAutoplayBlock && !sassieAudioUnlocked) {
+            sassieBlockedAudioUrl = fullUrl;
+            sassieBlockedDuration = d.durationMs || 0;
+            _sassieLastAudioState = 'BLOCKED (click to unlock)';
+            _sassieLastAudioError = '';
+            console.warn('[Live2D] Audio autoplay blocked — click page to unlock and replay');
+            var prompt = document.getElementById('sassie-unlock');
+            if (prompt) prompt.style.display = '';
+          } else {
+            _sassieAudioFailed++;
+            _sassieLastAudioState = 'FAILED';
+            _sassieLastAudioError = err.message;
+            console.warn('[Live2D] TTS audio play failed:', err.message);
+          }
+          _sassieUpdateDebug();
+        });
+      }
+      // Wait for browser to buffer enough audio, with 3s timeout fallback
+      sassieAudio.addEventListener('canplaythrough', attemptPlay, { once: true });
+      setTimeout(function() { attemptPlay(); }, 3000);
+
+      pendingMouthFlap = null;
+    } catch(ex) {
+      console.warn('[Live2D] Sassie audio parse error:', ex);
+    }
+  });
+
+  evtSource.addEventListener('sassie-stop-audio', function(e) {
+    try {
+      var d = JSON.parse(e.data);
+      console.log('[Live2D] Sassie stop audio:', d.debugId, '(was playing:', _sassieLastAudioDebugId, ')');
+      _sassieAudioInterrupted++;
+      _sassieLastInterruptedBy = 'stop:' + d.debugId;
+      sassieAudio.pause();
+      sassieAudio.currentTime = 0;
+      _mouthActive = false;
+      _sassieLastAudioState = 'stopped (interrupted by ' + d.debugId + ')';
+      _sassieUpdateDebug();
+    } catch(ex) {}
+  });
+
+  evtSource.addEventListener('stream-context', function(e) {
+    try {
+      var d = JSON.parse(e.data);
+      applyRuntimeStreamContext(d, 'runtime-sse');
+    } catch(ex) {
+      console.warn('[Live2D] stream-context parse error:', ex);
+    }
+  });
+
+  // ── Comprehensive audio lifecycle listeners ──
+  // These help diagnose OBS browser-source audio issues where playback
+  // starts but gets cut short by the browser environment.
+  sassieAudio.addEventListener('ended', function() {
+    _sassieLastAudioState = 'ended (natural)';
+    _sassieUpdateDebug();
+    console.log('[Live2D] Audio ended naturally:', _sassieLastAudioDebugId);
+  });
+  sassieAudio.addEventListener('pause', function() {
+    // Ignore pause events from: intentional stop, already-ended audio, src-change on
+    // finished audio, or autoplay-blocked audio (state = BLOCKED).
+    var dominated = _sassieLastAudioState.indexOf('stopped') !== -1
+      || _sassieLastAudioState.indexOf('ended') !== -1
+      || _sassieLastAudioState.indexOf('loading') !== -1
+      || _sassieLastAudioState.indexOf('BLOCKED') !== -1;
+    if (!dominated && sassieAudio.currentTime > 0) {
+      console.warn('[Live2D] Audio PAUSED unexpectedly at', sassieAudio.currentTime.toFixed(2) + 's:', _sassieLastAudioDebugId);
+      _sassieLastAudioState = 'PAUSED at ' + sassieAudio.currentTime.toFixed(2) + 's';
+      _sassieUpdateDebug();
+    }
+  });
+  sassieAudio.addEventListener('abort', function() {
+    // Ignore abort on already-ended or loading audio (normal when src changes)
+    var dominated = _sassieLastAudioState.indexOf('ended') !== -1
+      || _sassieLastAudioState.indexOf('loading') !== -1
+      || _sassieLastAudioState.indexOf('BLOCKED') !== -1;
+    if (!dominated) {
+      console.warn('[Live2D] Audio ABORTED:', _sassieLastAudioDebugId);
+      _sassieLastAudioState = 'ABORTED';
+      _sassieUpdateDebug();
+    }
+  });
+  sassieAudio.addEventListener('error', function(ev) {
+    var code = sassieAudio.error ? sassieAudio.error.code : '?';
+    var msg = sassieAudio.error ? sassieAudio.error.message : 'unknown';
+    console.error('[Live2D] Audio ERROR:', code, msg, _sassieLastAudioDebugId);
+    _sassieAudioFailed++;
+    _sassieLastAudioState = 'ERROR code=' + code;
+    _sassieLastAudioError = msg;
+    _sassieUpdateDebug();
+  });
+  sassieAudio.addEventListener('stalled', function() {
+    console.warn('[Live2D] Audio STALLED (buffering):', _sassieLastAudioDebugId);
+  });
+  sassieAudio.addEventListener('waiting', function() {
+    console.log('[Live2D] Audio WAITING (buffering):', _sassieLastAudioDebugId);
+  });
+
+  // Expose console debug hook: type sassieDebug() in browser console
+  window.sassieDebug = _sassieShowDebug;
+
+  evtSource.onopen = function() {
+    _sassieConnected = true;
+    console.log('[Live2D] Sassie SSE CONNECTED to', sassieUrl);
+    // Flash status briefly so OBS/dev can confirm connection
+    if (statusEl) {
+      statusEl.style.display = '';
+      statusEl.textContent = 'sassie: connected';
+      setTimeout(function() { statusEl.style.display = 'none'; }, 4000);
+    }
+    _sassieUpdateDebug();
+  };
+
+  evtSource.onerror = function() {
+    if (evtSource.readyState === EventSource.CLOSED) {
+      _sassieConnected = false;
+      console.log('[Live2D] Sassie SSE DISCONNECTED, retrying in 10s');
+      setTimeout(connectSassieSSE, 10000);
+    } else if (evtSource.readyState === EventSource.CONNECTING) {
+      // Browser is auto-reconnecting (normal SSE behavior)
+      _sassieConnected = false;
+      console.log('[Live2D] Sassie SSE reconnecting...');
+    }
+  };
+}
+
+// ─── Start ───────────────────────────────────────────────────────────────────
+init();
+initMouthTicker();
+
+// Init debug element early (before SSE connects) so ?sdebug=1 works even if runtime is down
+_sassieDebugEl = document.getElementById('sassie-debug');
+if (SHOW_OVERLAY_DEBUG) {
+  _sassieShowDebug();
+}
+setInterval(_sassieUpdateDebug, 500);
+
+connectSassieSSE();
+
+})();
+</script>
+</body>
+</html>

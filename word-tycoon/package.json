@@ -1,0 +1,49 @@
+{
+  "name": "mobile-tycoon",
+  "version": "1.0.0",
+  "description": "Mobile Tycoon — Livestream interactive tycoon clicker game",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "smoke:prod": "node scripts/smoke-ecosystem.js --ssh-target deploy@wordtycoon.live",
+    "smoke:ecosystem": "node scripts/smoke-ecosystem.js",
+    "smoke:business-admin": "node scripts/smoke-business-admin.js",
+    "sassie": "node tools/sassie-mvp/server.js",
+    "sassie-runtime": "node tools/sassie-runtime/server.js",
+    "import:licia-memories": "node tools/sassie-mvp/scripts/import-licia-memories.js",
+    "repair:orphaned-player-history": "node scripts/repair-orphaned-player-history.js",
+    "archive:orphaned-player-history": "node scripts/archive-orphaned-player-history.js",
+    "restore:drill": "node scripts/restore-drill.js",
+    "backup:replicate": "node scripts/replicate-backups.js",
+    "test:business-smoke": "node --test test/business-smoke.test.js",
+    "test:letterworks": "node --test test/letterworks.test.js",
+    "test:word-foundry": "node --test test/word-foundry.test.js test/word-foundry-service.test.js test/word-foundry-simulator.test.js test/word-foundry-database.test.js",
+    "simulate:word-foundry": "node scripts/simulate-word-foundry.js",
+    "test:sassie-mvp": "node --test tools/sassie-mvp/test/*.test.js",
+    "test:obsidian-sync": "node --test test/obsidian-sync.test.js",
+    "test:tax-season": "node --test test/tax-season.test.js"
+  },
+  "dependencies": {
+    "canvas": "^3.2.1",
+    "dotenv": "^16.4.0",
+    "express": "^4.22.2",
+    "msedge-tts": "^2.0.5",
+    "socket.io": "^4.8.0",
+    "socket.io-client": "^4.8.0",
+    "sql.js": "^1.11.0",
+    "stripe": "^20.4.1"
+  },
+  "overrides": {
+    "@protobufjs/utf8": "^1.1.1",
+    "axios": "^1.16.1",
+    "path-to-regexp": "^0.1.13",
+    "protobufjs": "^7.6.1",
+    "qs": "^6.16.0",
+    "socket.io-parser": "^4.2.6",
+    "ws": "^8.21.0"
+  },
+  "devDependencies": {
+    "kokoro-js": "^1.2.1"
+  }
+}

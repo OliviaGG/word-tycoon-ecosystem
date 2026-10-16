@@ -1,0 +1,702 @@
+/* ===== Word Mine — Styles ===== */
+
+:root {
+  --bg: #0a0e17;
+  --surface: #111827;
+  --surface-light: #1e293b;
+  --border: #334155;
+  --text: #f1f5f9;
+  --text-dim: #64748b;
+  --text-muted: #475569;
+
+  /* Depth Tier Colors */
+  --coal: #6b7280;
+  --iron: #a1724a;
+  --silver: #94a3b8;
+  --gold: #f59e0b;
+  --diamond: #06b6d4;
+
+  /* Accents */
+  --primary: #f59e0b;
+  --primary-light: #fbbf24;
+  --danger: #ef4444;
+  --success: #22c55e;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ─── Mine Selector ─────────────────────────────────────────────── */
+
+.mine-selector {
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.selector-header {
+  text-align: center;
+  margin-bottom: 16px;
+  position: relative;
+  width: 100%;
+}
+
+.back-link {
+  position: absolute;
+  left: 4px;
+  top: 2px;
+  font-size: 1.4rem;
+  text-decoration: none;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+.back-link:hover { opacity: 1; }
+
+.selector-header h1 {
+  font-size: 1.6rem;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+}
+.pick-icon { font-size: 1.3rem; }
+.tagline {
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  margin-top: 2px;
+  font-style: italic;
+}
+
+.random-mine-btn {
+  padding: 12px 28px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  background: var(--primary);
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-bottom: 12px;
+  font-family: inherit;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 4px 12px rgba(245,158,11,0.3);
+  transition: all 0.2s;
+}
+.random-mine-btn:hover {
+  background: var(--primary-light);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(245,158,11,0.4);
+}
+
+.mine-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  width: 100%;
+  max-height: 70vh;
+  overflow-y: auto;
+  padding: 4px;
+}
+
+.mine-card {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+.mine-card:hover {
+  background: var(--surface-light);
+  border-color: var(--primary);
+  box-shadow: 0 4px 16px rgba(245,158,11,0.15);
+}
+.mine-card.completed {
+  border-color: var(--success);
+}
+.mine-card.completed::after {
+  content: '\2713';
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  color: var(--success);
+  font-weight: 900;
+  font-size: 1rem;
+}
+
+.mine-card .mine-num {
+  color: var(--text-dim);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+.mine-card .mine-card-name {
+  font-weight: 700;
+  font-size: 0.85rem;
+  margin: 2px 0;
+  color: var(--text);
+}
+.mine-card .mine-card-theme {
+  color: var(--text-dim);
+  font-size: 0.7rem;
+}
+.mine-card .mine-pct {
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: var(--primary-light);
+  margin-top: 4px;
+  letter-spacing: 1px;
+}
+.mine-card .mine-pct.complete { color: var(--success); }
+
+/* Daily/Weekly cards */
+.mine-card.daily-card {
+  border-color: #ff6b35;
+  background: linear-gradient(135deg, rgba(255,107,53,.08), rgba(255,69,0,.03));
+}
+.mine-card.weekly-card {
+  border-color: var(--gold);
+  background: linear-gradient(135deg, rgba(245,158,11,.08), rgba(245,158,11,.03));
+}
+.mine-card.archived-daily { border-color: #ff6b35; background: linear-gradient(135deg, rgba(255,107,53,.06), rgba(255,69,0,.03)); }
+.mine-card.archived-weekly { border-color: #d4a017; background: linear-gradient(135deg, rgba(212,160,23,.06), rgba(212,160,23,.03)); }
+
+.challenge-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.6rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+.challenge-badge.daily { background: #ff6b35; color: #fff; }
+.challenge-badge.weekly { background: var(--gold); color: #000; }
+
+/* ─── Game Screen ───────────────────────────────────────────────── */
+
+.game-screen {
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.game-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 12px;
+}
+.back-btn {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+.back-btn:hover { color: var(--text); }
+
+.mine-info { flex: 1; }
+.mine-name { font-weight: 700; font-size: 0.95rem; }
+.daily-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.6rem;
+  font-weight: 800;
+  background: #ff6b35;
+  color: #fff;
+  margin-left: 6px;
+  letter-spacing: 1px;
+}
+.daily-badge.weekly-badge { background: var(--gold); color: #000; }
+.hidden { display: none !important; }
+
+.xp-total {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #4caf50;
+}
+.xp-icon { font-size: 1.1rem; }
+
+/* ─── Letter Area ───────────────────────────────────────────────── */
+
+.letter-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.letter-row {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.letter-cell {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.letter-cell.revealed {
+  background: var(--surface-light);
+  border: 2px solid var(--border);
+  color: var(--text);
+}
+.letter-cell.revealed:hover {
+  border-color: var(--primary);
+  background: #1a2332;
+  transform: scale(1.05);
+}
+.letter-cell.revealed:active {
+  transform: scale(0.95);
+}
+.letter-cell.revealed.selected {
+  border-color: var(--primary);
+  background: rgba(245,158,11,0.15);
+  box-shadow: 0 0 12px rgba(245,158,11,0.3);
+}
+
+.letter-cell.locked {
+  background: rgba(100,116,139,0.1);
+  border: 2px dashed var(--text-muted);
+  color: var(--text-muted);
+  cursor: default;
+  font-size: 1.2rem;
+  animation: pulse-lock 2s ease-in-out infinite;
+}
+.letter-cell.just-unlocked {
+  animation: unlock-flash 0.6s ease-out;
+  border-style: solid;
+}
+
+@keyframes pulse-lock {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.7; }
+}
+
+@keyframes unlock-flash {
+  0% { transform: scale(1.3); box-shadow: 0 0 30px var(--primary); }
+  100% { transform: scale(1); box-shadow: none; }
+}
+
+@keyframes letter-glow {
+  0%   { transform: scale(1.18); box-shadow: 0 0 20px var(--glow-color, var(--primary)); border-color: var(--glow-color, var(--primary)); background: rgba(255,255,255,0.12); }
+  100% { transform: scale(1); box-shadow: none; border-color: var(--border); background: var(--surface-light); }
+}
+.letter-cell.word-glow {
+  animation: letter-glow 0.6s ease-out forwards;
+  z-index: 10;
+}
+
+/* ─── Tier Hint: Dimmed Letters + Starting-Letter Badges ─────── */
+
+.letter-cell.letter-dimmed {
+  opacity: 0.3;
+  filter: grayscale(0.6);
+}
+.letter-cell.letter-dimmed:hover {
+  opacity: 0.6;
+}
+
+.letter-start-badge {
+  position: absolute;
+  bottom: -5px;
+  left: -5px;
+  background: #3b82f6;
+  color: #fff;
+  font-size: 0.55rem;
+  font-weight: 700;
+  min-width: 15px;
+  height: 15px;
+  padding: 0 3px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 5;
+  line-height: 1;
+  box-sizing: border-box;
+}
+
+/* ─── Feed Player/Word Styles ──────────────────────────────────── */
+
+.found-word-player { font-weight: 700; margin-right: 4px; }
+.found-word-title {
+  font-size: 0.6rem; font-weight: 700; text-transform: uppercase;
+  margin: 0 4px; padding: 1px 4px; border-radius: 3px;
+  background: rgba(255,255,255,0.08); letter-spacing: 0.5px;
+}
+.found-word-word {
+  font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-left: 4px;
+}
+
+/* ─── Input Area ────────────────────────────────────────────────── */
+
+.input-area {
+  text-align: center;
+  margin: 8px 0 16px;
+}
+
+.current-word {
+  min-height: 44px;
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--text);
+  padding: 8px 0;
+  border-bottom: 2px solid var(--border);
+  margin-bottom: 10px;
+}
+.current-word:empty::after {
+  content: 'tap letters to dig';
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.input-buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.action-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.delete-btn {
+  background: var(--surface-light);
+  color: var(--text-dim);
+  font-size: 1.2rem;
+  padding: 10px 16px;
+}
+.delete-btn:hover { background: rgba(239,68,68,0.15); color: var(--danger); }
+
+.shuffle-btn {
+  background: var(--surface-light);
+  color: var(--text-dim);
+  font-size: 1.1rem;
+  padding: 10px 16px;
+}
+.shuffle-btn:hover { background: var(--surface); color: var(--text); }
+
+.dig-btn {
+  background: var(--primary);
+  color: #000;
+  font-size: 1rem;
+  padding: 10px 28px;
+  box-shadow: 0 4px 12px rgba(245,158,11,0.3);
+}
+.dig-btn:hover {
+  background: var(--primary-light);
+  transform: translateY(-1px);
+}
+.dig-btn:active { transform: translateY(0); }
+
+/* ─── Feedback Toast ────────────────────────────────────────────── */
+
+.feedback {
+  position: fixed;
+  top: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  z-index: 100;
+  animation: toast-in 0.3s ease-out;
+  pointer-events: none;
+}
+.feedback.success { background: rgba(34,197,94,0.9); color: #fff; }
+.feedback.error { background: rgba(239,68,68,0.85); color: #fff; }
+.feedback.info { background: rgba(6,182,212,0.9); color: #fff; }
+.feedback.depth-unlock { background: rgba(245,158,11,0.95); color: #000; font-size: 1.1rem; }
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* ─── Depth Meter ───────────────────────────────────────────────── */
+
+.depth-meter {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+.depth-title {
+  font-weight: 800;
+  font-size: 0.75rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+}
+
+.depth-tiers {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.depth-tier {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  transition: all 0.3s;
+}
+.depth-tier.locked {
+  opacity: 0.35;
+}
+.depth-tier.current {
+  background: rgba(245,158,11,0.08);
+  border: 1px solid rgba(245,158,11,0.2);
+}
+.depth-tier.unlocked {
+  opacity: 0.7;
+}
+
+.tier-icon {
+  font-size: 1rem;
+  width: 24px;
+  text-align: center;
+}
+.tier-label {
+  font-weight: 700;
+  font-size: 0.8rem;
+  width: 60px;
+}
+.tier-progress {
+  flex: 1;
+  height: 6px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.tier-progress-bar {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.4s ease-out;
+}
+.tier-count {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-dim);
+  width: 30px;
+  text-align: right;
+}
+.tier-xp {
+  font-size: 0.65rem;
+  color: #4caf50;
+  width: 40px;
+  text-align: right;
+}
+
+/* ─── Found Words ───────────────────────────────────────────────── */
+
+.found-words {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.found-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+.found-list { display: flex; flex-direction: column; gap: 4px; }
+
+.found-tier-group {
+  margin-bottom: 6px;
+}
+.found-tier-label {
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 3px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  display: inline-block;
+}
+
+.found-word-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 3px 6px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  animation: word-in 0.3s ease-out;
+}
+.found-word-row:nth-child(odd) { background: rgba(255,255,255,0.02); }
+.found-word-text { font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+.found-word-xp { color: #4caf50; font-weight: 700; font-size: 0.75rem; }
+
+@keyframes word-in {
+  from { opacity: 0; transform: translateX(-8px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* ─── Theme Toggle ─────────────────────────────────────────────── */
+
+.theme-toggle {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+.theme-toggle:hover { color: var(--text); background: var(--surface-light); }
+.theme-icon-dark { display: inline; }
+.theme-icon-light { display: none; }
+[data-theme="light"] .theme-icon-dark { display: none; }
+[data-theme="light"] .theme-icon-light { display: inline; }
+
+/* ─── Light Mode ───────────────────────────────────────────────── */
+
+[data-theme="light"] {
+  --bg: #faf7f2;
+  --surface: #f0ebe3;
+  --surface-light: #e8e0d4;
+  --border: #d5cbbf;
+  --text: #3d3329;
+  --text-dim: #8c7e6f;
+  --text-muted: #a89c8e;
+  --primary: #d97706;
+  --primary-light: #f59e0b;
+  --danger: #d64545;
+  --success: #2e7d32;
+}
+[data-theme="light"] body { background: var(--bg); }
+[data-theme="light"] .letter-cell.revealed {
+  background: linear-gradient(145deg, #fff, var(--surface));
+  color: #3d3329;
+  border-color: var(--border);
+  text-shadow: none;
+}
+[data-theme="light"] .letter-cell.revealed:hover {
+  background: #fff;
+  border-color: var(--primary);
+}
+[data-theme="light"] .letter-cell.locked {
+  background: var(--surface);
+  border-color: var(--text-muted);
+  color: var(--text-muted);
+}
+[data-theme="light"] .mine-card {
+  background: var(--surface);
+  border-color: var(--border);
+}
+[data-theme="light"] .mine-card:hover {
+  background: #fff;
+  border-color: var(--primary);
+  box-shadow: 0 4px 16px rgba(217,119,6,0.12);
+}
+[data-theme="light"] .mine-card.daily-card {
+  background: linear-gradient(135deg, rgba(255,107,53,.06), #faf7f2);
+}
+[data-theme="light"] .mine-card.weekly-card {
+  background: linear-gradient(135deg, rgba(245,158,11,.06), #faf7f2);
+}
+[data-theme="light"] .depth-meter { background: var(--surface); border-color: var(--border); }
+[data-theme="light"] .depth-tier.current {
+  background: rgba(217,119,6,0.06);
+  border-color: rgba(217,119,6,0.2);
+}
+[data-theme="light"] .tier-progress { background: rgba(0,0,0,0.06); }
+[data-theme="light"] .found-words { background: var(--surface); border-color: var(--border); }
+[data-theme="light"] .found-word-row:nth-child(odd) { background: rgba(0,0,0,0.03); }
+[data-theme="light"] .feedback.success { background: rgba(46,125,50,0.9); }
+[data-theme="light"] .feedback.error { background: rgba(214,69,69,0.9); }
+[data-theme="light"] .feedback.info { background: rgba(6,150,176,0.9); }
+[data-theme="light"] .feedback.depth-unlock { background: rgba(217,119,6,0.95); }
+[data-theme="light"] .random-mine-btn {
+  box-shadow: 0 4px 12px rgba(217,119,6,0.2);
+}
+[data-theme="light"] .random-mine-btn:hover {
+  box-shadow: 0 6px 20px rgba(217,119,6,0.3);
+}
+[data-theme="light"] .action-btn.delete-btn { background: var(--surface); }
+[data-theme="light"] .action-btn.delete-btn:hover { background: rgba(214,69,69,0.1); }
+[data-theme="light"] .action-btn.shuffle-btn { background: var(--surface); }
+[data-theme="light"] .action-btn.shuffle-btn:hover { background: var(--surface-light); }
+[data-theme="light"] .action-btn.dig-btn {
+  box-shadow: 0 4px 12px rgba(217,119,6,0.2);
+}
+[data-theme="light"] .current-word { border-bottom-color: var(--border); }
+
+/* ─── Responsive ────────────────────────────────────────────────── */
+
+@media (max-width: 420px) {
+  .letter-cell { width: 42px; height: 42px; font-size: 1.2rem; }
+  .mine-grid { grid-template-columns: repeat(2, 1fr); gap: 6px; }
+  .mine-selector, .game-screen { padding: 8px; }
+}
+
+@media (min-width: 600px) {
+  .letter-cell { width: 56px; height: 56px; font-size: 1.6rem; }
+}

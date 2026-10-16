@@ -1,0 +1,93 @@
+/* ===== Searchle 3.0 — Animations ===== */
+/* Pixel values scaled for 1800px base width (4.5x) */
+
+/* Header */
+@keyframes header-shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes header-glow {
+  0%, 100% { box-shadow: 0 9px 54px rgba(34, 211, 238, 0.1); }
+  50% { box-shadow: 0 9px 90px rgba(34, 211, 238, 0.25); }
+}
+
+@keyframes header-slide-in {
+  0% { transform: translateY(-100%); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+/* Jackpot */
+@keyframes jackpot-shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes jackpot-glow {
+  0% { box-shadow: 0 0 20px rgba(57, 255, 20, 0.25), 0 0 50px rgba(57, 255, 20, 0.1), inset 0 0 20px rgba(57, 255, 20, 0.06); }
+  100% { box-shadow: 0 0 30px rgba(57, 255, 20, 0.4), 0 0 70px rgba(57, 255, 20, 0.15), inset 0 0 25px rgba(57, 255, 20, 0.1); }
+}
+
+@keyframes jackpot-bump {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+  100% { transform: scale(1); }
+}
+
+/* Win */
+@keyframes celebrate {
+  0% { transform: scale(0.5); opacity: 0; }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes win-slide-in {
+  0% { transform: translateY(-100%); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+/* Guess Bubbles */
+@keyframes bump-flash {
+  0% { opacity: 0; transform: translateY(-36px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.pinned-guess .guess-entry.bumped {
+  animation: bump-flash 0.3s ease-out;
+}
+
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4); }
+  50% { box-shadow: 0 0 90px 18px rgba(255, 255, 255, 0.2); }
+}
+
+/* Money Rain */
+@keyframes money-fall {
+  0% {
+    opacity: 1;
+    transform: translateY(-90px) rotate(0deg) scale(0.5);
+  }
+  10% {
+    opacity: 1;
+    transform: translateY(0) rotate(20deg) scale(1);
+  }
+  90% { opacity: 0.8; }
+  100% {
+    opacity: 0;
+    transform: translateY(var(--base-height, 100vh)) rotate(720deg) scale(0.6);
+  }
+}
+
+/* Rank bar shimmer */
+@keyframes rank-shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+/* ===== OBS Performance Mode ===== */
+body.obs-mode .header-bar {
+  animation: none;
+  box-shadow: 0 9px 54px rgba(34, 211, 238, 0.15);
+}
+body.obs-mode .jackpot-bar { animation: jackpot-glow 3s ease-in-out infinite alternate; }
+body.obs-mode .guess-rank { animation: none; }

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-18066640610"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'AW-18066640610');
+</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#000000">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Figural">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="description" content="Figural is a free symbol-to-word deduction puzzle. Decode hidden words by matching symbols to letters — daily puzzles and unlimited practice rounds.">
+  <meta name="keywords" content="figural, word puzzle, symbol puzzle, deduction game, daily puzzle, free word game, code breaking game">
+  <title>Figural — Free Symbol-Word Deduction Puzzle</title>
+  <link rel="canonical" href="https://wordtycoon.live/figural/solo/">
+  <link rel="manifest" href="manifest.webmanifest?v=3">
+  <link rel="icon" type="image/png" href="favicon-32-v3.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon-v3.png">
+  <!-- Open Graph -->
+  <meta property="og:title" content="Figural — Symbol-Word Deduction Puzzle">
+  <meta property="og:description" content="Decode hidden words by matching symbols to letters. Daily puzzles and unlimited practice rounds — free to play.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://wordtycoon.live/figural/solo/">
+  <meta property="og:image" content="https://wordtycoon.live/figural/icon-512.png">
+  <meta property="og:site_name" content="Figural">
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Figural — Symbol-Word Deduction Puzzle">
+  <meta name="twitter:description" content="Free symbol-to-word deduction puzzle. Decode hidden words — daily puzzles and unlimited practice.">
+  <meta name="twitter:image" content="https://wordtycoon.live/figural/icon-512.png">
+  <!-- JSON-LD -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "VideoGame",
+    "name": "Figural",
+    "description": "Figural is a free symbol-to-word deduction puzzle. Decode hidden words by matching symbols to letters — daily puzzles and unlimited practice rounds.",
+    "url": "https://wordtycoon.live/figural/solo/",
+    "genre": ["Word Game", "Puzzle", "Deduction"],
+    "gamePlatform": "Web Browser",
+    "applicationCategory": "Game",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+    "author": { "@type": "Organization", "name": "Word Tycoon", "url": "https://wordtycoon.live" }
+  }
+  </script>
+  <link rel="stylesheet" href="game.css?v=11">
+</head>
+<body>
+  <div id="app">
+    <header id="header">
+      <h1 id="title">FIGURAL</h1>
+      <div id="status">
+        <span id="guesses-left">8 left</span>
+        <span id="word-length-tag"></span>
+        <span id="jackpot">50</span>
+        <span id="daily-badge" class="daily-badge" style="display:none">DAILY</span>
+        <span id="frenzy-badge" class="frenzy-badge" style="display:none">
+          <span class="frenzy-label">FRENZY</span>
+          <span id="frenzy-mult">1.0x</span>
+        </span>
+      </div>
+    </header>
+
+    <div id="legend">
+      <div class="legend-item" id="legend-0">
+        <span class="legend-symbol"></span>
+        <span class="legend-meaning">= ?</span>
+      </div>
+      <div class="legend-item" id="legend-1">
+        <span class="legend-symbol"></span>
+        <span class="legend-meaning">= ?</span>
+      </div>
+      <div class="legend-item" id="legend-2">
+        <span class="legend-symbol"></span>
+        <span class="legend-meaning">= ?</span>
+      </div>
+    </div>
+
+    <div id="board"></div>
+
+    <div id="message" role="alert" aria-atomic="true"></div>
+
+    <div id="keyboard">
+      <div class="kb-row">
+        <button class="kb-key" data-key="Q">Q</button>
+        <button class="kb-key" data-key="W">W</button>
+        <button class="kb-key" data-key="E">E</button>
+        <button class="kb-key" data-key="R">R</button>
+        <button class="kb-key" data-key="T">T</button>
+        <button class="kb-key" data-key="Y">Y</button>
+        <button class="kb-key" data-key="U">U</button>
+        <button class="kb-key" data-key="I">I</button>
+        <button class="kb-key" data-key="O">O</button>
+        <button class="kb-key" data-key="P">P</button>
+      </div>
+      <div class="kb-row">
+        <div class="kb-spacer-half"></div>
+        <button class="kb-key" data-key="A">A</button>
+        <button class="kb-key" data-key="S">S</button>
+        <button class="kb-key" data-key="D">D</button>
+        <button class="kb-key" data-key="F">F</button>
+        <button class="kb-key" data-key="G">G</button>
+        <button class="kb-key" data-key="H">H</button>
+        <button class="kb-key" data-key="J">J</button>
+        <button class="kb-key" data-key="K">K</button>
+        <button class="kb-key" data-key="L">L</button>
+        <div class="kb-spacer-half"></div>
+      </div>
+      <div class="kb-row">
+        <button class="kb-key kb-wide" data-key="Backspace">&#9003;</button>
+        <button class="kb-key" data-key="Z">Z</button>
+        <button class="kb-key" data-key="X">X</button>
+        <button class="kb-key" data-key="C">C</button>
+        <button class="kb-key" data-key="V">V</button>
+        <button class="kb-key" data-key="B">B</button>
+        <button class="kb-key" data-key="N">N</button>
+        <button class="kb-key" data-key="M">M</button>
+        <button class="kb-key kb-wide" data-key="Enter">ENTER</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="game.js?v=4-authoritative-pot"></script>
+  <script src="/portal/js/library-toast.js" data-mode="mp"></script>
+  <script src="/portal/js/cosmetic-reward.js"></script>
+  <script src="/portal/js/progress-card.js"></script>
+  <script src="pwa-install.js"></script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+{
+  "name": "Word5000",
+  "short_name": "Word5000",
+  "description": "Daily word deduction with color-coded clues and practice rounds.",
+  "id": "/play.html?source=pwa",
+  "start_url": "/play.html?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#101525",
+  "theme_color": "#101525",
+  "icons": [
+    {
+      "src": "/icon-192-v3.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512-v3.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

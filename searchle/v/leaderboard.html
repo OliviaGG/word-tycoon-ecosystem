@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Searchle 3.0 — Player Leaderboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: transparent;
+      font-family: 'Inter', 'Segoe UI', sans-serif;
+      color: #f1f5f9;
+      overflow: hidden;
+      height: 100vh;
+      padding: 16px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    h2 {
+      font-size: 12px;
+      font-weight: 700;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      margin-bottom: 12px;
+    }
+
+    #leaderboard {
+      display: flex;
+      flex-direction: column;
+      height: calc(100vh - 80px);
+    }
+
+    /* Bar styling via SVG */
+    .bar-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 6px;
+      opacity: 0;
+    }
+
+    .bar-rank {
+      font-size: 14px;
+      font-weight: 800;
+      color: #94a3b8;
+      min-width: 24px;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .bar-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 1.5px solid rgba(148, 163, 184, 0.2);
+      flex-shrink: 0;
+    }
+    .bar-avatar-fb {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .bar-name {
+      font-size: 13px;
+      font-weight: 600;
+      min-width: 80px;
+      max-width: 120px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .bar-chart-area {
+      flex: 1;
+      height: 24px;
+      position: relative;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 4px;
+      position: absolute;
+      top: 0;
+      left: 0;
+      transition: width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .bar-value {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 11px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      z-index: 2;
+    }
+
+    /* Stats footer */
+    #footer-stats {
+      display: flex;
+      gap: 24px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(148, 163, 184, 0.1);
+      margin-top: auto;
+    }
+    .footer-stat {
+      text-align: center;
+    }
+    .footer-value {
+      font-size: 18px;
+      font-weight: 800;
+      color: #22d3ee;
+      font-variant-numeric: tabular-nums;
+    }
+    .footer-label {
+      font-size: 9px;
+      font-weight: 600;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* Platform colors */
+    .plat-tiktok { border-color: #69C9D0; }
+    .plat-youtube { border-color: #FF0000; }
+    .plat-discord { border-color: #5865F2; }
+
+    /* Library word toast — OBS overlay (all users, larger) */
+    .library-toast {
+      position: fixed;
+      top: 60px;
+      right: 20px;
+      background: linear-gradient(135deg, #1a0f00, #2d1f0a);
+      border: 2px solid #8b6914;
+      border-radius: 16px;
+      padding: 24px 40px;
+      color: #f5deb3;
+      font-size: 28px;
+      font-weight: 700;
+      z-index: 10000;
+      opacity: 0;
+      transform: translateX(60px);
+      transition: opacity 0.4s, transform 0.4s;
+      pointer-events: none;
+      box-shadow: 0 6px 30px rgba(139, 105, 20, 0.4);
+      max-width: 500px;
+    }
+    .library-toast.show { opacity: 1; transform: translateX(0); }
+    .library-toast strong { color: #ffd700; letter-spacing: 1px; }
+    .library-toast .toast-player { font-size: 18px; color: #c0a050; margin-top: 4px; }
+  </style>
+</head>
+<body>
+  <h2>Player Leaderboard</h2>
+  <div id="leaderboard"></div>
+  <div id="footer-stats">
+    <div class="footer-stat">
+      <div class="footer-value" id="total-guesses">0</div>
+      <div class="footer-label">Total Guesses</div>
+    </div>
+    <div class="footer-stat">
+      <div class="footer-value" id="total-players">0</div>
+      <div class="footer-label">Players</div>
+    </div>
+    <div class="footer-stat">
+      <div class="footer-value" id="best-rank">—</div>
+      <div class="footer-label">Best Rank</div>
+    </div>
+    <div class="footer-stat">
+      <div class="footer-value" id="game-timer">0:00</div>
+      <div class="footer-label">Time</div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script>
+  (function () {
+    var socket = io({ reconnection: true, reconnectionDelay: 2000, reconnectionDelayMax: 10000, reconnectionAttempts: Infinity, transports: ['polling', 'websocket'] });
+
+    var guesses = [];
+    var startTime = null;
+    var isWon = false;
+    var MAX_BARS = 15;
+
+    var platformColors = {
+      tiktok: '#69C9D0',
+      youtube: '#FF0000',
+      discord: '#5865F2'
+    };
+    var defaultColor = '#9147FF';
+
+    // Build player stats from guesses
+    function buildPlayerStats() {
+      var playerMap = {};
+
+      guesses.forEach(function (g) {
+        var key = (g.user.platformUserId || g.user.displayName) + ':' + g.user.platform;
+        if (!playerMap[key]) {
+          playerMap[key] = {
+            key: key,
+            user: g.user,
+            guessCount: 0,
+            bestRank: Infinity,
+            bestWord: ''
+          };
+        }
+        playerMap[key].guessCount++;
+        if (g.rank < playerMap[key].bestRank) {
+          playerMap[key].bestRank = g.rank;
+          playerMap[key].bestWord = g.word;
+        }
+      });
+
+      var players = Object.values(playerMap);
+      // Sort by guess count descending
+      players.sort(function (a, b) { return b.guessCount - a.guessCount; });
+      return players.slice(0, MAX_BARS);
+    }
+
+    function render() {
+      var players = buildPlayerStats();
+      var maxGuesses = players.length > 0 ? players[0].guessCount : 1;
+
+      var container = d3.select('#leaderboard');
+
+      // D3 data join
+      var rows = container.selectAll('.bar-row')
+        .data(players, function (d) { return d.key; });
+
+      // EXIT
+      rows.exit()
+        .transition().duration(200)
+        .style('opacity', 0)
+        .style('transform', 'translateX(-20px)')
+        .remove();
+
+      // ENTER
+      var enter = rows.enter()
+        .append('div')
+        .attr('class', 'bar-row')
+        .style('opacity', 0)
+        .style('transform', 'translateX(20px)');
+
+      // Rank number
+      enter.append('span').attr('class', 'bar-rank');
+
+      // Avatar
+      enter.each(function (d) {
+        var row = d3.select(this);
+        if (d.user.profilePic) {
+          var img = row.append('img')
+            .attr('class', 'bar-avatar')
+            .attr('src', d.user.profilePic)
+            .attr('alt', d.user.displayName);
+          img.on('error', function () {
+            var fb = document.createElement('div');
+            fb.className = 'bar-avatar-fb';
+            fb.style.backgroundColor = platformColors[d.user.platform] || defaultColor;
+            fb.textContent = (d.user.displayName || '?')[0].toUpperCase();
+            this.replaceWith(fb);
+          });
+        } else {
+          row.append('div')
+            .attr('class', 'bar-avatar-fb')
+            .style('background-color', platformColors[d.user.platform] || defaultColor)
+            .text((d.user.displayName || '?')[0].toUpperCase());
+        }
+      });
+
+      // Name
+      enter.append('span').attr('class', 'bar-name');
+
+      // Bar chart area
+      var barArea = enter.append('div').attr('class', 'bar-chart-area');
+      barArea.append('div').attr('class', 'bar-fill');
+      barArea.append('span').attr('class', 'bar-value');
+
+      // Animate enter
+      enter.transition().duration(300).delay(function (d, i) { return i * 40; })
+        .style('opacity', 1)
+        .style('transform', 'translateX(0)');
+
+      // UPDATE + MERGE
+      var merged = enter.merge(rows);
+
+      // Reorder with smooth animation
+      merged.order();
+
+      merged.select('.bar-rank')
+        .text(function (d, i) { return i + 1; });
+
+      merged.select('.bar-name')
+        .text(function (d) { return d.user.displayName; });
+
+      merged.select('.bar-fill')
+        .style('background', function (d) {
+          var color = platformColors[d.user.platform] || defaultColor;
+          return 'linear-gradient(90deg, ' + color + '44, ' + color + 'aa)';
+        })
+        .style('width', function (d) {
+          return Math.max(8, (d.guessCount / maxGuesses) * 100) + '%';
+        });
+
+      merged.select('.bar-value')
+        .text(function (d) {
+          return d.guessCount + ' (' + d.bestWord.toUpperCase() + ' #' + d.bestRank.toLocaleString() + ')';
+        });
+
+      // Footer stats
+      document.getElementById('total-guesses').textContent = guesses.length;
+      document.getElementById('total-players').textContent = players.length;
+
+      if (guesses.length > 0) {
+        var best = guesses.slice().sort(function (a, b) { return a.rank - b.rank; })[0];
+        document.getElementById('best-rank').textContent = '#' + best.rank.toLocaleString();
+      }
+    }
+
+    // Timer
+    function updateTimer() {
+      if (!startTime || isWon) return;
+      var elapsed = Math.floor((Date.now() - new Date(startTime).getTime()) / 1000);
+      var mins = Math.floor(elapsed / 60);
+      var secs = elapsed % 60;
+      document.getElementById('game-timer').textContent = mins + ':' + secs.toString().padStart(2, '0');
+    }
+
+    // Socket events
+    socket.on('game-state', function (state) {
+      guesses = state.guesses || [];
+      startTime = state.startTime;
+      isWon = state.isWon;
+      render();
+    });
+
+    socket.on('new-guess', function (guess) {
+      guesses.push(guess);
+      render();
+    });
+
+    socket.on('bump-guess', function () {
+      // Bumps don't change player stats significantly
+    });
+
+    socket.on('game-won', function (data) {
+      isWon = true;
+    });
+
+    socket.on('new-game', function (data) {
+      guesses = [];
+      startTime = data.startTime;
+      isWon = false;
+      document.getElementById('leaderboard').innerHTML = '';
+      document.getElementById('total-guesses').textContent = '0';
+      document.getElementById('total-players').textContent = '0';
+      document.getElementById('best-rank').textContent = '—';
+      document.getElementById('game-timer').textContent = '0:00';
+    });
+
+    // ─── Library Word Toast (all users) ───
+    socket.on('library-word-new', function(data) {
+      if (!data || !data.word) return;
+      var t = document.createElement('div');
+      t.className = 'library-toast';
+      var html = '\uD83D\uDCDA Word Found! <strong>' + data.word.toUpperCase() + '</strong>';
+      if (data.displayName) html += '<div class="toast-player">' + data.displayName + '</div>';
+      t.innerHTML = html;
+      document.body.appendChild(t);
+      setTimeout(function() { t.classList.add('show'); }, 10);
+      setTimeout(function() {
+        t.classList.remove('show');
+        setTimeout(function() { t.remove(); }, 400);
+      }, 4000);
+    });
+
+    setInterval(updateTimer, 1000);
+  })();
+  </script>
+</body>
+</html>

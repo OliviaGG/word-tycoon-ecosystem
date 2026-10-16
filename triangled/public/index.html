@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Play Triangled on Word Tycoon — Free Daily Triangle Word Puzzle</title>
+  <meta name="description" content="Play Triangled on Word Tycoon — a free daily triangle word puzzle game. Find hidden words in a triangular letter grid. New puzzle every day — no account needed.">
+  <link rel="canonical" href="https://triangled.io/">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Triangled">
+  <meta property="og:title" content="Play Triangled on Word Tycoon — Free Daily Triangle Word Puzzle">
+  <meta property="og:description" content="Play Triangled on Word Tycoon — a free daily triangle word puzzle game. Find hidden words in a triangular letter grid. New puzzle every day — no account needed.">
+  <meta property="og:url" content="https://triangled.io/">
+  <meta property="og:image" content="https://triangled.io/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Play Triangled on Word Tycoon — Free Daily Triangle Word Puzzle">
+  <meta name="twitter:description" content="Play Triangled on Word Tycoon — a free daily triangle word puzzle game. Find hidden words in a triangular letter grid. New puzzle every day — no account needed.">
+  <meta name="twitter:image" content="https://triangled.io/og-image.png">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": "https://triangled.io/#website",
+        "url": "https://triangled.io/",
+        "name": "Triangled",
+        "description": "Free daily triangle word puzzle game on Word Tycoon.",
+        "publisher": {
+          "@type": "Organization",
+          "name": "Word Tycoon",
+          "url": "https://wordtycoon.live/"
+        }
+      },
+      {
+        "@type": "VideoGame",
+        "name": "Triangled",
+        "url": "https://triangled.io/",
+        "image": "https://triangled.io/og-image.png",
+        "description": "Triangled is a free daily triangle word puzzle game. Find hidden words in a triangular letter grid. New puzzle every day — no account needed.",
+        "genre": ["Word Game", "Puzzle"],
+        "playMode": "SinglePlayer",
+        "applicationCategory": "Game",
+        "operatingSystem": "Web Browser",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD",
+          "availability": "https://schema.org/InStock"
+        }
+      }
+    ]
+  }
+  </script>
+
+  <link rel="icon" type="image/png" href="img/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="app">
+    <header id="header">
+      <a href="https://wordtycoon.live/portal" id="logo-link"><img src="img/logo.png" alt="Triangled" id="logo"></a>
+      <div id="theme-line">
+        <span id="theme-hint">Loading...</span>
+        <span id="theme-sep">&middot;</span>
+        <span id="word-count"><span id="found-count">0</span> / <span id="total-count">?</span></span>
+        <span id="hint-btn-wrap"></span>
+      </div>
+    </header>
+
+    <div id="no-puzzle" class="hidden">
+      <p>No puzzle available today. Check back later!</p>
+    </div>
+
+    <div id="game-area">
+      <div id="trace-display">
+        <span id="current-trace"></span>
+      </div>
+
+      <canvas id="grid-canvas"></canvas>
+
+      <div id="found-words">
+        <!-- Found words appear here -->
+      </div>
+    </div>
+
+    <div id="controls">
+      <button id="hint-btn" class="btn" disabled>
+        Hint <span id="hint-progress">(0/3)</span>
+      </button>
+      <button id="clear-btn" class="btn">Clear</button>
+    </div>
+
+    <div id="type-bar">
+      <input type="text" id="type-input" placeholder="Swipe or type" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <button id="type-submit" class="btn">Enter</button>
+    </div>
+
+    <div id="login-bar" class="hidden">
+      <p>Log in to save progress and earn coins!</p>
+    </div>
+
+    <footer class="wt-legal-footer">
+      <a href="https://wordtycoon.live/privacy" target="_blank" rel="noopener">Privacy</a> &middot; <a href="https://wordtycoon.live/terms" target="_blank" rel="noopener">Terms</a> &middot; <a href="https://discord.gg/C8Nm2jEZFC" target="_blank" rel="noopener">Discord</a> &middot; <a href="https://www.jorry.live" target="_blank" rel="noopener">jorry.live</a> &middot; <a href="https://wordtycoon.live/portal">&copy; 2026 Word Tycoon</a>
+    </footer>
+  </div>
+
+  <script src="https://wordtycoon.live/js/win-card.js"></script>
+  <script src="js/grid-renderer.js"></script>
+  <script src="js/ui.js?v=2"></script>
+  <script src="https://wordtycoon.live/js/hints.js?v=1"></script>
+  <script src="js/app.js"></script>
+  <style>
+    .wt-legal-footer{flex:0 0 auto;padding:4px 8px 6px;text-align:center;font:10px/1.35 "Segoe UI",Tahoma,sans-serif;color:#7a8a9b;opacity:.75}
+    .wt-legal-footer a{color:inherit;text-decoration:none;margin:0 2px}
+    .wt-legal-footer a:hover{text-decoration:underline;opacity:1}
+  </style>
+</body>
+</html>

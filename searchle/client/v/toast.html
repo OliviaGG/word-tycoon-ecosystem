@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Searchle 3.0 — Library Toast</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: transparent;
+      overflow: hidden;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .library-toast {
+      position: fixed;
+      top: 24px;
+      right: 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: linear-gradient(135deg, #1a0f00, #2d1f0a);
+      border: 3px solid #8b6914;
+      border-radius: 20px;
+      padding: 16px 28px 16px 12px;
+      color: #f5deb3;
+      z-index: 10000;
+      opacity: 0;
+      transform: translateX(50px);
+      transition: opacity .3s, transform .3s;
+      pointer-events: none;
+      box-shadow: 0 8px 30px rgba(139,105,20,.4);
+      overflow: visible;
+    }
+    .library-toast.show { opacity: 1; transform: translateX(0); }
+    .library-toast .toast-logo {
+      width: 100px; height: 100px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin: -14px -8px -14px -12px;
+      filter: drop-shadow(0 4px 12px rgba(0,0,0,.6));
+    }
+    .library-toast .toast-text { display: flex; flex-direction: column; }
+    .library-toast .toast-header { font-size: 18px; font-weight: 700; color: #f5deb3; line-height: 1.2; }
+    .library-toast .toast-word { font-size: 36px; font-weight: 800; color: #ffd700; letter-spacing: 2px; line-height: 1.2; }
+    .library-toast .toast-player { font-size: 16px; color: #c0a050; margin-top: 4px; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <script>
+    // Detect base path: /searchle/v/toast → /searchle, /v/toast → empty
+    var basePath = location.pathname.replace(/\/v\/toast.*/, '');
+    // Dynamically load socket.io client from correct path
+    document.write('<script src="' + (basePath || '') + '/socket.io/socket.io.js"><\/script>');
+  </script>
+  <script>
+    // If served under /searchle/ prefix, use /searchle/socket.io path
+    var sock = io({ path: (basePath || '') + '/socket.io', transports: ['websocket', 'polling'] });
+
+    sock.on('library-word-new', function(data) {
+      if (!data || !data.word) return;
+      showToast(data.word, data.displayName);
+    });
+
+    function showToast(word, displayName) {
+      var t = document.createElement('div');
+      t.className = 'library-toast';
+      var html = '<img class="toast-logo" src="' + (basePath || '') + '/img/wt-logo.png" alt="">' +
+        '<div class="toast-text"><div class="toast-header">Word Found!</div>' +
+        '<div class="toast-word">' + word.toUpperCase() + '</div>';
+      if (displayName) html += '<div class="toast-player">' + displayName + '</div>';
+      html += '</div>';
+      t.innerHTML = html;
+      document.body.appendChild(t);
+      setTimeout(function() { t.classList.add('show'); }, 10);
+      setTimeout(function() {
+        t.classList.remove('show');
+        setTimeout(function() { t.remove(); }, 300);
+      }, 3000);
+    }
+    // Prevent nginx sub_filter from injecting chat widget
+    document.write('</' + 'body></' + 'html>');
+  </script>

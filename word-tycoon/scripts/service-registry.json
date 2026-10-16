@@ -1,0 +1,158 @@
+{
+  "targetNodeMajor": 24,
+  "services": [
+    {
+      "name": "mobile-relay",
+      "tier": "critical",
+      "port": 3000,
+      "script": "/opt/chat-relay/server.js",
+      "memoryWarnMB": 2000,
+      "minMaxMemoryRestartMB": 2500
+    },
+    {
+      "name": "mobile-tycoon",
+      "tier": "critical",
+      "port": 3020,
+      "script": "/opt/word-tycoon/server.js",
+      "memoryWarnMB": 3200,
+      "minMaxMemoryRestartMB": 4096
+    },
+    {
+      "name": "searchle-mobile",
+      "tier": "critical",
+      "port": 3015,
+      "script": "/opt/searchle/server/server.js",
+      "memoryWarnMB": 2500,
+      "minMaxMemoryRestartMB": 3072,
+      "notes": "High RSS is expected because embeddings are memory-resident."
+    },
+    {
+      "name": "discord-bot",
+      "tier": "shared",
+      "port": 3026,
+      "script": "/opt/word-tycoon/discord-bot/src/index.js",
+      "memoryWarnMB": 600,
+      "minMaxMemoryRestartMB": 768
+    },
+    {
+      "name": "betwixt",
+      "tier": "game",
+      "port": 3017,
+      "script": "/opt/betwixt/server.js",
+      "memoryWarnMB": 400,
+      "minMaxMemoryRestartMB": 512
+    },
+    {
+      "name": "colour500",
+      "tier": "game",
+      "script": "/opt/colour500/server.js",
+      "memoryWarnMB": 400,
+      "minMaxMemoryRestartMB": 512,
+      "notes": "The service listens on 3033 but the current PM2 entry does not expose PORT in its environment."
+    },
+    {
+      "name": "erectangled",
+      "tier": "game",
+      "port": 3023,
+      "script": "/opt/sproutle/server.js",
+      "memoryWarnMB": 1200,
+      "minMaxMemoryRestartMB": 1536
+    },
+    {
+      "name": "figural",
+      "tier": "game",
+      "port": 3019,
+      "script": "/opt/figural/server.js",
+      "memoryWarnMB": 400,
+      "minMaxMemoryRestartMB": 512
+    },
+    {
+      "name": "pixeletters",
+      "tier": "game",
+      "port": 3012,
+      "script": "/opt/pixeletters/server.js",
+      "memoryWarnMB": 400,
+      "minMaxMemoryRestartMB": 512
+    },
+    {
+      "name": "rectangled",
+      "tier": "game",
+      "port": 3016,
+      "script": "/opt/rectangled/server.js",
+      "memoryWarnMB": 1200,
+      "minMaxMemoryRestartMB": 1536
+    },
+    {
+      "name": "spellingbee",
+      "tier": "game",
+      "port": 3013,
+      "script": "/opt/spellingbee/server.js",
+      "memoryWarnMB": 400,
+      "minMaxMemoryRestartMB": 512
+    },
+    {
+      "name": "triangled",
+      "tier": "game",
+      "port": 3024,
+      "script": "/opt/triangled/server.js",
+      "memoryWarnMB": 400,
+      "minMaxMemoryRestartMB": 512
+    },
+    {
+      "name": "unwordle",
+      "tier": "game",
+      "port": 3021,
+      "script": "/opt/unwordle/server.js",
+      "memoryWarnMB": 400,
+      "minMaxMemoryRestartMB": 512
+    },
+    {
+      "name": "voice-tts",
+      "tier": "game",
+      "port": 3032,
+      "script": "/opt/voice/server.js",
+      "memoryWarnMB": 600,
+      "minMaxMemoryRestartMB": 768
+    },
+    {
+      "name": "wikirectangled",
+      "tier": "game",
+      "port": 3031,
+      "script": "/opt/wikirectangled/server.js",
+      "memoryWarnMB": 2000,
+      "minMaxMemoryRestartMB": 2500
+    },
+    {
+      "name": "wikisearchle",
+      "tier": "game",
+      "port": 3029,
+      "script": "/opt/wikisearchle/server.js",
+      "memoryWarnMB": 1000,
+      "minMaxMemoryRestartMB": 1280
+    },
+    {
+      "name": "word1000",
+      "tier": "game",
+      "port": 3018,
+      "script": "/opt/word1000/server.js",
+      "memoryWarnMB": 400,
+      "minMaxMemoryRestartMB": 512
+    },
+    {
+      "name": "word500",
+      "tier": "game",
+      "port": 3011,
+      "script": "/opt/word500/server.js",
+      "memoryWarnMB": 400,
+      "minMaxMemoryRestartMB": 512
+    },
+    {
+      "name": "wordle",
+      "tier": "game",
+      "port": 3014,
+      "script": "/opt/wordle/server.js",
+      "memoryWarnMB": 400,
+      "minMaxMemoryRestartMB": 512
+    }
+  ]
+}

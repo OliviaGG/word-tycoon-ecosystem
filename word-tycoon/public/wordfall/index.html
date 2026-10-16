@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#111a32">
+  <meta name="description" content="Trace words. Clear tiles. Watch the letters fall.">
+  <title>Wordfall · Word Tycoon</title>
+  <link rel="canonical" href="https://wordtycoon.live/wordfall/">
+  <link rel="stylesheet" href="styles.css?v=12">
+  <link rel="stylesheet" href="/css/cosmetics-fx.css?v=3">
+</head>
+<body>
+  <div class="ambient ambient-one" aria-hidden="true"></div>
+  <div class="ambient ambient-two" aria-hidden="true"></div>
+  <div class="page-shell">
+    <header class="site-header">
+      <div class="brand" aria-label="Wordfall">
+        <span class="brand-symbol" aria-hidden="true"><i>W</i><b>✦</b></span>
+        <span class="brand-name">word<span>fall</span><small>A WORD TYCOON GAME</small></span>
+      </div>
+      <span class="prototype-tag"><span></span> WORD TYCOON CONNECTED</span>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div>
+          <p class="eyebrow">THE BOARD IS ALWAYS CHANGING</p>
+          <h1>Find a word.<br><em>Start a fall.</em></h1>
+          <p class="hero-copy">Trace neighboring letters. Watch them tumble away. Chase a solo clear, today's board, or the top score on one shared multiplayer board.</p>
+        </div>
+        <div class="hero-rule" aria-label="This round's challenge">
+          <span class="rule-spark" aria-hidden="true">✳</span>
+          <div><small>THE CHALLENGE</small><strong>Clear 70 tiles</strong><span>in 18 moves or fewer</span></div>
+        </div>
+      </section>
+
+      <section class="multi-hud" id="multiHud" aria-label="Multiplayer round" hidden>
+        <div class="multi-podium-panel">
+          <div class="multi-hud-heading"><span>FIRST TO 25,000 · TOP THREE</span><strong id="multiClock">0 / 25K</strong></div>
+          <ol id="multiPodium" class="multi-podium"></ol>
+        </div>
+        <div class="latest-panel">
+          <div class="multi-hud-heading"><span>MOST RECENT WORD</span><span id="latestStatus">WAITING FOR A FIND</span></div>
+          <div class="latest-main"><span id="latestAvatar" class="player-avatar latest-avatar">✦</span><div class="latest-copy"><strong id="latestWord">Ready to fall</strong><span id="latestFinder">Trace a word to start the round</span></div><div class="latest-xp"><small>WORD XP</small><strong id="latestXp">+0 XP</strong></div></div>
+          <div class="balance-line"><span id="balanceLabel">FINDER’S WORD TYCOON TOTAL</span><strong id="xpBalance">—</strong></div>
+        </div>
+      </section>
+
+      <nav class="mode-tabs" aria-label="Wordfall mode">
+        <button type="button" data-mode="practice" class="active">Practice</button>
+        <button type="button" data-mode="solo">Solo</button>
+        <button type="button" data-mode="daily">Daily</button>
+        <button type="button" data-mode="multi">Multiplayer</button>
+      </nav>
+      <div class="game-layout">
+        <section class="game-card" aria-label="Wordfall game">
+          <div class="card-topline">
+            <span class="round-label"><span class="round-dot"></span> <span id="modeLabel">PRACTICE</span> <span class="divider">/</span> TILE TUMBLE</span>
+            <button id="newGame" class="text-button" type="button">↻ New round</button>
+          </div>
+
+          <div class="stats" aria-label="Round stats">
+            <div class="stat"><span id="scoreLabel">SCORE</span><strong id="score">0</strong></div>
+            <div class="stat"><span id="movesLabel">MOVES LEFT</span><strong id="moves">18</strong></div>
+            <div class="stat"><span>TILES CLEARED</span><strong><span id="cleared">0</span><small> / 70</small></strong></div>
+          </div>
+          <div class="goal-track" role="progressbar" aria-label="Tiles cleared" aria-valuemin="0" aria-valuemax="70" aria-valuenow="0" id="goalTrack"><span id="goalFill"></span></div>
+
+          <div class="board-heading"><span>TRACE A WORD</span><span>3+ LETTERS · ANY DIRECTION</span></div>
+          <div class="board-frame">
+            <div id="board" class="board" role="group" aria-label="Seven by seven letter board">
+              <svg id="traceLines" class="trace-lines" aria-hidden="true"><polyline id="traceLine" points=""></polyline></svg>
+            </div>
+            <div id="wordBurst" class="word-burst" aria-hidden="true"></div>
+          </div>
+          <div id="wordTicker" class="word-ticker" aria-label="Recent multiplayer guesses" hidden><span class="ticker-caption">LIVE WORDS</span><div id="tickerLanes" class="ticker-lanes"></div></div>
+
+          <div class="word-tray">
+            <div class="word-readout"><small>YOUR WORD</small><strong id="selectedWord">Trace the letters</strong></div>
+            <span id="wordBadge" class="word-badge">READY</span>
+          </div>
+          <div id="feedback" class="feedback" role="status" aria-live="polite">Drag through adjacent letters, or tap them one by one.</div>
+          <div class="game-actions">
+            <button id="undo" class="action-button secondary" type="button" title="Undo last letter">↶ <span>Undo</span></button>
+            <button id="submit" class="action-button primary" type="button">Play word <span>↗</span></button>
+            <button id="hint" class="action-button secondary" type="button" title="Highlight a possible word">✦ <span>Hint</span></button>
+          </div>
+          <p class="gesture-note">Drag to play instantly · Tap letters and press Play word · Enter to submit</p>
+        </section>
+
+        <aside class="side-rail" aria-label="Game guide">
+          <section class="combo-card">
+            <div class="combo-icon" aria-hidden="true">⚡</div>
+            <p class="eyebrow">KEEP IT GOING</p>
+            <h2>Catch the cascade.</h2>
+            <p>Find another word within seven seconds of a fall to keep your streak alive. Words score with RecTangled's Word Tycoon rarity and length bonuses.</p>
+            <div class="combo-readout"><strong id="comboValue">×1</strong><span id="comboLabel">Ready to roll</span></div>
+            <div class="combo-track"><span id="comboFill"></span></div>
+          </section>
+          <section class="guide-card">
+            <p class="eyebrow">HOW TO PLAY</p>
+            <div class="guide-step"><span>01</span><div><strong>Connect letters</strong><p>Trace up, down, sideways, or diagonally. Each tile can be used once per word.</p></div></div>
+            <div class="guide-step"><span>02</span><div><strong>Watch them fall</strong><p>Your word disappears. Letters above drop down and new ones arrive.</p></div></div>
+            <div class="guide-step"><span>03</span><div><strong>Find the next one</strong><p>Longer words score more. Quick follow-ups build a combo.</p></div></div>
+            <button id="shuffle" class="shuffle-button" type="button">↝ Shuffle board <small>costs 1 move</small></button>
+          </section>
+          <section class="guide-card podium-card" id="podiumCard" hidden>
+            <p class="eyebrow">SHARED BOARD</p>
+            <h2>Top word finders</h2>
+            <ol id="podium"></ol>
+            <p id="roomNote">Found letters hold for four seconds. Connected words add one second and 200 Bonus XP, up to eight seconds. Separate groups fall independently. First to 25,000 wins.</p>
+          </section>
+          <p class="local-note" id="accountNote">Practice is local. Sign in for saved solo, daily, multiplayer, Word Bank, cosmetics, and Word Tycoon XP.</p>
+        </aside>
+      </div>
+    </main>
+    <footer>WORD FALLS. IDEAS RISE. <span>✦</span> WORD TYCOON</footer>
+  </div>
+
+  <div id="resultOverlay" class="result-overlay" hidden>
+    <section class="result-card" role="dialog" aria-modal="true" aria-labelledby="resultTitle">
+      <div id="resultIcon" class="result-icon" aria-hidden="true">✦</div>
+      <p id="resultEyebrow" class="eyebrow">ROUND COMPLETE</p>
+      <h2 id="resultTitle">What a run.</h2>
+      <p id="resultCopy"></p>
+      <div class="result-stats"><span><small id="resultScoreLabel">SCORE</small><strong id="resultScore">0</strong></span><span><small id="resultWordsLabel">WORDS FOUND</small><strong id="resultWords">0</strong></span><span><small id="resultThirdLabel">BEST COMBO</small><strong id="resultCombo">×1</strong></span></div>
+      <button id="playAgain" class="action-button primary" type="button">Play again <span>↗</span></button>
+    </section>
+  </div>
+
+  <script src="/js/pfp-cosmetics.js?v=15"></script>
+  <script src="words.js?v=3"></script>
+  <script src="core.js?v=5"></script>
+  <script src="game.js?v=16"></script>
+</body>
+</html>

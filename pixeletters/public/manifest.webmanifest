@@ -1,0 +1,56 @@
+{
+  "name": "PixeLetters",
+  "short_name": "PixeLetters",
+  "description": "Play PixeLetters on Word Tycoon — a free pixel-word puzzle game. Install for one-tap solo and multiplayer rounds.",
+  "id": "./sp.html?source=pwa",
+  "start_url": "./sp.html?source=pwa",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#101321",
+  "theme_color": "#151a2d",
+  "categories": ["games", "entertainment", "word"],
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Solo Daily",
+      "short_name": "Solo",
+      "description": "Open the current solo PixeLetters puzzle.",
+      "url": "./sp.html?source=shortcut-solo",
+      "icons": [
+        {
+          "src": "app-icon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "Live Game",
+      "short_name": "Live",
+      "description": "Jump into the multiplayer PixeLetters round.",
+      "url": "./mp.html?source=shortcut-live",
+      "icons": [
+        {
+          "src": "app-icon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
+    }
+  ]
+}

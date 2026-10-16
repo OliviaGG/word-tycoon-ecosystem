@@ -1,0 +1,292 @@
+/* WikiWord / WikiSearchle — shared guess bar component.
+   Searchle-style fixed-bottom input + optional custom QWERTY keyboard,
+   skinned to the WikiWord orange/dark palette. */
+
+:root {
+  --wwgb-bg: rgba(17, 20, 28, 0.94);
+  --wwgb-panel: #1a1d27;
+  --wwgb-field: #ffffff;
+  --wwgb-field-text: #1e293b;
+  --wwgb-field-placeholder: #9ca3af;
+  --wwgb-border: rgba(255, 255, 255, 0.08);
+  --wwgb-accent: #FF6600;
+  --wwgb-accent-hover: #E06620;
+  --wwgb-muted: #94a3b8;
+  --wwgb-kb-bg: rgba(15, 17, 23, 0.94);
+  --wwgb-kb-key: rgba(226, 232, 240, 0.14);
+  --wwgb-kb-key-hover: rgba(226, 232, 240, 0.22);
+  --wwgb-kb-text: #e6e6e6;
+  --wwgb-toggle-bg: rgba(255, 102, 0, 0.14);
+  --wwgb-toggle-border: rgba(255, 102, 0, 0.45);
+  --wwgb-toggle-text: #FF6600;
+}
+
+/* ── Fixed-bottom bar ─────────────────────────────────── */
+#wwgb-root {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  z-index: 520;
+  pointer-events: none;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+#wwgb-bar {
+  display: flex;
+  justify-content: center;
+  padding: 10px 12px;
+  padding-bottom: max(10px, env(safe-area-inset-bottom));
+  pointer-events: none;
+}
+#wwgb-bar.kb-mode { padding-bottom: 0; }
+#wwgb-inner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  max-width: 700px;
+  padding: 8px;
+  background: var(--wwgb-bg);
+  border: 1px solid var(--wwgb-border);
+  border-radius: 20px;
+  box-shadow: 0 6px 28px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  pointer-events: auto;
+}
+
+/* ── Nickname chip ────────────────────────────────────── */
+#wwgb-nick {
+  width: 80px;
+  flex-shrink: 0;
+  padding: 10px 10px;
+  background: rgba(255, 102, 0, 0.08);
+  border: 1px solid rgba(255, 102, 0, 0.25);
+  border-radius: 12px;
+  color: var(--wwgb-accent);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-align: center;
+  outline: none;
+  text-transform: uppercase;
+}
+#wwgb-nick:focus { border-color: var(--wwgb-accent); }
+#wwgb-nick::placeholder { color: rgba(255, 102, 0, 0.5); font-weight: 600; }
+#wwgb-nick.guest-chip {
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+}
+#wwgb-nick.guest-chip:hover {
+  background: rgba(255, 102, 0, 0.16);
+  border-color: rgba(255, 102, 0, 0.4);
+}
+#wwgb-nick.guest-chip:focus {
+  box-shadow: 0 0 0 2px rgba(255, 102, 0, 0.18);
+}
+
+/* ── Main input ───────────────────────────────────────── */
+#wwgb-input-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  background: var(--wwgb-field);
+  border-radius: 14px;
+  padding: 0 12px 0 0;
+  min-width: 0;
+}
+#wwgb-input {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 8px 12px 16px;
+  background: transparent;
+  border: none;
+  color: var(--wwgb-field-text);
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  outline: none;
+}
+#wwgb-input::placeholder { color: var(--wwgb-field-placeholder); font-weight: 400; }
+#wwgb-bar.kb-mode #wwgb-input {
+  caret-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.wwgb-search-icon { width: 18px; height: 18px; color: var(--wwgb-field-placeholder); flex-shrink: 0; }
+
+/* ── Enter button ─────────────────────────────────────── */
+#wwgb-btn {
+  padding: 12px 22px;
+  background: var(--wwgb-accent);
+  border: none;
+  border-radius: 14px;
+  color: #111;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  cursor: pointer;
+  flex-shrink: 0;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+#wwgb-btn:hover { background: var(--wwgb-accent-hover); }
+#wwgb-btn:active { transform: scale(0.97); }
+
+/* ── Keyboard-mode toggle (touch only) ────────────────── */
+#wwgb-kb-toggle {
+  width: 40px; height: 40px;
+  border-radius: 12px;
+  background: var(--wwgb-toggle-bg);
+  border: 1px solid var(--wwgb-toggle-border);
+  color: var(--wwgb-toggle-text);
+  font-size: 18px;
+  flex-shrink: 0;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+#wwgb-kb-toggle:hover { background: rgba(255, 102, 0, 0.22); }
+#wwgb-kb-toggle.active { background: var(--wwgb-accent); color: #111; }
+body.wwgb-touch #wwgb-kb-toggle { display: flex; }
+
+/* ── Custom QWERTY keyboard ───────────────────────────── */
+#wwgb-kb {
+  display: none;
+  pointer-events: none;
+}
+#wwgb-kb.visible { display: block; pointer-events: auto; }
+#wwgb-kb-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 8px max(4px, env(safe-area-inset-bottom));
+  background: var(--wwgb-kb-bg);
+  border-top: 1px solid var(--wwgb-border);
+  border-radius: 20px 20px 0 0;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  touch-action: manipulation;
+}
+.wwgb-kb-row {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
+.wwgb-kb-key {
+  flex: 1;
+  min-width: 0;
+  min-height: 48px;
+  border: none;
+  border-radius: 12px;
+  background: var(--wwgb-kb-key);
+  color: var(--wwgb-kb-text);
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  box-shadow: inset 0 -2px 0 rgba(15, 23, 42, 0.22);
+  transition: transform 0.08s ease, background 0.12s ease;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.wwgb-kb-key:hover { background: var(--wwgb-kb-key-hover); }
+.wwgb-kb-key:active { transform: translateY(1px) scale(0.98); }
+.wwgb-kb-key.wide { flex: 1.6; }
+.wwgb-kb-key.enter {
+  background: var(--wwgb-accent);
+  color: #111;
+}
+.wwgb-kb-key.backspace {
+  background: rgba(94, 234, 212, 0.15);
+  color: #cffafe;
+}
+.wwgb-kb-key.space {
+  flex: 5;
+  background: rgba(148, 163, 184, 0.18);
+}
+
+/* Push page content so bar doesn't cover anything important. */
+body.wwgb-mounted { padding-bottom: 76px; }
+body.wwgb-mounted.wwgb-kb-open { padding-bottom: 340px; }
+
+@media (max-width: 540px) {
+  #wwgb-inner { padding: 7px; gap: 6px; }
+  #wwgb-nick { width: 64px; font-size: 12px; padding: 14px 8px; }
+  #wwgb-input { font-size: 16px; padding: 16px 6px 16px 12px; }
+  #wwgb-btn { padding: 16px 14px; font-size: 12px; }
+  body.wwgb-mounted { padding-bottom: 84px; }
+  body.wwgb-mounted.wwgb-kb-open { padding-bottom: 324px; }
+}
+
+/* Touch devices — this page locks to a 720px virtual viewport, so the 540px
+   media query never fires on phones. Key off the .wwgb-touch class that
+   guessbar.js adds via detectTouch() instead. */
+body.wwgb-touch #wwgb-inner { padding: 14px; gap: 10px; }
+body.wwgb-touch #wwgb-nick { padding: 22px 12px; font-size: 22px; width: 100px; }
+body.wwgb-touch #wwgb-input { font-size: 28px; padding: 26px 12px 26px 20px; }
+body.wwgb-touch #wwgb-btn { padding: 26px 28px; font-size: 22px; }
+body.wwgb-touch .wwgb-search-icon { width: 26px; height: 26px; }
+body.wwgb-touch.wwgb-mounted { padding-bottom: 96px; }
+body.wwgb-touch.wwgb-mounted.wwgb-kb-open { padding-bottom: 340px; }
+
+/* ── Light / cream pastel theme ───────────────────────── */
+/* The `.theme-light` class lives on <html>, so these rules are scoped
+   to any descendant when the light theme is active. */
+html.theme-light {
+  --wwgb-bg: rgba(255, 248, 236, 0.95);
+  --wwgb-panel: #FFF8EC;
+  --wwgb-field: #FFFBF2;
+  --wwgb-field-text: #3A2E1F;
+  --wwgb-field-placeholder: #A08868;
+  --wwgb-border: rgba(120, 95, 55, 0.18);
+  --wwgb-accent: #D9561F;
+  --wwgb-accent-hover: #B8461A;
+  --wwgb-muted: #8A7555;
+  --wwgb-kb-bg: rgba(250, 244, 230, 0.96);
+  --wwgb-kb-key: rgba(120, 95, 55, 0.12);
+  --wwgb-kb-key-hover: rgba(120, 95, 55, 0.2);
+  --wwgb-kb-text: #3A2E1F;
+  --wwgb-toggle-bg: rgba(217, 86, 31, 0.14);
+  --wwgb-toggle-border: rgba(217, 86, 31, 0.45);
+  --wwgb-toggle-text: #D9561F;
+}
+html.theme-light #wwgb-inner {
+  box-shadow: 0 6px 20px rgba(120, 95, 55, 0.22);
+}
+html.theme-light #wwgb-nick {
+  background: rgba(217, 86, 31, 0.08);
+  border-color: rgba(217, 86, 31, 0.3);
+}
+html.theme-light #wwgb-nick::placeholder {
+  color: rgba(217, 86, 31, 0.55);
+}
+html.theme-light #wwgb-nick.guest-chip:hover {
+  background: rgba(217, 86, 31, 0.16);
+  border-color: rgba(217, 86, 31, 0.45);
+}
+html.theme-light #wwgb-nick.guest-chip:focus {
+  box-shadow: 0 0 0 2px rgba(217, 86, 31, 0.2);
+}
+/* Enter button & keyboard enter key: on the darker cream-mode orange (#D9561F)
+   black-on-orange has ~9:1 contrast whereas white has ~2.5:1 — keep text
+   black in both themes. Backspace key gets a muted teal instead of pale cyan. */
+html.theme-light .wwgb-kb-key {
+  box-shadow: inset 0 -2px 0 rgba(120, 95, 55, 0.22);
+}
+html.theme-light .wwgb-kb-key.backspace {
+  background: rgba(11, 107, 122, 0.16);
+  color: #0B5560;
+}
+html.theme-light .wwgb-kb-key.space {
+  background: rgba(120, 95, 55, 0.14);
+}
+html.theme-light #wwgb-kb-toggle:hover {
+  background: rgba(217, 86, 31, 0.22);
+}

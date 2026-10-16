@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Color 500 — stream board</title>
+<link rel="stylesheet" href="../app.css?v=13-toon">
+<style>
+  /* OBS view: the board and nothing else. No dock, no chrome, no footer —
+     nobody can click on a stream, and every pixel of height is board.
+
+     Transparency notes for the streaming browser (hard-won elsewhere in this
+     ecosystem): never set `color-scheme: dark` (it kills OBS transparency in
+     OS dark mode) and avoid backdrop-filter (renders BLACK in render1's
+     SoftCEF). app.css already keeps color-scheme normal; the pill glass
+     layers here are plain gradients, not backdrop-filter. */
+  html, body {
+    background: transparent !important;
+    overflow: hidden;
+    height: 100%;
+  }
+  body { display: flex; flex-direction: column; padding: 0; }
+
+  /* Game name over the board. Viewers land mid-stream with no chrome to tell
+     them what they're watching, so the board gets the wordmark the player
+     page carries — minus the .com, which is dead weight at this size.
+     Toon treatment scaled up from app.css's 19px `.title`: the ink outline
+     goes 1px -> 2px and the flat bottom edge becomes a real slab, matching
+     the 5px extrusion on .chrome-pill / the palette keys below.
+     Shadow-only, no fill: a background box here would punch a solid
+     rectangle into the OBS broadcast (see the app.css transparency note). */
+  #board-title {
+    flex: 0 0 auto;
+    text-align: center;
+    padding: 10px 10px 8px;
+    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+    font-size: 32px;
+    font-weight: 900;
+    letter-spacing: 1.5px;
+    line-height: 1;
+    color: #fff;
+    text-shadow:
+      -2px -2px 0 #0a0b12,  2px -2px 0 #0a0b12,
+      -2px  2px 0 #0a0b12,  2px  2px 0 #0a0b12,
+       0    5px 0 #141230,  0    7px 0 #0a0b12;
+  }
+
+  #guesses {
+    flex: 1 1 auto;
+    /* Top-anchored to match the player pages — the board grows downward. */
+    justify-content: flex-start;
+    padding: 8px 10px;
+    gap: 2px;
+  }
+
+  /* The active row is a player affordance — meaningless on a stream. */
+  .row-active { display: none; }
+
+  #empty-note {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.55);
+    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    padding: 18px 10px;
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.9);
+  }
+
+  /* Colour key strip. Sits below the board so viewers always know which
+     colours are in play and which letter to type in chat. Deliberately NOT
+     inside #guesses — that element gets transform-scaled by fitBoard(), and
+     the key should stay a constant, readable size. */
+  #palette-strip {
+    flex: 0 0 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 6px 10px 10px;
+  }
+  /* Toon skin, matched to the docked palette on the player page (2026-07-27):
+     flat fill, one hard highlight band, 1px ink, coloured slab. --pk-sl is
+     set inline per key by overlay.js. Kept in step with app.css's .kb-key —
+     if one changes, change both or the stream stops matching the game. */
+  #palette-strip .pk {
+    position: relative;
+    width: 58px;
+    height: 58px;
+    border-radius: 13px;
+    flex: 0 0 auto;
+    background-image:
+      linear-gradient(180deg,
+        rgba(255, 255, 255, 0.30) 0%,
+        rgba(255, 255, 255, 0.30) 32%,
+        rgba(255, 255, 255, 0) 32.5%),
+      linear-gradient(180deg, var(--pk-hi) 0%, var(--pk-hi) 100%);
+    box-shadow:
+      0 0 0 1px #0a0b12,
+      0 5px 0 var(--pk-sl, #241a52),
+      0 5px 0 1px #0a0b12;
+  }
+  #palette-strip .pk span {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+    font-size: 26px;
+    font-weight: 900;
+    color: #fff;
+    text-shadow:
+      -2px -2px 0 rgba(0, 0, 0, 0.75), 2px -2px 0 rgba(0, 0, 0, 0.75),
+      -2px  2px 0 rgba(0, 0, 0, 0.75), 2px  2px 0 rgba(0, 0, 0, 0.75);
+  }
+
+  /* Win banner, sized for a vertical stream rather than a desktop dialog. */
+  #win-strip {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 0 10px 10px;
+    padding: 10px 14px;
+    border-radius: 14px;
+    background: linear-gradient(180deg, rgba(74, 222, 128, 0.22), rgba(0, 0, 0, 0.45));
+    box-shadow: inset 0 0 0 1px rgba(74, 222, 128, 0.85),
+                0 0 24px rgba(74, 222, 128, 0.4);
+    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+    color: #fff;
+  }
+  #win-strip.is-shown { display: flex; }
+  #win-strip .wname {
+    font-weight: 900;
+    font-size: 18px;
+    max-width: 46vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.9);
+  }
+  #win-strip .wcode { display: flex; gap: 5px; }
+  #win-strip .code-chip { width: 30px; height: 30px; }
+  #win-strip .wpot { font-weight: 900; color: #f2c53d; font-size: 16px; }
+</style>
+</head>
+<body class="obs-mode">
+
+<div id="board-title">COLOR<span class="title-500">500</span></div>
+
+<div id="guesses" aria-live="polite"></div>
+<div id="empty-note">Waiting for the first guess…</div>
+
+<!-- Colour key. Viewers can't see the game's palette dock, so without this
+     they have no way to know which colours are in play or what to type. -->
+<div id="palette-strip" aria-hidden="true"></div>
+
+<div id="win-strip">
+  <span class="wname" id="win-name"></span>
+  <span class="wcode" id="win-code"></span>
+  <span class="wpot" id="win-pot"></span>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+  <link rel="stylesheet" href="https://wordtycoon.live/portal/assets/badges/perk-badges.css?b3">
+  <script src="https://wordtycoon.live/portal/assets/badges/perk-badges.js?b3"></script>
+<script src="../ui.js?v=14-toon-perks"></script>
+<script src="../overlay.js?v=13-toon"></script>
+</body>
+</html>

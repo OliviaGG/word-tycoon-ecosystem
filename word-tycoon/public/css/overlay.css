@@ -1,0 +1,1097 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  height: 100vh;
+}
+
+body {
+  background: transparent;
+  overflow: hidden;
+  font-family: 'Inter', sans-serif;
+  color: #fff;
+  width: 1920px;
+  height: 1080px;
+  position: relative;
+}
+
+/* ==================== PLAYER EMPIRES ==================== */
+
+#empires-panel {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  background: rgba(0, 0, 0, 0.65);
+  border-radius: 16px;
+  padding: 12px 14px;
+  min-width: 340px;
+  max-width: 420px;
+  max-height: 580px;
+  overflow: hidden;
+  border: 2px solid rgba(255, 170, 0, 0.4);
+  z-index: 10;
+}
+
+#empires-title {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  color: rgba(255, 170, 0, 0.9);
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+#empires-list {
+  overflow: hidden;
+  max-height: 540px;
+}
+
+/* Auto-scroll wrapper — always slowly scrolls (GPU-accelerated) */
+.emp-scroll-inner {
+  animation: empireAutoScroll 30s linear infinite;
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+@keyframes empireAutoScroll {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(0, -50%, 0); }
+}
+
+/* Compact empire row - one player per line */
+.emp-row {
+  display: flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  gap: 6px;
+}
+
+.emp-row:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.emp-rank {
+  font-size: 9px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.35);
+  width: 18px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.emp-rank.gold { color: #FFD700; }
+.emp-rank.silver { color: #C0C0C0; }
+.emp-rank.bronze { color: #CD7F32; }
+
+.emp-name {
+  font-size: 11px;
+  font-weight: 600;
+  color: #fff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 60px;
+  max-width: 120px;
+  flex-shrink: 1;
+}
+
+.emp-coins {
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(255, 170, 0, 0.8);
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-width: 40px;
+}
+
+.emp-bizlist {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  flex: 1;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.emp-biz {
+  font-size: 11px;
+  flex-shrink: 0;
+}
+
+.emp-income {
+  font-size: 10px;
+  font-weight: 700;
+  color: #4CAF50;
+  white-space: nowrap;
+  flex-shrink: 0;
+  text-align: right;
+  min-width: 50px;
+}
+
+/* ==================== SHOP PANEL ==================== */
+
+#shop-panel {
+  position: absolute;
+  top: 660px;
+  left: 24px;
+  background: rgba(0, 0, 0, 0.65);
+  border-radius: 16px;
+  padding: 14px 20px;
+  min-width: 320px;
+  max-width: 400px;
+  border: 2px solid rgba(76, 175, 80, 0.4);
+  z-index: 10;
+}
+
+#shop-title {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  color: rgba(76, 175, 80, 0.9);
+  margin-bottom: 4px;
+  text-align: center;
+}
+
+#shop-command {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+#shop-command .cmd {
+  color: rgba(255, 170, 0, 0.9);
+  font-weight: 700;
+}
+
+.shop-row {
+  display: flex;
+  align-items: center;
+  padding: 7px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.shop-row:last-child {
+  border-bottom: none;
+}
+
+.shop-emoji {
+  font-size: 18px;
+  width: 28px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.shop-info {
+  flex: 1;
+  margin: 0 10px;
+  min-width: 0;
+}
+
+.shop-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.shop-detail {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.shop-detail .shop-income-val {
+  color: rgba(76, 175, 80, 0.9);
+  font-weight: 600;
+}
+
+.shop-cost {
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(255, 170, 0, 0.9);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.shop-cost.free {
+  color: #4CAF50;
+}
+
+/* ==================== TAP UPGRADES ==================== */
+
+#upgrades-panel {
+  position: absolute;
+  bottom: 60px;
+  right: 24px;
+  background: rgba(0, 0, 0, 0.65);
+  border-radius: 16px;
+  padding: 14px 20px;
+  min-width: 260px;
+  border: 2px solid rgba(224, 64, 251, 0.4);
+  z-index: 10;
+}
+
+#upgrades-title {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  color: rgba(224, 64, 251, 0.9);
+  margin-bottom: 4px;
+  text-align: center;
+}
+
+#upgrades-command {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+#upgrades-command .cmd {
+  color: rgba(224, 64, 251, 0.9);
+  font-weight: 700;
+}
+
+.upgrade-row {
+  display: flex;
+  align-items: center;
+  padding: 7px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.upgrade-row:last-child {
+  border-bottom: none;
+}
+
+.upgrade-emoji {
+  font-size: 18px;
+  width: 28px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.upgrade-info {
+  flex: 1;
+  margin: 0 10px;
+  min-width: 0;
+}
+
+.upgrade-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.upgrade-desc {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.upgrade-cost {
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(224, 64, 251, 0.9);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* ==================== LEADERBOARD ==================== */
+
+#leaderboard-panel {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  background: rgba(0, 0, 0, 0.65);
+  border-radius: 16px;
+  padding: 16px 20px;
+  min-width: 260px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  z-index: 10;
+}
+
+#leaderboard-title {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  color: rgba(255, 170, 0, 0.9);
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.lb-row {
+  display: flex;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.lb-row:last-child {
+  border-bottom: none;
+}
+
+.lb-rank {
+  font-size: 14px;
+  font-weight: 900;
+  width: 28px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.lb-rank.gold { color: #FFD700; }
+.lb-rank.silver { color: #C0C0C0; }
+.lb-rank.bronze { color: #CD7F32; }
+
+.lb-name {
+  font-size: 14px;
+  font-weight: 600;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin: 0 8px;
+}
+
+.lb-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: rgba(255, 170, 0, 0.9);
+  flex-shrink: 0;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* ==================== TICKER ==================== */
+
+#ticker-container {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 44px;
+  background: rgba(0, 0, 0, 0.85);
+  border-top: 2px solid rgba(255, 170, 0, 0.3);
+  overflow: hidden;
+  z-index: 10;
+}
+
+#ticker-track {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  white-space: nowrap;
+  animation: ticker-scroll 30s linear infinite;
+}
+
+.ticker-item {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 24px;
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  flex-shrink: 0;
+}
+
+.ticker-item .ticker-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-right: 10px;
+  flex-shrink: 0;
+}
+
+.ticker-dot.join { background: #4CAF50; }
+.ticker-dot.buy { background: #2196F3; }
+.ticker-dot.levelup { background: #FF9800; }
+.ticker-dot.collect { background: #FFD700; }
+.ticker-dot.upgrade { background: #E040FB; }
+.ticker-dot.reward { background: #00BCD4; }
+.ticker-dot.default { background: #9E9E9E; }
+
+.ticker-item .ticker-player {
+  color: #FFAA00;
+  margin-right: 6px;
+}
+
+@keyframes ticker-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* ==================== TOAST (Command Responses) ==================== */
+
+#toast-container {
+  position: absolute;
+  bottom: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  gap: 8px;
+  z-index: 20;
+  pointer-events: none;
+}
+
+.toast {
+  background: rgba(0, 0, 0, 0.88);
+  border-radius: 12px;
+  padding: 10px 20px;
+  border: 1px solid rgba(255, 170, 0, 0.3);
+  animation: toastIn 0.3s ease-out, toastOut 0.3s ease-in 3.7s forwards;
+  max-width: 600px;
+}
+
+.toast-user {
+  color: #FFAA00;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.toast-msg {
+  color: #fff;
+  font-size: 13px;
+  margin-left: 6px;
+}
+
+.toast-error .toast-msg {
+  color: #ff6b6b;
+}
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes toastOut {
+  from { opacity: 1; }
+  to { opacity: 0; transform: translateY(-10px); }
+}
+
+/* ==================== LEADERBOARD TRANSITION ==================== */
+
+#leaderboard-panel.switching #leaderboard-list {
+  animation: fadeSwitch 0.4s ease;
+}
+
+@keyframes fadeSwitch {
+  0% { opacity: 1; }
+  40% { opacity: 0; }
+  60% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+/* ==================== INCOME BUBBLES ==================== */
+
+#bubble-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 15;
+}
+
+.income-bubble {
+  position: absolute;
+  bottom: -80px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.75);
+  border-radius: 28px;
+  padding: 6px 14px 6px 6px;
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  animation: bubbleFloat var(--float-duration, 4s) ease-out forwards;
+  white-space: nowrap;
+}
+
+.bubble-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 900;
+  color: #fff;
+  flex-shrink: 0;
+  text-transform: uppercase;
+}
+
+.bubble-avatar-img {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(255, 215, 0, 0.4);
+}
+
+.bubble-coins {
+  font-size: 15px;
+  font-weight: 700;
+  color: #ffd700;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes bubbleFloat {
+  0% {
+    bottom: -80px;
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  8% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    bottom: 90%;
+    opacity: 0;
+    transform: scale(0.8);
+  }
+}
+
+/* ==================== AUX AUDIO-REACTIVE ANIMATIONS ==================== */
+
+/* Frequency — word color cycles through audio spectrum */
+@keyframes aux-frequency {
+  0%   { color: #00ffcc; text-shadow: 0 0 8px rgba(0,255,204,0.8), 0 0 16px rgba(0,255,128,0.4); }
+  25%  { color: #00ccff; text-shadow: 0 0 12px rgba(0,204,255,0.9), 0 0 20px rgba(0,128,255,0.5); }
+  50%  { color: #8000ff; text-shadow: 0 0 14px rgba(128,0,255,0.9), 0 0 24px rgba(200,0,255,0.4); }
+  75%  { color: #00ff88; text-shadow: 0 0 10px rgba(0,255,136,0.8), 0 0 18px rgba(0,255,204,0.4); }
+  100% { color: #00ffcc; text-shadow: 0 0 8px rgba(0,255,204,0.8), 0 0 16px rgba(0,255,128,0.4); }
+}
+
+/* Bass Drop — pulsing intensity on beat */
+@keyframes aux-bassdrop {
+  0%   { text-shadow: 0 0 6px rgba(0,255,204,0.5), 0 0 12px rgba(0,200,255,0.3); }
+  50%  { text-shadow: 0 0 20px rgba(0,255,204,1), 0 0 40px rgba(0,200,255,0.8), 0 0 60px rgba(128,0,255,0.5); }
+  100% { text-shadow: 0 0 6px rgba(0,255,204,0.5), 0 0 12px rgba(0,200,255,0.3); }
+}
+
+/* Equalizer — border pulses like EQ bars */
+@keyframes aux-equalizer {
+  0%   { box-shadow: 0 0 8px rgba(0,255,204,0.4), 0 0 16px rgba(0,200,255,0.2); border-color: #00ffcc; }
+  33%  { box-shadow: 0 0 16px rgba(0,255,204,0.8), 0 0 32px rgba(0,200,255,0.5), inset 0 0 12px rgba(0,255,204,0.3); border-color: #00ccff; }
+  66%  { box-shadow: 0 0 12px rgba(128,0,255,0.6), 0 0 24px rgba(0,200,255,0.4); border-color: #8000ff; }
+  100% { box-shadow: 0 0 8px rgba(0,255,204,0.4), 0 0 16px rgba(0,200,255,0.2); border-color: #00ffcc; }
+}
+
+/* Subwoofer — deep bass pulse expanding outward */
+@keyframes aux-subwoofer {
+  0%   { box-shadow: 0 0 10px rgba(0,255,204,0.5), 0 0 20px rgba(0,200,255,0.3); }
+  50%  { box-shadow: 0 0 30px rgba(0,255,204,0.9), 0 0 60px rgba(0,200,255,0.6), 0 0 90px rgba(128,0,255,0.4); }
+  100% { box-shadow: 0 0 10px rgba(0,255,204,0.5), 0 0 20px rgba(0,200,255,0.3); }
+}
+
+/* Reverb — echoing glow layers with delay effect */
+@keyframes aux-reverb {
+  0%   { text-shadow: 0 0 8px rgba(0,255,204,0.8), 0 0 16px rgba(0,200,255,0.3); }
+  25%  { text-shadow: 0 0 12px rgba(0,255,204,0.9), 0 0 24px rgba(0,200,255,0.5), 0 0 36px rgba(128,0,255,0.2); }
+  50%  { text-shadow: 0 0 8px rgba(0,200,255,0.6), 0 0 20px rgba(128,0,255,0.4), 0 0 32px rgba(0,255,204,0.2), 0 0 44px rgba(0,200,255,0.1); }
+  75%  { text-shadow: 0 0 10px rgba(128,0,255,0.7), 0 0 20px rgba(0,255,204,0.4), 0 0 30px rgba(0,200,255,0.2); }
+  100% { text-shadow: 0 0 8px rgba(0,255,204,0.8), 0 0 16px rgba(0,200,255,0.3); }
+}
+
+/* Synthwave — retro neon color shift */
+@keyframes aux-synthwave {
+  0%   { color: #00ffcc; text-shadow: 0 0 6px rgba(0,255,204,0.6); }
+  25%  { color: #ff00ff; text-shadow: 0 0 8px rgba(255,0,255,0.6); }
+  50%  { color: #00ccff; text-shadow: 0 0 8px rgba(0,204,255,0.6); }
+  75%  { color: #ff6600; text-shadow: 0 0 6px rgba(255,102,0,0.6); }
+  100% { color: #00ffcc; text-shadow: 0 0 6px rgba(0,255,204,0.6); }
+}
+
+/* DJ title pulse — audio master glow */
+@keyframes aux-dj-pulse {
+  0%   { text-shadow: 0 0 6px rgba(0,255,204,0.5), 0 0 12px rgba(0,200,255,0.2); }
+  50%  { text-shadow: 0 0 14px rgba(0,255,204,0.9), 0 0 28px rgba(0,200,255,0.5), 0 0 42px rgba(128,0,255,0.3); }
+  100% { text-shadow: 0 0 6px rgba(0,255,204,0.5), 0 0 12px rgba(0,200,255,0.2); }
+}
+
+/* AUX rarity tag glow for shop/UI */
+.rarity-aux {
+  color: #00ffcc;
+  text-shadow: 0 0 6px rgba(0,255,204,0.6);
+  animation: aux-tag-glow 2s ease-in-out infinite;
+}
+
+@keyframes aux-tag-glow {
+  0%, 100% { text-shadow: 0 0 6px rgba(0,255,204,0.4); }
+  50%      { text-shadow: 0 0 12px rgba(0,255,204,0.8), 0 0 20px rgba(0,200,255,0.4); }
+}
+
+/* ==================== COSMETICS TAB ==================== */
+
+#cosmetics-panel {
+  position: absolute;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.88);
+  border-radius: 16px;
+  padding: 12px 16px;
+  min-width: 320px;
+  max-width: 500px;
+  border: 2px solid rgba(0, 255, 204, 0.4);
+  z-index: 10;
+  display: none;
+}
+
+#cosmetics-panel.active {
+  display: block;
+}
+
+#cosmetics-title {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  color: rgba(0, 255, 204, 0.9);
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.cos-tab-bar {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.cos-tab {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.2s;
+}
+
+.cos-tab:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.cos-tab.active {
+  background: rgba(0, 255, 204, 0.15);
+  color: #00ffcc;
+  border-color: rgba(0, 255, 204, 0.4);
+}
+
+.cos-tab.aux-tab {
+  color: #00ffcc;
+  text-shadow: 0 0 4px rgba(0,255,204,0.4);
+}
+
+.cos-tab.aux-tab.active {
+  background: rgba(0, 255, 204, 0.2);
+  box-shadow: 0 0 8px rgba(0,255,204,0.3);
+}
+
+#cosmetics-list {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.cos-item {
+  display: flex;
+  align-items: center;
+  padding: 4px 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  gap: 8px;
+}
+
+.cos-item:last-child {
+  border-bottom: none;
+}
+
+.cos-rarity-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.cos-rarity-dot.aux {
+  background: #00ffcc;
+  box-shadow: 0 0 6px rgba(0,255,204,0.6);
+  animation: aux-tag-glow 2s ease-in-out infinite;
+}
+
+.cos-item-name {
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  flex: 1;
+  -webkit-text-stroke: 1px #000;
+  text-shadow: -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000, 0 -2px 0 #000, 0 2px 0 #000, -2px 0 0 #000, 2px 0 0 #000;
+}
+
+.cos-item-name.aux-name {
+  color: #00ffcc;
+  -webkit-text-stroke: 1px #000;
+  text-shadow: -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000, 0 -2px 0 #000, 0 2px 0 #000, -2px 0 0 #000, 2px 0 0 #000;
+}
+
+.cos-item-cost {
+  font-size: 10px;
+  font-weight: 700;
+  color: #ffaa00;
+  flex-shrink: 0;
+  -webkit-text-stroke: 1px #000;
+  text-shadow: -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000, 0 -2px 0 #000, 0 2px 0 #000, -2px 0 0 #000, 2px 0 0 #000;
+}
+
+.cos-item-buff {
+  font-size: 9px;
+  font-weight: 600;
+  color: #00ffcc;
+  flex-shrink: 0;
+  -webkit-text-stroke: 0.7px #000;
+  text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+}
+
+.cos-audio-badge {
+  font-size: 8px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: rgba(0, 255, 204, 0.15);
+  color: #00ffcc;
+  border: 1px solid rgba(0, 255, 204, 0.3);
+  flex-shrink: 0;
+  animation: aux-tag-glow 2s ease-in-out infinite;
+}
+
+/* ─── Audio-Reactive Preview Swatches ─── */
+
+/* When JS audio engine takes control, disable static CSS animations */
+[data-aux-profile] {
+  animation: none !important;
+}
+
+.cos-aux-preview {
+  font-size: 13px;
+  font-weight: 700;
+  min-width: 40px;
+  text-align: center;
+  flex-shrink: 0;
+  color: #00ffcc;
+  text-shadow: 0 0 6px rgba(0,255,204,0.6);
+  display: inline-block;
+}
+
+.cos-aux-preview-circle {
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
+  border-radius: 50%;
+  border: 2px solid #00ffcc;
+  box-shadow: 0 0 8px rgba(0,255,204,0.4);
+  font-size: 0;
+}
+
+.cos-item-aux {
+  padding: 5px 6px;
+}
+
+/* Sonic Boom beat-triggered burst animation */
+@keyframes aux-sonic-burst {
+  0%   { transform: scale(1); filter: brightness(1); }
+  15%  { transform: scale(1.5); filter: brightness(2.5); }
+  100% { transform: scale(1); filter: brightness(1); }
+}
+
+.aux-sonic-burst {
+  animation: aux-sonic-burst 0.3s ease-out !important;
+}
+
+/* ==================== D3 VISUALIZATION STYLES ==================== */
+
+/* D3 leaderboard SVG */
+.lb-svg {
+  display: block;
+  overflow: visible;
+}
+
+/* D3 empires treemap SVG */
+.emp-treemap {
+  display: block;
+  overflow: visible;
+}
+
+/* D3 force-controlled bubbles — override CSS keyframe animation */
+.income-bubble.d3-bubble {
+  bottom: auto;
+  left: auto;
+  animation: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  will-change: transform;
+}
+
+/* ==================== EMPTY STATE ==================== */
+
+.empty-state {
+  text-align: center;
+  padding: 12px;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 13px;
+  font-style: italic;
+}
+
+/* ==================== COSMETIC ANIMATIONS ==================== */
+/* All non-AUX cosmetic keyframes — referenced by css.animation in cosmetics.js */
+
+/* ─── Word Color: Prismatic (Legendary) — 6-stop rainbow cycle ─── */
+@keyframes cosmetic-prismatic {
+  0%   { color: #ff4444; text-shadow: -3px -3px 0 #000, 3px -3px 0 #000, -3px 3px 0 #000, 3px 3px 0 #000, 0 -3px 0 #000, 0 3px 0 #000, -3px 0 0 #000, 3px 0 0 #000, 0 0 12px rgba(255,68,68,0.8), 0 0 24px rgba(255,68,68,0.4); }
+  16%  { color: #ff8800; text-shadow: -3px -3px 0 #000, 3px -3px 0 #000, -3px 3px 0 #000, 3px 3px 0 #000, 0 -3px 0 #000, 0 3px 0 #000, -3px 0 0 #000, 3px 0 0 #000, 0 0 12px rgba(255,136,0,0.8), 0 0 24px rgba(255,136,0,0.4); }
+  33%  { color: #ffee00; text-shadow: -3px -3px 0 #000, 3px -3px 0 #000, -3px 3px 0 #000, 3px 3px 0 #000, 0 -3px 0 #000, 0 3px 0 #000, -3px 0 0 #000, 3px 0 0 #000, 0 0 12px rgba(255,238,0,0.8), 0 0 24px rgba(255,238,0,0.4); }
+  50%  { color: #00ff44; text-shadow: -3px -3px 0 #000, 3px -3px 0 #000, -3px 3px 0 #000, 3px 3px 0 #000, 0 -3px 0 #000, 0 3px 0 #000, -3px 0 0 #000, 3px 0 0 #000, 0 0 12px rgba(0,255,68,0.8), 0 0 24px rgba(0,255,68,0.4); }
+  66%  { color: #0088ff; text-shadow: -3px -3px 0 #000, 3px -3px 0 #000, -3px 3px 0 #000, 3px 3px 0 #000, 0 -3px 0 #000, 0 3px 0 #000, -3px 0 0 #000, 3px 0 0 #000, 0 0 12px rgba(0,136,255,0.8), 0 0 24px rgba(0,136,255,0.4); }
+  83%  { color: #cc00ff; text-shadow: -3px -3px 0 #000, 3px -3px 0 #000, -3px 3px 0 #000, 3px 3px 0 #000, 0 -3px 0 #000, 0 3px 0 #000, -3px 0 0 #000, 3px 0 0 #000, 0 0 12px rgba(204,0,255,0.8), 0 0 24px rgba(204,0,255,0.4); }
+  100% { color: #ff4444; text-shadow: -3px -3px 0 #000, 3px -3px 0 #000, -3px 3px 0 #000, 3px 3px 0 #000, 0 -3px 0 #000, 0 3px 0 #000, -3px 0 0 #000, 3px 0 0 #000, 0 0 12px rgba(255,68,68,0.8), 0 0 24px rgba(255,68,68,0.4); }
+}
+
+/* ─── Word Color: Glitch (Ultra) — chromatic aberration + jitter ─── */
+@keyframes cosmetic-glitch {
+  0%   { text-shadow: -3px -3px 0 #000, 3px -3px 0 #000, -3px 3px 0 #000, 3px 3px 0 #000, 0 -3px 0 #000, 0 3px 0 #000, -3px 0 0 #000, 3px 0 0 #000, 3px 0 #ff0040, -3px 0 #00ffff, 0 0 8px rgba(0,255,136,0.5); transform: translate(0, 0); }
+  20%  { text-shadow: -3px -3px 0 #000, 3px -3px 0 #000, -3px 3px 0 #000, 3px 3px 0 #000, 0 -3px 0 #000, 0 3px 0 #000, -3px 0 0 #000, 3px 0 0 #000, -4px 0 #ff0040, 4px 0 #00ffff, 0 0 12px rgba(0,255,136,0.6); transform: translate(-2px, 1px); }
+  40%  { text-shadow: -3px -3px 0 #000, 3px -3px 0 #000, -3px 3px 0 #000, 3px 3px 0 #000, 0 -3px 0 #000, 0 3px 0 #000, -3px 0 0 #000, 3px 0 0 #000, 2px 0 #ff0040, -2px 0 #00ffff; transform: translate(1px, -1px); }
+  60%  { text-shadow: -3px -3px 0 #000, 3px -3px 0 #000, -3px 3px 0 #000, 3px 3px 0 #000, 0 -3px 0 #000, 0 3px 0 #000, -3px 0 0 #000, 3px 0 0 #000, -3px 0 #ff0040, 3px 0 #00ffff, 0 0 16px rgba(0,255,136,0.7); transform: translate(2px, 0); }
+  80%  { text-shadow: -3px -3px 0 #000, 3px -3px 0 #000, -3px 3px 0 #000, 3px 3px 0 #000, 0 -3px 0 #000, 0 3px 0 #000, -3px 0 0 #000, 3px 0 0 #000, 5px 0 #ff0040, -5px 0 #00ffff; transform: translate(-1px, 1px); }
+  100% { text-shadow: -3px -3px 0 #000, 3px -3px 0 #000, -3px 3px 0 #000, 3px 3px 0 #000, 0 -3px 0 #000, 0 3px 0 #000, -3px 0 0 #000, 3px 0 0 #000, 3px 0 #ff0040, -3px 0 #00ffff, 0 0 8px rgba(0,255,136,0.5); transform: translate(0, 0); }
+}
+
+/* ─── Word Color: Void Pulse (Ultra) — dark purple breathing ─── */
+@keyframes cosmetic-void-pulse {
+  0%, 100% { text-shadow: -3px -3px 0 rgba(180,74,255,0.65), 3px -3px 0 rgba(180,74,255,0.65), -3px 3px 0 rgba(180,74,255,0.65), 3px 3px 0 rgba(180,74,255,0.65), 0 -3px 0 rgba(180,74,255,0.65), 0 3px 0 rgba(180,74,255,0.65), -3px 0 0 rgba(180,74,255,0.65), 3px 0 0 rgba(180,74,255,0.65), 0 0 12px rgba(180,74,255,0.8), 0 0 24px rgba(120,0,255,0.5), 0 0 36px rgba(80,0,200,0.3); }
+  50%      { text-shadow: -3px -3px 0 rgba(200,100,255,0.8), 3px -3px 0 rgba(200,100,255,0.8), -3px 3px 0 rgba(200,100,255,0.8), 3px 3px 0 rgba(200,100,255,0.8), 0 -3px 0 rgba(200,100,255,0.8), 0 3px 0 rgba(200,100,255,0.8), -3px 0 0 rgba(200,100,255,0.8), 3px 0 0 rgba(200,100,255,0.8), 0 0 18px rgba(180,74,255,1), 0 0 36px rgba(120,0,255,0.7), 0 0 54px rgba(80,0,200,0.45), 0 0 72px rgba(50,0,150,0.2); }
+}
+
+/* ─── Word Glow: Frostbite (Rare) — ice blue pulse ─── */
+@keyframes cosmetic-wg-frost {
+  0%, 100% { text-shadow: 0 0 8px rgba(103,232,249,0.6), 0 0 18px rgba(103,232,249,0.3); }
+  50%      { text-shadow: 0 0 14px rgba(103,232,249,0.9), 0 0 30px rgba(150,240,255,0.55), 0 0 44px rgba(103,232,249,0.25); }
+}
+
+/* ─── Word Glow: Firestorm (Rare) — flame flicker ─── */
+@keyframes cosmetic-wg-fire {
+  0%   { text-shadow: 0 0 8px rgba(255,100,0,0.7), 0 0 18px rgba(255,50,0,0.4); }
+  25%  { text-shadow: 0 0 14px rgba(255,140,0,0.9), 0 0 28px rgba(255,80,0,0.55), 0 0 40px rgba(200,0,0,0.2); }
+  50%  { text-shadow: 0 0 8px rgba(255,60,0,0.7), 0 0 16px rgba(255,30,0,0.35); }
+  75%  { text-shadow: 0 0 16px rgba(255,120,0,0.95), 0 0 32px rgba(255,60,0,0.55), 0 0 44px rgba(220,0,0,0.25); }
+  100% { text-shadow: 0 0 8px rgba(255,100,0,0.7), 0 0 18px rgba(255,50,0,0.4); }
+}
+
+/* ─── Word Glow: Blood Moon (Epic) — deep red expansion ─── */
+@keyframes cosmetic-wg-bloodmoon {
+  0%, 100% { text-shadow: 0 0 10px rgba(220,38,38,0.7), 0 0 22px rgba(180,0,0,0.4), 0 0 34px rgba(120,0,0,0.2); }
+  50%      { text-shadow: 0 0 18px rgba(220,38,38,1), 0 0 36px rgba(180,0,0,0.65), 0 0 52px rgba(120,0,0,0.4), 0 0 68px rgba(80,0,0,0.15); }
+}
+
+/* ─── Word Glow: Galaxy (Epic) — purple nebula shift ─── */
+@keyframes cosmetic-wg-galaxy {
+  0%   { text-shadow: 0 0 12px rgba(180,74,255,0.75), 0 0 26px rgba(100,0,200,0.45), 0 0 38px rgba(50,0,150,0.2); }
+  33%  { text-shadow: 0 0 14px rgba(100,0,255,0.85), 0 0 30px rgba(150,50,255,0.55), 0 0 44px rgba(80,0,200,0.25); }
+  66%  { text-shadow: 0 0 12px rgba(200,100,255,0.8), 0 0 26px rgba(130,0,220,0.5), 0 0 40px rgba(60,0,180,0.22); }
+  100% { text-shadow: 0 0 12px rgba(180,74,255,0.75), 0 0 26px rgba(100,0,200,0.45), 0 0 38px rgba(50,0,150,0.2); }
+}
+
+/* ─── Word Glow: Aurora (Legendary) — tri-color cycle ─── */
+@keyframes cosmetic-wg-aurora {
+  0%   { text-shadow: 0 0 12px rgba(0,255,135,0.85), 0 0 26px rgba(0,188,212,0.55), 0 0 40px rgba(124,77,255,0.3); }
+  33%  { text-shadow: 0 0 14px rgba(0,188,212,0.9), 0 0 30px rgba(124,77,255,0.6), 0 0 44px rgba(0,255,135,0.28); }
+  66%  { text-shadow: 0 0 12px rgba(124,77,255,0.85), 0 0 26px rgba(0,255,135,0.55), 0 0 40px rgba(0,188,212,0.3); }
+  100% { text-shadow: 0 0 12px rgba(0,255,135,0.85), 0 0 26px rgba(0,188,212,0.55), 0 0 40px rgba(124,77,255,0.3); }
+}
+
+/* ─── Word Glow: Golden Radiance (Legendary) — gold pulse ─── */
+@keyframes cosmetic-wg-golden {
+  0%, 100% { text-shadow: 0 0 12px rgba(255,215,0,0.8), 0 0 26px rgba(255,180,0,0.5), 0 0 40px rgba(255,140,0,0.3); }
+  50%      { text-shadow: 0 0 20px rgba(255,215,0,1), 0 0 40px rgba(255,180,0,0.7), 0 0 58px rgba(255,140,0,0.45), 0 0 74px rgba(255,100,0,0.2); }
+}
+
+/* ─── Word Glow: Void Pulse (Ultra) — asymmetric void breathing ─── */
+@keyframes cosmetic-wg-void {
+  0%   { text-shadow: 0 0 12px rgba(180,74,255,0.8), 0 0 26px rgba(100,0,255,0.5), 0 0 38px rgba(50,0,200,0.3); }
+  25%  { text-shadow: 0 0 18px rgba(120,0,255,0.95), 0 0 36px rgba(80,0,200,0.65), 0 0 52px rgba(40,0,180,0.35), 0 0 68px rgba(20,0,100,0.15); }
+  50%  { text-shadow: 0 0 12px rgba(200,100,255,0.85), 0 0 26px rgba(140,0,255,0.55), 0 0 42px rgba(80,0,220,0.28); }
+  75%  { text-shadow: 0 0 22px rgba(160,50,255,1), 0 0 42px rgba(100,0,255,0.7), 0 0 60px rgba(60,0,200,0.42), 0 0 78px rgba(30,0,150,0.18); }
+  100% { text-shadow: 0 0 12px rgba(180,74,255,0.8), 0 0 26px rgba(100,0,255,0.5), 0 0 38px rgba(50,0,200,0.3); }
+}
+
+/* ─── Word Glow: Divine Light (Ultra) — white-to-gold radiance ─── */
+@keyframes cosmetic-wg-divine {
+  0%, 100% { text-shadow: 0 0 14px rgba(255,255,255,0.9), 0 0 28px rgba(255,215,0,0.6), 0 0 44px rgba(255,180,0,0.38), 0 0 60px rgba(255,140,0,0.18); }
+  50%      { text-shadow: 0 0 22px rgba(255,255,255,1), 0 0 44px rgba(255,230,150,0.8), 0 0 66px rgba(255,200,50,0.5), 0 0 88px rgba(255,160,0,0.3), 0 0 110px rgba(255,120,0,0.12); }
+}
+
+/* ─── Profile Border: Rainbow (Legendary) — color spin ─── */
+@keyframes cosmetic-border-rotate {
+  0%   { border-color: #ff0000; box-shadow: 0 0 10px rgba(255,0,0,0.6), 0 0 24px rgba(255,0,0,0.3); }
+  16%  { border-color: #ff8800; box-shadow: 0 0 10px rgba(255,136,0,0.6), 0 0 24px rgba(255,136,0,0.3); }
+  33%  { border-color: #ffee00; box-shadow: 0 0 10px rgba(255,238,0,0.6), 0 0 24px rgba(255,238,0,0.3); }
+  50%  { border-color: #00ff44; box-shadow: 0 0 10px rgba(0,255,68,0.6), 0 0 24px rgba(0,255,68,0.3); }
+  66%  { border-color: #0088ff; box-shadow: 0 0 10px rgba(0,136,255,0.6), 0 0 24px rgba(0,136,255,0.3); }
+  83%  { border-color: #cc00ff; box-shadow: 0 0 10px rgba(204,0,255,0.6), 0 0 24px rgba(204,0,255,0.3); }
+  100% { border-color: #ff0000; box-shadow: 0 0 10px rgba(255,0,0,0.6), 0 0 24px rgba(255,0,0,0.3); }
+}
+
+/* ─── Profile Border: Void Ring (Legendary) — void pulse ─── */
+@keyframes cosmetic-void-ring {
+  0%, 100% { box-shadow: 0 0 12px rgba(45,27,105,0.8), 0 0 26px rgba(100,0,255,0.4), inset 0 0 8px rgba(180,74,255,0.3); border-color: #2d1b69; }
+  50%      { box-shadow: 0 0 22px rgba(100,0,255,0.95), 0 0 44px rgba(140,50,255,0.6), 0 0 64px rgba(180,74,255,0.3), inset 0 0 16px rgba(180,74,255,0.5); border-color: #4a20b0; }
+}
+
+/* ─── Profile Border: Inferno (Ultra) — fire pulse ─── */
+@keyframes cosmetic-inferno-pulse {
+  0%   { box-shadow: 0 0 10px rgba(255,69,0,0.6), 0 0 24px rgba(255,69,0,0.3); border-color: #ff4500; }
+  33%  { box-shadow: 0 0 18px rgba(255,100,0,0.85), 0 0 36px rgba(255,69,0,0.55), 0 0 52px rgba(200,0,0,0.2); border-color: #ff6a00; }
+  66%  { box-shadow: 0 0 12px rgba(255,40,0,0.7), 0 0 26px rgba(200,0,0,0.38); border-color: #ff3000; }
+  100% { box-shadow: 0 0 10px rgba(255,69,0,0.6), 0 0 24px rgba(255,69,0,0.3); border-color: #ff4500; }
+}
+
+/* ─── Profile Border: Plasma (Epic) — plasma glow pulse ─── */
+@keyframes cosmetic-plasma-border {
+  0%, 100% { box-shadow: 0 0 10px rgba(124,58,237,0.6), 0 0 24px rgba(124,58,237,0.3); }
+  50%      { box-shadow: 0 0 18px rgba(124,58,237,0.9), 0 0 36px rgba(124,58,237,0.55), 0 0 50px rgba(160,80,255,0.22); }
+}
+
+/* ─── Profile Border: Celestial (Ultra) — golden orbital pulse ─── */
+@keyframes cosmetic-celestial {
+  0%   { box-shadow: 0 0 16px rgba(255,215,0,0.6), 0 0 32px rgba(255,150,0,0.3), 0 0 48px rgba(255,100,0,0.15); border-color: #ffd700; }
+  25%  { box-shadow: 0 0 22px rgba(255,230,100,0.8), 0 0 44px rgba(255,200,0,0.48), 0 0 64px rgba(255,150,0,0.25); border-color: #ffe44d; }
+  50%  { box-shadow: 0 0 16px rgba(255,180,0,0.65), 0 0 32px rgba(255,140,0,0.35), 0 0 52px rgba(255,100,0,0.18); border-color: #ffb400; }
+  75%  { box-shadow: 0 0 26px rgba(255,215,0,0.85), 0 0 50px rgba(255,180,0,0.55), 0 0 72px rgba(255,140,0,0.32), inset 0 0 10px rgba(255,215,0,0.15); border-color: #ffc933; }
+  100% { box-shadow: 0 0 16px rgba(255,215,0,0.6), 0 0 32px rgba(255,150,0,0.3), 0 0 48px rgba(255,100,0,0.15); border-color: #ffd700; }
+}
+
+/* ─── Profile Glow: Electric Aura (Epic) — irregular crackling ─── */
+@keyframes cosmetic-electric-aura {
+  0%, 100% { box-shadow: 0 0 12px rgba(34,211,238,0.6), 0 0 26px rgba(34,211,238,0.3), 0 0 38px rgba(34,211,238,0.15); }
+  25%      { box-shadow: 0 0 18px rgba(34,211,238,0.85), 0 0 36px rgba(34,211,238,0.5), 0 0 52px rgba(34,211,238,0.25); }
+  50%      { box-shadow: 0 0 10px rgba(34,211,238,0.5), 0 0 20px rgba(34,211,238,0.22); }
+  75%      { box-shadow: 0 0 22px rgba(34,211,238,0.9), 0 0 42px rgba(34,211,238,0.58), 0 0 60px rgba(34,211,238,0.3); }
+}
+
+/* ─── Profile Glow: Void Aura (Legendary) — void expansion ─── */
+@keyframes cosmetic-void-aura {
+  0%, 100% { box-shadow: 0 0 16px rgba(45,27,105,0.8), 0 0 32px rgba(100,0,255,0.5), 0 0 52px rgba(180,74,255,0.28); }
+  50%      { box-shadow: 0 0 26px rgba(100,0,255,1), 0 0 52px rgba(140,50,255,0.68), 0 0 78px rgba(180,74,255,0.4), 0 0 100px rgba(200,100,255,0.15); }
+}
+
+/* ─── Profile Glow: Supernova (Legendary) — golden explosion ─── */
+@keyframes cosmetic-supernova {
+  0%, 100% { box-shadow: 0 0 16px rgba(255,200,0,0.7), 0 0 32px rgba(255,100,0,0.4), 0 0 48px rgba(255,0,0,0.2); }
+  50%      { box-shadow: 0 0 26px rgba(255,220,50,1), 0 0 52px rgba(255,150,0,0.68), 0 0 78px rgba(255,50,0,0.4), 0 0 100px rgba(255,0,0,0.15); }
+}
+
+/* ─── Profile Glow: Cosmic (Ultra) — rotating deep-space colors ─── */
+@keyframes cosmetic-cosmic {
+  0%   { box-shadow: 0 0 16px rgba(100,0,255,0.75), 0 0 34px rgba(200,0,255,0.45), 0 0 54px rgba(255,0,200,0.25); }
+  25%  { box-shadow: 0 0 22px rgba(150,0,255,0.85), 0 0 44px rgba(255,0,200,0.55), 0 0 66px rgba(100,0,255,0.3); }
+  50%  { box-shadow: 0 0 16px rgba(255,0,200,0.78), 0 0 34px rgba(100,0,255,0.48), 0 0 56px rgba(200,0,255,0.25); }
+  75%  { box-shadow: 0 0 24px rgba(200,0,255,0.9), 0 0 48px rgba(100,0,255,0.6), 0 0 72px rgba(255,0,200,0.35), 0 0 94px rgba(150,0,255,0.15); }
+  100% { box-shadow: 0 0 16px rgba(100,0,255,0.75), 0 0 34px rgba(200,0,255,0.45), 0 0 54px rgba(255,0,200,0.25); }
+}
+
+/* ─── Name Glow: Legendary Glow — gold radiance pulse ─── */
+@keyframes cosmetic-legendary-glow {
+  0%, 100% { text-shadow: 0 0 10px rgba(255,215,0,0.8), 0 0 22px rgba(255,180,0,0.5), 0 0 36px rgba(255,140,0,0.28); }
+  50%      { text-shadow: 0 0 18px rgba(255,215,0,1), 0 0 36px rgba(255,180,0,0.72), 0 0 54px rgba(255,140,0,0.42); }
+}
+
+/* ─── Name Glow: Divine — white-to-gold divine radiance ─── */
+@keyframes cosmetic-divine-glow {
+  0%, 100% { text-shadow: 0 0 12px rgba(255,255,255,0.9), 0 0 26px rgba(255,215,0,0.58), 0 0 42px rgba(255,180,0,0.35), 0 0 58px rgba(255,140,0,0.18); }
+  50%      { text-shadow: 0 0 20px rgba(255,255,255,1), 0 0 40px rgba(255,230,150,0.8), 0 0 60px rgba(255,200,50,0.5), 0 0 80px rgba(255,160,0,0.28); }
+}
+
+/* ─── Name Color: Neon Flicker (Epic) — neon tube flicker ─── */
+@keyframes cosmetic-neon-flicker {
+  0%   { opacity: 1; text-shadow: -3px -3px 0 #000, 3px -3px 0 #000, -3px 3px 0 #000, 3px 3px 0 #000, 0 -3px 0 #000, 0 3px 0 #000, -3px 0 0 #000, 3px 0 0 #000, 0 0 10px rgba(163,230,53,0.7), 0 0 24px rgba(163,230,53,0.4); }
+  90%  { opacity: 1; }
+  92%  { opacity: 0.6; }
+  93%  { opacity: 1; }
+  95%  { opacity: 0.5; }
+  96%  { opacity: 1; }
+  98%  { opacity: 0.7; }
+  100% { opacity: 1; text-shadow: -3px -3px 0 #000, 3px -3px 0 #000, -3px 3px 0 #000, 3px 3px 0 #000, 0 -3px 0 #000, 0 3px 0 #000, -3px 0 0 #000, 3px 0 0 #000, 0 0 10px rgba(163,230,53,0.7), 0 0 24px rgba(163,230,53,0.4); }
+}
+
+/* ─── Name Color: Chromatic (Legendary) — rainbow cycle ─── */
+@keyframes cosmetic-chromatic {
+  0%   { color: #ff4444; text-shadow: -3px -3px 0 #000, 3px -3px 0 #000, -3px 3px 0 #000, 3px 3px 0 #000, 0 -3px 0 #000, 0 3px 0 #000, -3px 0 0 #000, 3px 0 0 #000, 0 0 10px rgba(255,68,68,0.6); }
+  16%  { color: #ff8800; text-shadow: -3px -3px 0 #000, 3px -3px 0 #000, -3px 3px 0 #000, 3px 3px 0 #000, 0 -3px 0 #000, 0 3px 0 #000, -3px 0 0 #000, 3px 0 0 #000, 0 0 10px rgba(255,136,0,0.6); }
+  33%  { color: #ffee00; text-shadow: -3px -3px 0 #000, 3px -3px 0 #000, -3px 3px 0 #000, 3px 3px 0 #000, 0 -3px 0 #000, 0 3px 0 #000, -3px 0 0 #000, 3px 0 0 #000, 0 0 10px rgba(255,238,0,0.6); }
+  50%  { color: #00ff44; text-shadow: -3px -3px 0 #000, 3px -3px 0 #000, -3px 3px 0 #000, 3px 3px 0 #000, 0 -3px 0 #000, 0 3px 0 #000, -3px 0 0 #000, 3px 0 0 #000, 0 0 10px rgba(0,255,68,0.6); }
+  66%  { color: #0088ff; text-shadow: -3px -3px 0 #000, 3px -3px 0 #000, -3px 3px 0 #000, 3px 3px 0 #000, 0 -3px 0 #000, 0 3px 0 #000, -3px 0 0 #000, 3px 0 0 #000, 0 0 10px rgba(0,136,255,0.6); }
+  83%  { color: #cc00ff; text-shadow: -3px -3px 0 #000, 3px -3px 0 #000, -3px 3px 0 #000, 3px 3px 0 #000, 0 -3px 0 #000, 0 3px 0 #000, -3px 0 0 #000, 3px 0 0 #000, 0 0 10px rgba(204,0,255,0.6); }
+  100% { color: #ff4444; text-shadow: -3px -3px 0 #000, 3px -3px 0 #000, -3px 3px 0 #000, 3px 3px 0 #000, 0 -3px 0 #000, 0 3px 0 #000, -3px 0 0 #000, 3px 0 0 #000, 0 0 10px rgba(255,68,68,0.6); }
+}
+
+/* ─── Name Color: Glitch Text (Ultra) — chromatic aberration ─── */
+@keyframes cosmetic-glitch-text {
+  0%   { text-shadow: -3px -3px 0 #000, 3px -3px 0 #000, -3px 3px 0 #000, 3px 3px 0 #000, 0 -3px 0 #000, 0 3px 0 #000, -3px 0 0 #000, 3px 0 0 #000, 3px 0 #ff0040, -3px 0 #00ffff, 0 0 8px rgba(0,255,136,0.5); transform: translate(0, 0); }
+  25%  { text-shadow: -3px -3px 0 #000, 3px -3px 0 #000, -3px 3px 0 #000, 3px 3px 0 #000, 0 -3px 0 #000, 0 3px 0 #000, -3px 0 0 #000, 3px 0 0 #000, -4px 0 #ff0040, 4px 0 #00ffff; transform: translate(-1px, 1px); }
+  50%  { text-shadow: -3px -3px 0 #000, 3px -3px 0 #000, -3px 3px 0 #000, 3px 3px 0 #000, 0 -3px 0 #000, 0 3px 0 #000, -3px 0 0 #000, 3px 0 0 #000, 2px 0 #ff0040, -2px 0 #00ffff, 0 0 14px rgba(0,255,136,0.6); transform: translate(1px, -1px); }
+  75%  { text-shadow: -3px -3px 0 #000, 3px -3px 0 #000, -3px 3px 0 #000, 3px 3px 0 #000, 0 -3px 0 #000, 0 3px 0 #000, -3px 0 0 #000, 3px 0 0 #000, -5px 0 #ff0040, 5px 0 #00ffff; transform: translate(-2px, 0); }
+  100% { text-shadow: -3px -3px 0 #000, 3px -3px 0 #000, -3px 3px 0 #000, 3px 3px 0 #000, 0 -3px 0 #000, 0 3px 0 #000, -3px 0 0 #000, 3px 0 0 #000, 3px 0 #ff0040, -3px 0 #00ffff, 0 0 8px rgba(0,255,136,0.5); transform: translate(0, 0); }
+}
+
+/* ─── Title: Word God (Ultra) — red power pulse ─── */
+@keyframes cosmetic-god-pulse {
+  0%, 100% { text-shadow: 0 0 10px rgba(255,68,68,0.7), 0 0 24px rgba(255,68,68,0.35); }
+  50%      { text-shadow: 0 0 20px rgba(255,68,68,1), 0 0 40px rgba(255,100,0,0.6), 0 0 58px rgba(255,0,0,0.3); }
+}
+
+/* ─── Title: Supreme Being (Ultra) — white-gold divine pulse ─── */
+@keyframes cosmetic-supreme-pulse {
+  0%, 100% { text-shadow: 0 0 10px rgba(255,255,255,0.8), 0 0 24px rgba(255,215,0,0.4), 0 0 40px rgba(255,100,0,0.18); }
+  50%      { text-shadow: 0 0 20px rgba(255,255,255,1), 0 0 40px rgba(255,230,150,0.72), 0 0 60px rgba(255,200,50,0.42), 0 0 80px rgba(255,160,0,0.2); }
+}
+
+/* ==================== Generated Cosmetic Animations ==================== */
+/* Used by procedurally generated loot box cosmetics */
+
+/* Epic: gentle brightness pulse */
+@keyframes gen-pulse {
+  0%, 100% { filter: brightness(1); }
+  50%      { filter: brightness(1.25); }
+}
+
+/* Legendary: hue rotation shift */
+@keyframes gen-shift {
+  0%   { filter: hue-rotate(0deg); }
+  100% { filter: hue-rotate(360deg); }
+}
+
+/* Ultra: prismatic hue + brightness */
+@keyframes gen-prismatic {
+  0%   { filter: hue-rotate(0deg) brightness(1); }
+  33%  { filter: hue-rotate(120deg) brightness(1.3); }
+  66%  { filter: hue-rotate(240deg) brightness(1.1); }
+  100% { filter: hue-rotate(360deg) brightness(1); }
+}

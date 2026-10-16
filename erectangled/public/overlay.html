@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>eRecTangled</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@700&family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
+    <style>
+      .chat-toggle, .chat-panel, .chat-btn, .chat-widget,
+      [class*="chat"], [id*="chat"], [class*="game-help"],
+      [id*="game-help"], iframe {
+        display: none !important;
+        visibility: hidden !important;
+      }
+    </style>
+    <link rel="stylesheet" href="top-player-cards.css?v=4">
+    <link rel="stylesheet" href="overlay.css?v=38">
+    <script>
+    new MutationObserver(function(muts) {
+      muts.forEach(function(m) {
+        m.addedNodes.forEach(function(n) {
+          if (!n || n.nodeType !== 1) return;
+          var sig = (n.id || '') + (n.className || '') + (n.src || '');
+          if (/chat|game-help/i.test(sig)) n.remove();
+        });
+      });
+    }).observe(document.documentElement, { childList: true, subtree: true });
+    </script>
+</head>
+<body>
+    <!-- Loading overlay -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <p id="loading-text">Loading...</p>
+        </div>
+    </div>
+
+    <!-- Game frame - everything visible on OBS goes inside here -->
+    <div class="game-frame">
+        <!-- Game completion overlay -->
+        <div id="complete-overlay" class="complete-overlay hidden">
+            <div class="complete-content">
+                <h1>All Rings Complete!</h1>
+                <p id="complete-stats"></p>
+                <div id="win-top-players" class="win-top-players"></div>
+                <div id="win-scroll-list" class="win-scroll-list" style="display:none"></div>
+                <div id="win-countdown" class="win-countdown"></div>
+                <div id="win-elo-leaderboard" style="margin-top:10px;max-height:120px;overflow-y:auto;font-size:0.65rem;"></div>
+            </div>
+        </div>
+
+        <!-- Top bar -->
+        <div class="top-bar">
+            <!-- logo removed for OBS — more room for word count -->
+            <div class="top-bar-right">
+                <div class="word-count">
+                    <span id="found-count">0</span> / <span id="total-count">0</span> words
+                    <span id="daily-badge" class="daily-badge" style="display:none;">DAILY</span>
+                    <span id="frenzy-badge" class="frenzy-badge" style="display:none;"><span class="frenzy-label">FRENZY</span><span id="frenzy-multiplier"></span></span>
+                </div>
+                <div class="top-bar-badges">
+                    <span id="rare-count" class="rare-count" style="display:none;"></span>
+                    <span id="ultra-rare-count" class="ultra-rare-count" style="display:none;"></span>
+                </div>
+                <div id="ring-info" class="ring-info"></div>
+            </div>
+        </div>
+
+        <!-- Top 3 players + compact word found banner — same row -->
+        <div class="players-row">
+            <div id="top-players" class="top-players"></div>
+            <div id="word-announce" class="word-announce hidden">
+                <img id="word-announce-avatar" class="word-announce-avatar" src="" alt="" onerror="this.style.display='none';document.getElementById('word-announce-avatar-fallback').style.display='flex'">
+                <div id="word-announce-avatar-fallback" class="word-announce-avatar-fallback" style="display:none"></div>
+                <div class="word-announce-info">
+                    <div class="word-announce-top-line">
+                        <span id="word-announce-name" class="word-announce-name"></span>
+                        <span id="word-announce-score" class="word-announce-score"></span>
+                        <span id="word-announce-earned" class="word-announce-earned" style="display:none"></span>
+                    </div>
+                    <div class="word-announce-bottom-row">
+                        <span id="word-announce-word" class="word-announce-word"></span>
+                        <span id="word-announce-rarity" class="word-announce-rarity" style="display:none"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Overall progress bar -->
+        <div class="progress-bar-container">
+            <div id="progress-bar" class="progress-bar" style="width: 0%"></div>
+        </div>
+
+        <!-- Ring progress bar (current ring) -->
+        <div class="ring-progress-container">
+            <div id="ring-progress-bar" class="ring-progress-bar" style="width: 0%"></div>
+        </div>
+
+        <!-- Incorrect guesses area -->
+        <div id="incorrect-area" class="incorrect-area">
+            <div id="word-announce-placeholder" class="word-announce-placeholder">type to play</div>
+        </div>
+
+        <!-- Grid -->
+        <div id="game-board" class="game-board">
+            <div id="grid-container" class="grid-container"></div>
+        </div>
+
+    </div>
+
+    <script>
+    // ===== Viewport Scaling =====
+    (function () {
+      var BASE = 380;
+      var actualW = window.innerWidth;
+      var actualH = window.innerHeight;
+      var scale = actualW / BASE;
+      var baseH = Math.round(actualH / scale);
+      window.__gameScale = scale;
+      window.__gameViewport = { width: BASE, height: baseH };
+      if (Math.abs(scale - 1) > 0.01) {
+        var html = document.documentElement;
+        html.style.width = BASE + 'px';
+        html.style.height = baseH + 'px';
+        html.style.overflow = 'hidden';
+        html.style.transformOrigin = '0 0';
+        html.style.transform = 'scale(' + scale + ')';
+      }
+      document.documentElement.style.setProperty('--base-width', BASE + 'px');
+      document.documentElement.style.setProperty('--base-height', baseH + 'px');
+    })();
+    </script>
+    <script src="socket.io/socket.io.js"></script>
+    <script src="top-player-cards.js?v=9-cosmq"></script>
+    <script src="elo-leaderboard.js?v=1"></script>
+    <script src="/xp-flyout.js?v=4"></script>
+    <script src="overlay.js?v=18"></script>
+
+</body>
+</html>

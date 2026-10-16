@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#000000">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Word5000">
+  <meta name="description" content="Word5000 — guess the secret word. Daily puzzles and live multiplayer rounds.">
+  <title>Word5000 — Daily Word Puzzle &amp; Live Multiplayer</title>
+  <link rel="canonical" href="https://word5000.com/">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <meta property="og:site_name" content="Word5000">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://word5000.com/">
+  <meta property="og:title" content="Word5000 — Daily Word Puzzle &amp; Live Multiplayer">
+  <meta property="og:description" content="Guess the secret word. Daily puzzles plus live multiplayer rounds you can play from TikTok chat or the web.">
+  <meta property="og:image" content="https://word5000.com/og-image.png">
+  <meta property="og:image:alt" content="Word5000 — guess the secret word">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Word5000 — Daily Word Puzzle &amp; Live Multiplayer">
+  <meta name="twitter:description" content="Guess the secret word. Daily puzzles and live multiplayer rounds.">
+  <meta name="twitter:image" content="https://word5000.com/og-image.png">
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"VideoGame","name":"Word5000","url":"https://word5000.com/","description":"Guess the secret word. Daily puzzles and live multiplayer rounds.","genre":["Puzzle","Word"],"gamePlatform":["Web browser"],"applicationCategory":"Game","operatingSystem":"Any","playMode":["SinglePlayer","MultiPlayer"],"publisher":{"@type":"Organization","name":"Word Tycoon","url":"https://wordtycoon.live/"},"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+  </script>
+  <link rel="icon" href="favicon-32-v3.png">
+  <link rel="stylesheet" href="next/app.css?v=35">
+  <link rel="stylesheet" href="https://wordtycoon.live/portal/assets/badges/fan-club-badge.css">
+  <script src="https://wordtycoon.live/login-prompt.js?v=3" defer></script>
+  <script src="socket.io/socket.io.js"></script>
+  <style>
+    /* OBS overlay: when this page is embedded in stream-view (?obs=1), drop the
+       html/body black bg so the parent overlay's full-screen animated
+       background (or the OBS scene) shows through. The guess tiles carry their
+       own green/yellow/red mark colours and stay fully readable; empty rows are
+       already translucent. Matches the rectangled / erecTangled obs-mode path. */
+    html.obs-mode, body.obs-mode { background: transparent !important; }
+  </style>
+  <script>
+    (function () {
+      try {
+        if (new URLSearchParams(location.search).has('obs')) {
+          document.documentElement.classList.add('obs-mode');
+          document.addEventListener('DOMContentLoaded', function () {
+            document.body.classList.add('obs-mode');
+          });
+        }
+      } catch (_) { /* harmless */ }
+    })();
+  </script>
+</head>
+<body data-mode="demo">
+  <!-- Fleet header: hub / title / status pills / actions — same structure and
+       glass chrome as Figural, PixeLetters and Betwixt. -->
+  <header class="top-chrome">
+    <a class="hub-btn" href="https://wordtycoon.live" title="Word Tycoon Hub" aria-label="Word Tycoon Hub">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    </a>
+    <div class="title">WORD<span class="title-num">5000</span></div>
+    <!-- Mode tag. Sibling of the title (not inside it) so the ellipsing title
+         can never clip it — same slot the other games put their MP badge in. -->
+    <span class="title-sub" id="title-sub">DEMO</span>
+    <div class="chrome-pill is-daily" id="daily" style="display:none">DAILY</div>
+    <!-- XP pot is STREAM-ONLY now. It was one of the widest chips in the
+         header and it doesn't change how you play, so app.css hides it unless
+         the page is running as an OBS source (html.obs-mode) — see the note
+         there. The markup stays put because that browser source renders this
+         same file. -->
+    <div class="chrome-pill" id="jackpot" style="display:none">
+      <span class="jp-label">XP</span><span class="jp-amount">300</span>
+    </div>
+    <div class="chrome-pill frenzy-pill" id="frenzy" style="display:none">
+      🔥 <span id="frenzy-mult">1.0x</span>
+    </div>
+    <div class="header-actions">
+      <a class="chrome-pill mode-link" href="x5/" aria-label="Play Word5000x5">×5</a>
+      <a class="chrome-pill mode-link" id="online-link" href="online" style="display:none">Online</a>
+      <a class="chrome-pill mode-link" id="solo-link"   href="./"     style="display:none">Solo</a>
+      <!-- Solo only: cycles the word length 4→8. Same one-button ws-btn pattern
+           the other solo games use (Figural / PixeLetters / Betwixt). -->
+      <div class="word-size-toggle">
+        <button class="ws-btn" id="len-btn" type="button" style="display:none"
+                aria-label="Word length" title="Change word length">5</button>
+      </div>
+      <span id="hint-btn-wrap" style="display:inline-flex;align-items:center;"></span>
+      <button class="stats-toggle-btn" id="stats-btn" type="button" aria-label="Stats" title="Stats">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="12" width="4" height="9"/><rect x="10" y="7" width="4" height="14"/><rect x="17" y="3" width="4" height="18"/></svg>
+      </button>
+      <button class="icon-pill" id="help-btn" type="button" aria-label="How to play" title="How to play">?</button>
+      <button class="user-pill" id="user-pill" type="button">
+        <img class="user-pill-avatar" id="user-pill-avatar" alt="" style="display:none">
+        <span class="user-pill-name" id="user-pill-name">Sign in</span>
+      </button>
+    </div>
+  </header>
+
+  <div id="guesses" aria-live="polite"></div>
+
+  <div id="keyboard"></div>
+
+  <div id="overlay" role="dialog" aria-modal="true">
+    <div class="card">
+      <h2 id="overlay-title">You got it!</h2>
+      <div class="word" id="overlay-word"></div>
+      <div class="detail" id="overlay-detail"></div>
+      <button id="overlay-action">Play again</button>
+    </div>
+  </div>
+
+  <div id="stats-overlay" role="dialog" aria-modal="true">
+    <div class="stats-card">
+      <button class="stats-close" id="stats-close" type="button" aria-label="Close">&times;</button>
+      <h2>Statistics</h2>
+      <div id="stats-grid" class="stats-grid"></div>
+      <h3 class="stats-section-title">Recent games</h3>
+      <div id="stats-history" class="stats-history"></div>
+    </div>
+  </div>
+
+  <!-- How to play. Deliberately static: unlike Color 500's modal there is
+       nothing here derived from live state, so app.js only opens and closes it.
+       It reuses .stats-card / .stats-close so it inherits the toon skin
+       (app.css scopes those by class, not by #stats-overlay). No chat-syntax
+       section on purpose — everyone reading this is on the site with a
+       keyboard, not typing guesses into TikTok. -->
+  <div id="help-overlay" role="dialog" aria-modal="true">
+    <div class="stats-card help-card">
+      <button class="stats-close" id="help-close" type="button" aria-label="Close">&times;</button>
+      <h2>How to play</h2>
+
+      <p>Guess the secret word. Type it and press enter — every guess has to be
+         a real word.</p>
+
+      <h3 class="stats-section-title">Reading a guess</h3>
+      <p>You're told <em>how many</em> letters you got, never <em>which</em>
+         ones. The triangle beside each guess splits it three ways:</p>
+      <ul class="help-legend">
+        <li><i class="hl-correct"></i> right letter, <strong>right</strong> spot</li>
+        <li><i class="hl-present"></i> right letter, <strong>wrong</strong> spot</li>
+        <li><i class="hl-absent"></i> not in the word at all</li>
+      </ul>
+      <p class="help-muted">The guess itself is tinted by how close you are —
+         the greener the row, the better it scored. Letters can repeat.</p>
+
+      <h3 class="stats-section-title">Working it out</h3>
+      <p>Tap any letter to colour it for yourself; tapping again cycles green →
+         yellow → red → off. Tap a wedge of the triangle to colour a whole row
+         at once, and double-tap that wedge to clear the row again. The marks
+         are just your notes — nobody else sees them.</p>
+
+      <h3 class="stats-section-title">Daily &amp; multiplayer</h3>
+      <p>The <strong>DAILY</strong> is one word a day, the same for everyone,
+         and it counts toward your streak. In multiplayer every guess in the
+         room is shown as it lands, and the first to crack the word takes it.</p>
+    </div>
+  </div>
+
+  <footer class="legal">
+    <a href="https://wordtycoon.live/privacy" target="_blank" rel="noopener">Privacy</a> ·
+    <a href="https://wordtycoon.live/terms" target="_blank" rel="noopener">Terms</a> ·
+    <a href="https://discord.gg/C8Nm2jEZFC" target="_blank" rel="noopener">Discord</a> ·
+    <a href="https://www.jorry.live" target="_blank" rel="noopener">jorry.live</a> ·
+    <a href="https://wordtycoon.live/portal">&copy; 2026 Word Tycoon</a>
+  </footer>
+
+  <script src="https://wordtycoon.live/js/win-card.js"></script>
+  <script src="https://wordtycoon.live/js/hints.js?v=1"></script>
+  <link rel="stylesheet" href="https://wordtycoon.live/portal/assets/badges/perk-badges.css?b3">
+  <script src="https://wordtycoon.live/portal/assets/badges/perk-badges.js?b3"></script>
+  <script type="module" src="next/app.js?v=20261003-owner2-deadline"></script>
+</body>
+</html>

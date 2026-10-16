@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="theme-color" content="#111827"/>
+  <title>UnWordle Offline</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: Inter, system-ui, sans-serif;
+      background: #0b1020;
+      color: #f8fafc;
+    }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background:
+        radial-gradient(circle at top, rgba(255,107,107,0.24), transparent 36%),
+        linear-gradient(180deg, #101626 0%, #0b1020 100%);
+    }
+    main {
+      width: min(100%, 420px);
+      padding: 28px 24px;
+      border-radius: 24px;
+      background: rgba(13, 17, 31, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 24px 48px rgba(0,0,0,0.35);
+      text-align: center;
+    }
+    h1 {
+      margin: 0 0 10px;
+      font-size: 1.7rem;
+      letter-spacing: -0.04em;
+    }
+    p {
+      margin: 0 0 18px;
+      color: #c5cada;
+      line-height: 1.5;
+    }
+    a {
+      display: inline-block;
+      padding: 12px 18px;
+      border-radius: 999px;
+      background: linear-gradient(180deg, #ff8a72, #ff6b6b);
+      color: #120809;
+      text-decoration: none;
+      font-weight: 800;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>You're offline</h1>
+    <p>UnWordle needs a connection to fetch the latest daily puzzle. Reconnect and jump back in when you're ready.</p>
+    <a href="./sp.html">Try again</a>
+  </main>
+</body>
+</html>

@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Canvas Water Test</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #0a0e1a; color: #fff; font-family: 'Inter', 'Segoe UI', sans-serif; padding: 40px; }
+    h2 { margin-bottom: 20px; font-size: 18px; color: #67e8f9; }
+    .row { display: flex; gap: 30px; margin-bottom: 40px; flex-wrap: wrap; }
+    .bubble {
+      position: relative;
+      width: 500px;
+      height: 60px;
+      background: #111827;
+      border-radius: 12px;
+      outline: 3px solid;
+      overflow: hidden;
+    }
+    .bubble canvas {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+    }
+    .bubble .label {
+      position: relative;
+      z-index: 1;
+      padding: 16px 24px;
+      font-size: 16px;
+      font-weight: 600;
+      color: #fff;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.6);
+    }
+    .controls { margin-bottom: 30px; display: flex; gap: 20px; align-items: center; }
+    .controls button {
+      padding: 8px 20px; border: none; border-radius: 6px;
+      background: #22d3ee; color: #000; font-weight: 600; cursor: pointer;
+      font-size: 14px;
+    }
+    .controls button:hover { background: #67e8f9; }
+    .info { font-size: 13px; color: #9ca3af; margin-top: 4px; }
+  </style>
+</head>
+<body>
+  <h2>Canvas 2D Water — Preview</h2>
+  <div class="controls">
+    <button id="btn-slosh">Slosh All</button>
+    <button id="btn-settle">Settle All</button>
+    <button id="btn-flatten">Instant Flatten (old behavior)</button>
+  </div>
+
+  <div class="row" id="bubbles"></div>
+  <p class="info">Slosh = simulates entry flying in. Settle = smooth idle fade to flat (new behavior). Instant Flatten = old snap behavior for comparison.</p>
+
+<script>
+// ---- Inline water config (matches Searchle config.water) ----
+const waterCfg = {
+  idleAmplitude: 2.5,
+  idleFrequency: 0.02,
+  idleSpeed: 1.8,
+  sloshFrequency: 0.03,
+  sloshVelocityScale: 0.025,
+  sloshPhaseScale: 0.008,
+  maxAmplitude: 6,
+  amplitudeDamping: 0.97,
+  amplitudeFollowRate: 14,
+  phaseDamping: 0.98,
+  samples: 12,
+  sleepThreshold: 0.1,
+  sleepFrameSkip: 4,
+};
+
+// ---- Canvas WaterWave (same as WaterWaveCanvas.js) ----
+class WaterWave {
+  constructor(canvas, colors, fillPercent, aspectRatio) {
+    this._canvas = canvas;
+    this._ctx = canvas.getContext('2d');
+    this.fillPercent = fillPercent;
+    this.time = Math.random() * 10;
+    this.amplitude = 0;
+    this.targetAmplitude = 0;
+    this.sloshing = 0;
+    this.tilt = 0;
+    this.idleFade = 1;
+    this._skipCounter = 0;
+    this._colors = colors;
+    this._yBoost = Math.min(Math.sqrt(aspectRatio || 7.5), 3.5);
+    this._resize();
+    this._ro = new ResizeObserver(() => this._resize());
+    this._ro.observe(canvas);
+    this._draw();
+  }
+
+  _resize() {
+    const c = this._canvas;
+    const w = c.clientWidth || 300;
+    const h = c.clientHeight || 40;
+    if (c.width !== w || c.height !== h) {
+      c.width = w;
+      c.height = h;
+    }
+  }
+
+  setFill(fp, colors) { this.fillPercent = fp; this._colors = colors; }
+
+  update(dt, vx, vy) {
+    const w = waterCfg;
+    this.time += dt;
+    const speed = Math.sqrt(vx * vx + vy * vy);
+    this.targetAmplitude = Math.min(speed * w.sloshVelocityScale, w.maxAmplitude);
+    this.amplitude += (this.targetAmplitude - this.amplitude) * dt * w.amplitudeFollowRate;
+    this.amplitude *= w.amplitudeDamping;
+    this.sloshing += vx * dt * w.sloshPhaseScale;
+    this.sloshing *= w.phaseDamping;
+    const tiltTarget = Math.max(-6, Math.min(6, vx * 0.004));
+    this.tilt += (tiltTarget - this.tilt) * dt * 12;
+    this.tilt *= 0.96;
+
+    if (this.amplitude < w.sleepThreshold && speed < 1 && this.idleFade >= 1) {
+      if (++this._skipCounter < w.sleepFrameSkip) return;
+      this._skipCounter = 0;
+    } else {
+      this._skipCounter = 0;
+    }
+    this._draw();
+  }
+
+  _draw() {
+    const c = this._canvas, ctx = this._ctx;
+    const cw = c.width, ch = c.height;
+    if (!cw || !ch) return;
+    const w = waterCfg;
+    const surfaceBase = ch * (1 - this.fillPercent / 100);
+    const idleFreq = w.idleFrequency * Math.PI * 2;
+    const sloshFreq = w.sloshFrequency * Math.PI * 2;
+    const yB = this._yBoost;
+    const pxScale = ch / 100;
+    const idleAmp = w.idleAmplitude * yB * this.idleFade * pxScale;
+    const sloshAmp = this.amplitude * yB * 1.5 * pxScale;
+    const tiltRange = this.tilt * yB * pxScale;
+
+    const waveY = (x) => {
+      const xN = (x / cw) * 100;
+      return Math.max(0, Math.min(ch, surfaceBase
+        + tiltRange * (x / cw - 0.5)
+        + idleAmp * Math.sin(xN * idleFreq + this.time * w.idleSpeed)
+        + sloshAmp * Math.sin(xN * sloshFreq + this.sloshing)));
+    };
+
+    ctx.clearRect(0, 0, cw, ch);
+    const samples = w.samples;
+    const step = cw / samples;
+
+    ctx.beginPath();
+    ctx.moveTo(0, ch);
+    ctx.lineTo(cw, ch);
+    const rightY = waveY(cw);
+    ctx.lineTo(cw, rightY);
+    for (let i = samples - 1; i >= 0; i--) {
+      const x = i * step;
+      const y = waveY(x);
+      const mx = x + step * 0.5;
+      const my = waveY(mx);
+      ctx.quadraticCurveTo(mx, my, x, y);
+    }
+    ctx.closePath();
+
+    const grad = ctx.createLinearGradient(0, ch, 0, surfaceBase);
+    grad.addColorStop(0, this._colors.deep);
+    grad.addColorStop(0.5, this._colors.mid);
+    grad.addColorStop(1, this._colors.surface);
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.moveTo(cw, rightY);
+    for (let i = samples - 1; i >= 0; i--) {
+      const x = i * step;
+      const y = waveY(x);
+      const mx = x + step * 0.5;
+      const my = waveY(mx);
+      ctx.quadraticCurveTo(mx, my, x, y);
+    }
+    ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+  }
+
+  flatten() {
+    this.amplitude = 0; this.targetAmplitude = 0;
+    this.sloshing = 0; this.tilt = 0; this.idleFade = 1;
+    const c = this._canvas, ctx = this._ctx;
+    const cw = c.width, ch = c.height;
+    if (!cw || !ch) return;
+    const surfaceY = ch * (1 - this.fillPercent / 100);
+    ctx.clearRect(0, 0, cw, ch);
+    const grad = ctx.createLinearGradient(0, ch, 0, surfaceY);
+    grad.addColorStop(0, this._colors.deep);
+    grad.addColorStop(0.5, this._colors.mid);
+    grad.addColorStop(1, this._colors.surface);
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, surfaceY, cw, ch - surfaceY);
+    ctx.beginPath();
+    ctx.moveTo(0, surfaceY);
+    ctx.lineTo(cw, surfaceY);
+    ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+  }
+}
+
+// ---- Demo setup ----
+const demos = [
+  { fill: 85, color: 'hsl(110,80%,35%)', colors: { deep: 'hsl(110,70%,12%)', mid: 'hsl(110,75%,22%)', surface: 'hsl(110,80%,35%)' }, label: '85% fill (close guess)' },
+  { fill: 50, color: 'hsl(60,80%,35%)',  colors: { deep: 'hsl(60,70%,12%)',  mid: 'hsl(60,75%,22%)',  surface: 'hsl(60,80%,35%)' },  label: '50% fill (mid guess)' },
+  { fill: 20, color: 'hsl(10,80%,35%)',  colors: { deep: 'hsl(10,70%,12%)',  mid: 'hsl(10,75%,22%)',  surface: 'hsl(10,80%,35%)' },  label: '20% fill (far guess)' },
+];
+
+const container = document.getElementById('bubbles');
+const waters = [];
+
+for (const d of demos) {
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble';
+  bubble.style.outlineColor = d.color;
+
+  const canvas = document.createElement('canvas');
+  bubble.appendChild(canvas);
+
+  const label = document.createElement('div');
+  label.className = 'label';
+  label.textContent = d.label;
+  bubble.appendChild(label);
+
+  container.appendChild(bubble);
+
+  const aspectRatio = 500 / 60;
+  const water = new WaterWave(canvas, d.colors, d.fill, aspectRatio);
+  waters.push({ water, state: 'idle', settleVx: 0 });
+}
+
+// ---- Animation loop ----
+let lastTime = performance.now();
+function animate(now) {
+  const dt = Math.min((now - lastTime) / 1000, 0.033);
+  lastTime = now;
+
+  for (const w of waters) {
+    if (w.state === 'sloshing') {
+      // Simulate flying in from the right
+      w.settleVx *= 0.96;
+      w.water.update(dt, w.settleVx, 0);
+      if (Math.abs(w.settleVx) < 0.5) {
+        w.state = 'idle';
+      }
+    } else if (w.state === 'settling') {
+      // Smooth settle: decay idleFade like GuessList does
+      w.water.update(dt, 0, 0);
+      w.water.idleFade = Math.max(0, w.water.idleFade - dt * 4);
+      if (w.water.idleFade <= 0 && w.water.amplitude < 0.05 && Math.abs(w.water.tilt) < 0.05) {
+        w.water.flatten();
+        w.state = 'flat';
+      }
+    } else if (w.state === 'idle') {
+      w.water.update(dt, 0, 0);
+    }
+    // 'flat' — do nothing
+  }
+
+  requestAnimationFrame(animate);
+}
+requestAnimationFrame(animate);
+
+// ---- Button handlers ----
+document.getElementById('btn-slosh').addEventListener('click', () => {
+  for (const w of waters) {
+    w.water.idleFade = 1;
+    w.water.tilt = -6;
+    w.settleVx = -300;
+    w.state = 'sloshing';
+  }
+});
+
+document.getElementById('btn-settle').addEventListener('click', () => {
+  for (const w of waters) {
+    w.state = 'settling';
+    // idleFade starts at current value (1 if idle, or wherever it is)
+  }
+});
+
+document.getElementById('btn-flatten').addEventListener('click', () => {
+  for (const w of waters) {
+    w.water.flatten();
+    w.state = 'flat';
+  }
+});
+</script>
+</body>
+</html>

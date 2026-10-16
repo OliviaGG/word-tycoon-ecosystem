@@ -1,0 +1,392 @@
+<!doctype html>
+<html lang="en" data-brand="wikicontexto">
+<head>
+<meta charset="utf-8">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#020a25">
+<!-- Scale the game canvas in CSS while keeping sign-in overlays at phone size. -->
+<meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content">
+<title>Play WikiContexto on Word Tycoon — Free Live Multiplayer Wikipedia Guess Game</title>
+
+<!--SEO_BLOCK_START-->
+<meta name="description" content="Play WikiContexto on Word Tycoon — a free live multiplayer Wikipedia guessing game inspired by Contexto. Guess words to reveal a hidden article — ranked by semantic relevance. Daily solo puzzles + live multiplayer rounds.">
+<meta name="keywords" content="wikisearchle, contexto, contexto alternative, wikipedia guess game, word guessing game, semantic guess, daily wikipedia puzzle, multiplayer word game, free word game">
+<meta name="author" content="Word Tycoon">
+<link rel="canonical" href="https://wikicontexto.com/">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="WikiContexto">
+<meta property="og:title" content="Play WikiContexto on Word Tycoon — Free Live Multiplayer Wikipedia Guess Game">
+<meta property="og:description" content="Play WikiContexto on Word Tycoon — a free live multiplayer Wikipedia guessing game inspired by Contexto. Guess words to reveal a hidden article — ranked by semantic relevance.">
+<meta property="og:url" content="https://wikicontexto.com/">
+<meta property="og:image" content="https://wikicontexto.com/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Play WikiContexto on Word Tycoon — Free Live Multiplayer Wikipedia Guess Game">
+<meta name="twitter:description" content="Play WikiContexto on Word Tycoon — a free live multiplayer Wikipedia guessing game inspired by Contexto. Guess words to reveal a hidden article — ranked by semantic relevance.">
+<meta name="twitter:image" content="https://wikicontexto.com/og-image.png">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": "https://wikicontexto.com/#website",
+      "url": "https://wikicontexto.com/",
+      "name": "WikiContexto",
+      "description": "Free live multiplayer Wikipedia guessing game inspired by Contexto, on Word Tycoon.",
+      "publisher": {
+        "@type": "Organization",
+        "name": "Word Tycoon",
+        "url": "https://wordtycoon.live/"
+      },
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://wikicontexto.com/?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    },
+    {
+      "@type": "VideoGame",
+      "name": "WikiContexto",
+      "url": "https://wikicontexto.com/",
+      "image": "https://wikicontexto.com/og-image.png",
+      "description": "WikiContexto is a free live multiplayer Wikipedia guessing game inspired by Contexto. Players guess words to reveal a hidden Wikipedia article — guesses are ranked by semantic relevance to the target article. Includes a daily solo puzzle and a live multiplayer mode where viewers around the world race to reveal the article in real time.",
+      "genre": ["Word Game", "Puzzle", "Trivia"],
+      "playMode": ["SinglePlayer", "MultiPlayer"],
+      "applicationCategory": "Game",
+      "operatingSystem": "Web Browser",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD",
+        "availability": "https://schema.org/InStock"
+      },
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.8",
+        "ratingCount": "127"
+      }
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Is WikiContexto like Contexto?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes — WikiContexto uses the same semantic-similarity ranking system as Contexto, but instead of guessing a single secret word, you're trying to reveal a hidden Wikipedia article. Each guess is scored by how relevant it is to the article's content, and matching words appear inline as the article fills in."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is WikiContexto free to play?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, WikiContexto is 100% free with no signup required. Play the daily solo puzzle, browse random articles, or join a live multiplayer round any time."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What's the difference between solo and multiplayer mode?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Solo mode gives you a daily curated Wikipedia article to crack at your own pace. Multiplayer (live) mode runs continuous rounds with viewers from streams around the world racing to reveal the article first — guesses are scored, ranked, and broadcast in real time."
+          }
+        }
+      ]
+    }
+  ]
+}
+</script>
+<!--SEO_BLOCK_END-->
+<script>
+/* Apply saved theme before first paint to prevent a FOUC flash between
+   dark and light modes. Runs synchronously, before any CSS parses. */
+(function () {
+  try {
+    if (localStorage.getItem('wikisearchle-theme') === 'light') {
+      document.documentElement.classList.add('theme-light');
+    }
+  } catch (e) {}
+})();
+/* OBS overlay mode: when /overlay/<handle> redirects to /?session=<handle>&obs=1
+   we hide the site header and switch the page background to transparent so
+   the page renders cleanly as a Browser Source over a stream. Applied
+   pre-paint to avoid a flash of full chrome. */
+(function () {
+  try {
+    if (/[?&]obs=1(?:&|$)/.test(location.search)) {
+      document.documentElement.classList.add('obs-overlay-mode');
+      // Scale .page-wrap (designed at 720px width) to whatever Browser
+      // Source size the streamer chose. transform: scale on a child works
+      // in CEF where zoom on html/body did not. Reapplied on resize.
+      var DESIGN_WIDTH = 720;
+      function applyObsScale() {
+        var wrap = document.querySelector('.page-wrap');
+        if (!wrap) { requestAnimationFrame(applyObsScale); return; }
+        wrap.style.transform = 'scale(' + (window.innerWidth / DESIGN_WIDTH) + ')';
+      }
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', applyObsScale);
+      } else { applyObsScale(); }
+      window.addEventListener('resize', applyObsScale);
+      setTimeout(applyObsScale, 800);
+
+          }
+  } catch (e) {}
+})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Roboto+Mono:wght@400;500&family=Inter:wght@400;600;700;800&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<link rel="icon" type="image/svg+xml" href="/icon.svg">
+<link rel="apple-touch-icon" href="/icons/icon-180.png">
+
+
+
+
+
+
+<script src="https://wordtycoon.live/login-prompt.js?v=3" defer></script>
+  <link rel="stylesheet" href="https://wordtycoon.live/portal/assets/badges/perk-badges.css?b3">
+  <script src="https://wordtycoon.live/portal/assets/badges/perk-badges.js?b3"></script>
+
+
+
+
+</head>
+<body data-vite-ui="true" class="game-loading">
+
+
+
+<div id="wsLoginScreen" class="mp-login-screen hidden">
+  <div class="mp-login-card">
+    <button id="wsLoginDismiss" class="mp-login-close" type="button" aria-label="Continue as guest">&times;</button>
+    <img src="wt-logo.png" alt="Word Tycoon" class="mp-login-logo">
+    <div class="mp-guest-row">
+      <div class="mp-guest-copy">Play as <strong>Anonymous</strong></div>
+      <button id="wsGuestContinueBtn" class="mp-guest-btn" type="button">Continue</button>
+    </div>
+    <div class="mp-login-divider"><span>or</span></div>
+    <a id="wsDiscordLoginLink" href="#" class="mp-discord-btn">
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037 19.736 19.736 0 0 0-4.886 1.515.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c.126-.094.252-.192.372-.292a.074.074 0 0 1 .078-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.1.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
+      Login with Discord
+    </a>
+    <a id="wsGithubLoginLink" href="#" class="mp-github-btn">
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.01-1.04-.015-2.04-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+      Login with GitHub
+    </a>
+    <a href="https://wordtycoon.live" class="mp-back-link">← Back to Word Tycoon</a>
+  </div>
+</div>
+
+<div id="psModal" class="ps-modal hidden" role="dialog" aria-modal="true" aria-labelledby="psName">
+  <div class="ps-card">
+    <button class="ps-close" id="psClose" type="button" aria-label="Close">&times;</button>
+    <div class="ps-head">
+      <div class="ps-avatar" id="psAvatar"></div>
+      <div>
+        <div class="ps-name" id="psName">—</div>
+        <div class="ps-sub" id="psSub"></div>
+      </div>
+    </div>
+    <div class="ps-body" id="psBody">
+      <div class="ps-loading">Loading…</div>
+    </div>
+  </div>
+</div>
+
+<div class="scroll-wrap">
+<div class="page-wrap">
+
+  <header class="site-header">
+    <a href="/" class="brand-link" aria-label="WikiContexto home" title="Home">
+      <img src="/icon.svg" alt="" class="brand-img hub-logo">
+      <span class="hub-name">WikiContexto</span>
+    </a>
+    <div class="header-nav">
+      <a href="/solo" class="nav-btn" aria-label="Go to solo mode" title="Solo mode (random articles)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span>Solo</span>
+      </a>
+      <button id="statsToggle" class="nav-btn" type="button" aria-label="View your stats" title="Your stats" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21V10M9 21V3M15 21V13M21 21V7"/></svg>
+        <span>Stats</span>
+      </button>
+      <span id="hint-btn-wrap"></span>
+      <button id="themeToggle" class="theme-toggle" type="button" aria-label="Toggle light/dark theme" title="Toggle light/dark theme">
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+      </button>
+      <button id="fxMuteToggle" class="mute-toggle" type="button" aria-label="Toggle sound effects" title="Toggle sound effects">
+        <svg class="icon-sound" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+        <svg class="icon-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Stats drawer — slides down from under the header. Toggled by the
+       Stats nav button above; dismisses on backdrop click or Escape. -->
+  <div id="statsBackdrop" class="stats-backdrop hidden" aria-hidden="true"></div>
+  <aside id="statsDrawer" class="stats-drawer hidden" role="dialog" aria-modal="false" aria-labelledby="statsDrawerTitle" tabindex="-1">
+    <div class="stats-drawer-head">
+      <div class="stats-drawer-title" id="statsDrawerTitle">Your Stats</div>
+      <button id="statsDrawerClose" class="stats-drawer-close" type="button" aria-label="Close stats">&times;</button>
+    </div>
+    <div class="stats-drawer-tabs" role="tablist">
+      <button class="stats-drawer-tab active" data-tab="career" type="button" role="tab" aria-selected="true">Career</button>
+      <button class="stats-drawer-tab" data-tab="round" type="button" role="tab" aria-selected="false">This Round</button>
+      <button class="stats-drawer-tab" data-tab="ranked" type="button" role="tab" aria-selected="false">Ranked</button>
+    </div>
+    <div class="stats-drawer-body" id="statsDrawerBody">
+      <div class="ps-empty">Loading…</div>
+    </div>
+  </aside>
+
+
+  <!-- Idle screen -->
+  <section id="idleScreen">
+    <div class="idle-hero">
+      <h1>WikiContexto</h1>
+      <p class="tagline">Type words in the stream chat to uncover a hidden Wikipedia article. Rank-closest guesses climb the board — finders earn points.</p>
+    </div>
+    <div class="htp-card">
+      <h2>How to Play</h2>
+      <div class="steps">
+        <div class="step"><div class="step-num">1</div><div class="step-text">A Wikipedia article is chosen and every word is blacked out.</div></div>
+        <div class="step"><div class="step-num">2</div><div class="step-text">Viewers type <strong>any word</strong> in chat.</div></div>
+        <div class="step"><div class="step-num">3</div><div class="step-text">Each guess gets a <strong>semantic rank</strong>; closest climbs the Top Guesses cards.</div></div>
+        <div class="step"><div class="step-num">4</div><div class="step-text">Words that appear in the article are <strong>revealed</strong>; finders earn <strong>1,000 pts</strong> each.</div></div>
+        <div class="step"><div class="step-num">5</div><div class="step-text">Round ends when someone guesses the target word.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- OBS-only brand bubble. Hidden unless html.obs-overlay-mode. The img src
+       points straight at the pre-sized WikiContexto logo. There is no runtime
+       brand swap any more — the served HTML is WikiContexto already. -->
+  <div id="obsBrand" aria-hidden="true">
+    <div class="ob-bubble">
+      <img src="/wikicontexto-brand-web.svg" alt="WikiContexto" class="ob-img"
+           onerror="this.outerHTML='&lt;div class=&quot;ob-fallback&quot;&gt;Wiki&lt;span&gt;Contexto&lt;/span&gt;&lt;/div&gt;';">
+    </div>
+  </div>
+
+  <!-- Game area -->
+  <div class="neon-brand"><img src="/wikicontexto-brand-web.svg" alt="WikiContexto"></div>
+  <main id="gameArea">
+    <!-- Article panel: 2-col top + ticker + body (no header) -->
+    <section class="article-panel">
+      <div class="top-row">
+        <!-- Left: title + stats + scoreboard -->
+        <aside class="left-col">
+          <div class="title-block">
+            <div class="title-header">
+              <div class="title-sub">Title</div>
+              <div class="stats-bar">
+                <div class="stat"><span class="stat-label">Guesses</span><span class="stat-val" id="guessCount">0</span></div>
+                <div class="stat"><span class="stat-label">Words Revealed</span><span class="stat-val" id="revealProgress">— / —</span></div>
+              </div>
+            </div>
+            <div id="titleText"></div>
+            <div id="hintPrompt" class="hint-prompt is-hidden" aria-live="polite"></div>
+          </div>
+          <div class="scoreboard" id="scoreboard">
+            <div class="tp-card gold empty"><div class="tp-pfp">1</div><div class="tp-name">—</div><div class="tp-score">0</div></div>
+            <div class="tp-card silver empty"><div class="tp-pfp">2</div><div class="tp-name">—</div><div class="tp-score">0</div></div>
+            <div class="tp-card bronze empty"><div class="tp-pfp">3</div><div class="tp-name">—</div><div class="tp-score">0</div></div>
+          </div>
+        </aside>
+
+        <!-- Right: top-six guess cards -->
+        <div class="right-col" id="cards">
+          <div class="cards-empty" id="cardsEmpty">No guesses yet — be the first!</div>
+        </div>
+
+        <!-- Full-width current/found-word banner -->
+        <div class="word-announce hidden" id="announce">
+          <a class="wa-beta-link" href="https://play.google.com/apps/internaltest/4701413765617392283" target="_blank" rel="noopener">
+            <img src="/icon.svg" alt="" width="38" height="38">
+            <span>Join the WikiContexto Android Beta</span><span aria-hidden="true">→</span>
+          </a>
+          <div class="wa-avatar" id="waAvatar">?</div>
+          <div class="wa-info">
+            <div class="wa-top">
+              <span class="wa-name" id="waName">—</span>
+              <span class="wa-total" id="waTotal">0 pts</span>
+            </div>
+            <div class="wa-bottom">
+              <span class="wa-word" id="waWord">—</span>
+              <span class="wa-rarity common" id="waRarity">COMMON</span>
+            </div>
+            <span class="wa-earned" id="waEarned">+0</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ticker -->
+      <div class="ticker-wrap">
+        <div class="ticker" id="ticker"></div>
+      </div>
+
+      <!-- Article body -->
+      <div class="article-body-panel">
+        <div id="body"></div>
+      </div>
+    </section>
+    <div class="particle-layer" aria-hidden="true"></div>
+  </main>
+  <footer class="wt-legal-footer">
+    <a href="https://wordtycoon.live/privacy" target="_blank" rel="noopener">Privacy</a> &middot;
+    <a href="https://wordtycoon.live/terms" target="_blank" rel="noopener">Terms</a> &middot;
+    <a href="https://discord.gg/C8Nm2jEZFC" target="_blank" rel="noopener">Discord</a> &middot;
+    <a href="https://www.jorry.live" target="_blank" rel="noopener">jorry.live</a> &middot;
+    <a href="https://wordtycoon.live/portal">&copy; 2026 Word Tycoon</a>
+  </footer>
+</div>
+</div>
+
+<section id="gameLoadingScreen" class="wk-loading-screen" data-message="Joining the live round." aria-label="Loading Online">
+  <div class="wk-loading-card">
+    <img class="wk-loading-brand" src="/wikicontexto-brand-web.svg" alt="WikiContexto" width="280" height="43">
+    <div class="wk-loading-mode">Online</div>
+    <div id="gameLoadingSpinner" class="wk-loading-spinner" aria-hidden="true"></div>
+    <div role="status" aria-live="polite">
+      <h1 id="gameLoadingTitle">Loading…</h1>
+      <p id="gameLoadingMessage">Joining the live round.</p>
+    </div>
+    <div id="gameLoadingActions" class="wk-loading-actions" hidden>
+      <button id="gameLoadingRetry" type="button">Try again</button>
+      <a href="/">Back to home</a>
+    </div>
+  </div>
+</section>
+
+
+
+
+
+
+
+<script src="https://wordtycoon.live/js/win-card.js"></script>
+<script src="https://wordtycoon.live/js/hints.js?v=5-wiki"></script>
+
+
+
+
+
+
+
+
+
+<script src="https://wordtycoon.live/portal/js/session-disable-gate.js?v=3"></script>
+
+
+<script type="module" src="../src/online/entry.js"></script>
+</body>
+</html>

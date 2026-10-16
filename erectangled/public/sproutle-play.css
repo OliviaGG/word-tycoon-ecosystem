@@ -1,0 +1,1852 @@
+/* sproutle-play.css — eRecTangled Clean Modern Theme */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+    --bg: #0b0f19;
+    --surface: #111827;
+    --surface-light: #1e293b;
+    --primary: #f43f5e;
+    --primary-light: #fb7185;
+    --accent: #22d3ee;
+    --accent-dark: #06b6d4;
+    --neon-yellow: #fbbf24;
+    --text: #f1f5f9;
+    --text-dim: #64748b;
+    --cell-bg: #1e293b;
+    --cell-greyed: #0f172a;
+    --cell-border: #334155;
+    --incorrect: #ef4444;
+    --already: #fbbf24;
+    --grid-cols: 4;
+    --glow-cyan: 0 0 10px rgba(34,211,238,0.3);
+    --glow-pink: 0 0 10px rgba(244,63,94,0.3);
+}
+
+html { height: 100%; background: var(--bg); touch-action: manipulation; }
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px 12px;
+    max-width: 390px;
+    width: 100%;
+    margin: 0 auto;
+    height: 100%;
+    touch-action: manipulation;
+}
+
+/* Login banner */
+.login-banner {
+    width: 100%; max-width: 500px;
+    background: var(--surface);
+    border: 1px solid var(--cell-border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 0.8rem;
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 8px;
+}
+.login-banner a { color: var(--accent); text-decoration: none; font-weight: 700; }
+.login-banner a:hover { text-decoration: underline; }
+.dismiss-btn { background: none; border: none; color: var(--text-dim); font-size: 1.2rem; cursor: pointer; }
+
+/* Header */
+.game-header {
+    width: 100%; max-width: 500px;
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 8px;
+}
+.hub-link { text-decoration: none; font-size: 1.4rem; }
+.game-title {
+    font-size: 1.3rem; font-weight: 900; letter-spacing: 3px;
+    display: flex; gap: 1px; text-transform: uppercase;
+}
+.game-title .letter {
+    font-weight: 900;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+}
+.header-controls { display: flex; align-items: center; gap: 8px; }
+.word-counter { font-size: 1.1rem; font-weight: 700; }
+.word-counter #found-count { color: var(--accent); }
+.word-counter #total-count { color: var(--text-dim); }
+.icon-btn {
+    background: var(--surface); border: 2px solid var(--cell-border);
+    border-radius: 8px; padding: 4px 8px; cursor: pointer; font-size: 1rem;
+    color: var(--text-dim); transition: all 0.2s;
+}
+.icon-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* Stats dropdown */
+.stats-dropdown {
+    width: 100%; max-width: 500px;
+    background: var(--surface);
+    border: 2px solid var(--cell-border);
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 8px;
+    animation: slideDown 0.2s ease;
+}
+.stats-dropdown.hidden { display: none; }
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; text-align: center; }
+.stat-item .stat-val { font-size: 1.3rem; font-weight: 800; color: var(--accent); }
+.stat-item .stat-label { font-size: 0.65rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+
+@keyframes slideDown { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Size selector */
+.size-selector { display: flex; gap: 6px; margin-bottom: 8px; }
+.size-btn {
+    padding: 6px 14px; font-size: 0.8rem; font-weight: 700;
+    background: var(--surface); border: 2px solid var(--cell-border);
+    color: var(--text-dim); border-radius: 8px; cursor: pointer;
+    font-family: inherit; transition: all 0.2s;
+}
+.size-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); box-shadow: var(--glow-pink); }
+.size-btn:hover:not(.active) { border-color: var(--primary); color: var(--text); }
+
+/* Progress bar */
+.progress-container {
+    width: 100%; max-width: 500px;
+    height: 4px; background: var(--surface-light); border-radius: 4px;
+    margin-bottom: 2px; overflow: hidden;
+}
+.progress-bar {
+    height: 100%; width: 0%;
+    background: linear-gradient(90deg, var(--accent-dark), var(--accent));
+    border-radius: 4px; transition: width 0.3s ease;
+    box-shadow: 0 0 8px rgba(34,211,238,0.4);
+}
+
+/* Game board / Grid */
+.game-board { width: 100%; max-width: 500px; margin-bottom: 2px; touch-action: none; }
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(var(--grid-cols), 1fr);
+    gap: clamp(4px, calc(14px - var(--grid-cols) * 1px), 10px); padding: clamp(6px, calc(16px - var(--grid-cols) * 1px), 12px);
+    background: var(--bg); border-radius: 12px;
+    border: 2px solid var(--cell-border);
+    position: relative; touch-action: none;
+    transition: transform 0.6s ease;
+    transform-origin: center;
+    overflow: hidden;
+    container-type: inline-size;
+}
+
+/* Grid rotation */
+.grid-container.rotated-90  { transform: rotate(90deg); }
+.grid-container.rotated-180 { transform: rotate(180deg); }
+.grid-container.rotated-270 { transform: rotate(270deg); }
+
+/* Hide corner numbers during rotation animation to prevent jumping outside tiles */
+.grid-container.rotating .cell-starts,
+.grid-container.rotating .cell-uses { opacity: 0; transition: opacity 0s; }
+
+/* Counter-rotate letters to keep them upright */
+.grid-container.rotated-90 .cell-letter  { transform: rotate(-90deg); }
+.grid-container.rotated-180 .cell-letter { transform: rotate(-180deg); }
+.grid-container.rotated-270 .cell-letter { transform: rotate(-270deg); }
+
+/* Counter-rotate number text, AND fix absolute position so numbers stay
+   at the correct visual corners after the grid is rotated.
+   Math: after N° CW rotation, CSS `bottom/left/right/top` in the cell's
+   own coordinate space maps to different visual edges:
+     90° CW:  cell-bottom→visual-left,  cell-left→visual-top,
+              cell-top→visual-right,     cell-right→visual-bottom
+    180°:     cell-bottom→visual-top,   cell-left→visual-right,
+              cell-top→visual-bottom,   cell-right→visual-left
+    270° CW:  cell-bottom→visual-right, cell-left→visual-bottom,
+              cell-top→visual-left,     cell-right→visual-top             */
+
+/* 90° CW — cell-starts stays visual bottom-left, cell-uses stays visual bottom-right */
+.grid-container.rotated-90 .cell-starts {
+    transform: rotate(-90deg);
+    top: auto; left: auto; bottom: 5px; right: 3px;
+}
+.grid-container.rotated-90 .cell-uses {
+    transform: rotate(-90deg);
+    bottom: auto; left: auto; top: 5px; right: 3px;
+}
+
+/* 180° — cell-starts stays visual bottom-left, cell-uses stays visual bottom-right */
+.grid-container.rotated-180 .cell-starts {
+    transform: rotate(-180deg);
+    bottom: auto; left: auto; top: 3px; right: 5px;
+}
+.grid-container.rotated-180 .cell-uses {
+    transform: rotate(-180deg);
+    bottom: auto; right: auto; top: 3px; left: 5px;
+}
+
+/* 270° CW — cell-starts stays visual bottom-left, cell-uses stays visual bottom-right */
+.grid-container.rotated-270 .cell-starts {
+    transform: rotate(-270deg);
+    bottom: auto; right: auto; top: 5px; left: 3px;
+}
+.grid-container.rotated-270 .cell-uses {
+    transform: rotate(-270deg);
+    top: auto; right: auto; bottom: 5px; left: 3px;
+}
+
+/* Rotate button */
+.rotate-btn {
+    background: none; border: none; color: var(--text-dim); cursor: pointer;
+    padding: 4px; border-radius: 6px; display: flex; align-items: center; justify-content: center;
+    transition: color 0.2s, background 0.2s;
+}
+.rotate-btn:hover { color: var(--accent); background: rgba(255,255,255,0.06); }
+.rotate-btn svg { transition: transform 0.3s ease; }
+
+.grid-cell {
+    aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+    min-width: 0; min-height: 0;
+    font-size: clamp(0.6rem, calc(100cqw / var(--grid-cols) * 0.45), 2.2rem); font-weight: 900;
+    background: linear-gradient(145deg, var(--cell-bg), #151c2e);
+    color: #fff;
+    border-radius: 12px; position: relative;
+    border: 2px solid var(--cell-border);
+    transition: background 0.3s, opacity 0.5s ease-out, border-color 0.3s, transform 0.15s;
+    user-select: none; cursor: default; touch-action: none;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+
+.cell-letter { text-transform: uppercase; }
+
+.cell-starts {
+    position: absolute; bottom: 3px; left: 5px;
+    font-size: clamp(0px, calc(100cqw / var(--grid-cols) * 0.16), 0.85rem); font-weight: 700;
+    color: #4ade80; text-shadow: 0 0 6px rgba(74,222,128,0.8), 0 0 12px rgba(74,222,128,0.4); line-height: 1; opacity: 0.85;
+}
+.cell-uses {
+    position: absolute; bottom: 3px; right: 5px;
+    font-size: clamp(0px, calc(100cqw / var(--grid-cols) * 0.16), 0.85rem); font-weight: 700;
+    color: #ef4444; line-height: 1; opacity: 0.6;
+}
+
+.grid-cell.greyed {
+    opacity: 0.35; background: linear-gradient(145deg, #2a1a2e, #1e1428); color: var(--text-dim);
+    border-color: rgba(180, 100, 160, 0.15); text-shadow: none;
+}
+.grid-cell.greyed .cell-starts, .grid-cell.greyed .cell-uses { display: none; }
+
+/* Tiles usable for rare/uncommon words only (no common words) */
+.grid-cell:not(.greyed):not(.unrevealed):not(.ring-unrevealed):not(.has-words) {
+    opacity: 0.35; background: linear-gradient(145deg, #2a1a2e, #1e1428); color: var(--text-dim);
+    border-color: rgba(180, 100, 160, 0.15); text-shadow: none;
+}
+.grid-cell:not(.greyed):not(.unrevealed):not(.ring-unrevealed):not(.has-words) .cell-starts,
+.grid-cell:not(.greyed):not(.unrevealed):not(.ring-unrevealed):not(.has-words) .cell-uses { display: none; }
+
+/* Tiles that contribute to at least one findable common word */
+.grid-cell.has-words {
+    background: linear-gradient(145deg, #1a2d4a, #111e33);
+    border-color: rgba(80, 140, 210, 0.3);
+}
+
+/* Unrevealed cells (ring mechanic — not yet expanded to) */
+.grid-cell.unrevealed {
+    background: #080c14 !important; color: transparent !important;
+    border-color: rgba(50,60,80,0.3) !important; text-shadow: none !important;
+    box-shadow: inset 0 0 12px rgba(0,0,0,0.6) !important;
+}
+.grid-cell.unrevealed .cell-letter { color: transparent !important; text-shadow: none !important; }
+.grid-cell.unrevealed .cell-starts, .grid-cell.unrevealed .cell-uses { display: none; }
+
+/* Ring reveal animation — cells pop into view when a ring expands */
+.grid-cell.ring-reveal {
+    animation: ringRevealPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+@keyframes ringRevealPop {
+    0% { transform: scale(0.5); opacity: 0; background: #080c14; color: transparent; border-color: rgba(50,60,80,0.3); }
+    50% { transform: scale(1.15); opacity: 1; background: rgba(68,187,136,0.3); border-color: #44bb88; }
+    100% { transform: scale(1); opacity: 1; background: linear-gradient(145deg, var(--cell-bg), #151c2e); color: #fff; border-color: var(--cell-border); }
+}
+
+/* Replaced cells — no special styling, looks like a default tile */
+
+/* ring-unrevealed — used by overlay for hidden cells (completely black) */
+.grid-cell.ring-unrevealed {
+    background: #000 !important;
+    border-color: rgba(0,0,0,0.8) !important;
+    color: transparent !important;
+    box-shadow: none !important;
+}
+.grid-cell.ring-unrevealed .cell-letter { color: transparent !important; }
+.grid-cell.ring-unrevealed .cell-starts,
+.grid-cell.ring-unrevealed .cell-uses { display: none !important; }
+
+/* Ring progress indicator */
+.ring-progress {
+    font-size: 0.7rem; font-weight: 700;
+    color: #44bb88; letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+.ring-progress .ring-label { color: var(--text-dim); }
+.ring-progress .ring-phase-initial { color: #fbbf24; }
+.ring-progress .ring-phase-ring { color: #44bb88; }
+.ring-progress .ring-phase-complete { color: var(--accent); }
+
+/* All common words found — fade entire grid */
+.grid-container.all-found .grid-cell {
+    opacity: 0.3;
+    transition: opacity 0.6s ease;
+}
+
+.grid-cell.found-highlight {
+    background: var(--accent) !important;
+    color: #0b0f19 !important;
+    border-color: var(--accent) !important;
+    transform: scale(1.1);
+    box-shadow: 0 0 22px rgba(34,211,238,0.6), 0 0 44px rgba(34,211,238,0.25);
+    text-shadow: none !important;
+    transition: background 0.2s, transform 0.2s, box-shadow 0.2s, color 0.2s, border-color 0.2s;
+}
+.grid-cell.found-fadeout {
+    /* opacity is in the list so a tile that greyed out under the flash eases
+       back down to .greyed instead of snapping from 1 to 0.35. */
+    transition: background 0.8s, transform 0.5s, box-shadow 0.8s, color 0.8s, border-color 0.8s, opacity 0.8s;
+}
+/* ─── Finder PFP — pops on every tile of a found word ─── */
+/* .grid-container clips its children, which would slice the overhang off the
+   top row / right column. Un-clip only while pfps are on screen (refcounted). */
+.grid-container.finder-pfp-active { overflow: visible; }
+.grid-cell.has-finder-pfp { z-index: 7; }
+
+.cell-finder-pfp {
+    position: absolute;
+    top: -14%;
+    right: -14%;
+    width: 44%;
+    aspect-ratio: 1;
+    pointer-events: none;
+    z-index: 6;
+    opacity: 0;
+    transform: scale(0.35);
+    animation: cell-finder-pfp-in 200ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+.cell-finder-pfp.is-leaving {
+    animation: cell-finder-pfp-out 320ms ease-in forwards;
+}
+
+/* Inner wrap is the cosmetics host (profile_glow + frame render layer) — kept
+   separate from the outer so a cosmetic `animation` can't clobber the pop-in. */
+.cell-finder-pfp-inner {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    isolation: isolate;
+}
+
+.cell-finder-pfp-img {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+    background: #1b2438;
+    border: 2px solid rgba(255,255,255,0.9);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.55);
+}
+.cell-finder-pfp-fallback {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 45%;
+    font-weight: 900;
+    line-height: 1;
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+    background: linear-gradient(145deg, #2b3550, #1b2438);
+}
+
+.cell-finder-pfp-inner.has-fan-club-badge::after {
+    content: '';
+    position: absolute;
+    top: -22%;
+    right: -22%;
+    width: 52%;
+    height: 52%;
+    background-image: url('https://wordtycoon.live/portal/assets/badges/tiktok-fanclub.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    pointer-events: none;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6));
+    z-index: 5;
+}
+
+@keyframes cell-finder-pfp-in {
+    0%   { opacity: 0; transform: scale(0.35); }
+    100% { opacity: 1; transform: scale(1); }
+}
+@keyframes cell-finder-pfp-out {
+    0%   { opacity: 1; transform: scale(1); }
+    100% { opacity: 0; transform: scale(0.6); }
+}
+/* Board rotation: the pfp is a child of the cell, so it inherits the grid's
+   rotation. Counter-rotate it upright and remap which cell edge it hangs off so
+   it always reads as the tile's visual upper-right corner. Edge mapping is the
+   same one the .cell-starts / .cell-uses rules above use. */
+.cell-finder-pfp-rot {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+.grid-container.rotated-90  .cell-finder-pfp-rot { transform: rotate(-90deg); }
+.grid-container.rotated-180 .cell-finder-pfp-rot { transform: rotate(-180deg); }
+.grid-container.rotated-270 .cell-finder-pfp-rot { transform: rotate(-270deg); }
+
+/* 90° CW — cell-left→visual-top, cell-top→visual-right */
+.grid-container.rotated-90 .cell-finder-pfp {
+    top: -14%; left: -14%; right: auto; bottom: auto;
+}
+/* 180° — cell-bottom→visual-top, cell-left→visual-right */
+.grid-container.rotated-180 .cell-finder-pfp {
+    bottom: -14%; left: -14%; top: auto; right: auto;
+}
+/* 270° CW — cell-right→visual-top, cell-bottom→visual-right */
+.grid-container.rotated-270 .cell-finder-pfp {
+    bottom: -14%; right: -14%; top: auto; left: auto;
+}
+
+
+
+/* Incorrect area */
+.incorrect-area {
+    width: 100%; max-width: 500px;
+    display: flex; flex-wrap: wrap; gap: 6px; justify-content: center;
+    min-height: 28px; margin-bottom: 4px;
+}
+.incorrect-word {
+    color: var(--incorrect); font-weight: 700; font-size: 0.85rem;
+    padding: 3px 12px; border-radius: 6px;
+    background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3);
+    animation: shake 0.4s ease;
+}
+.already-found-tag {
+    color: var(--already); font-weight: 700; font-size: 0.85rem;
+    padding: 3px 12px; border-radius: 6px;
+    background: rgba(251, 191, 36, 0.08); border: 1px solid rgba(251, 191, 36, 0.3);
+    animation: shake 0.3s ease;
+}
+.incorrect-word.fading, .already-found-tag.fading {
+    animation: fadeOut 0.4s ease forwards;
+}
+@keyframes shake {
+    0%,100% { transform: translateX(0); }
+    20% { transform: translateX(-5px); }
+    40% { transform: translateX(5px); }
+    60% { transform: translateX(-3px); }
+    80% { transform: translateX(3px); }
+}
+@keyframes fadeOut { to { opacity: 0; transform: translateY(-8px); } }
+
+/* Text input (hidden on mobile, visible on desktop) */
+.input-area { width: 100%; max-width: 500px; margin-bottom: 8px; }
+.word-input {
+    width: 100%; padding: 10px 16px; font-size: 1rem;
+    background: var(--surface); border: 2px solid var(--cell-border);
+    border-radius: 8px; color: var(--accent); outline: none;
+    font-family: inherit; transition: border-color 0.2s, box-shadow 0.2s;
+    letter-spacing: 2px; text-transform: uppercase; font-weight: 600;
+}
+.word-input:focus { border-color: var(--primary); box-shadow: var(--glow-pink); }
+.word-input::placeholder { color: var(--text-dim); text-transform: none; letter-spacing: 0; font-weight: 400; }
+
+/* Found-words scrollable wrapper — grows freely, page handles scrolling */
+.found-wrapper {
+    width: 100%; max-width: 500px;
+    flex: 0 0 auto;
+    min-height: 80px;
+}
+
+/* Found words */
+.found-section { width: 100%; max-width: 500px; }
+.found-header {
+    font-size: 0.8rem; color: var(--text-dim); margin-bottom: 4px;
+    display: flex; align-items: center; gap: 6px;
+    text-transform: uppercase; letter-spacing: 1px; font-weight: 600;
+}
+.found-header span { color: var(--accent); font-weight: 700; }
+.found-words-list {
+    display: flex; flex-wrap: wrap; gap: 5px;
+    max-height: 120px; overflow-y: auto;
+    padding: 8px; background: var(--surface); border-radius: 8px;
+    border: 1px solid var(--cell-border);
+}
+.found-word {
+    padding: 3px 10px; font-size: 0.75rem; font-weight: 700;
+    background: rgba(34, 211, 238, 0.1); border: 1px solid rgba(34, 211, 238, 0.25);
+    color: var(--accent); border-radius: 4px;
+    letter-spacing: 1px; text-transform: uppercase;
+}
+.found-empty { color: var(--text-dim); font-size: 0.8rem; padding: 8px; }
+
+/* Letter stats */
+.letter-stats { width: 100%; max-width: 500px; margin-top: 8px; font-size: 0.7rem; color: var(--text-dim); }
+
+/* Win overlay */
+.win-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1000; animation: fadeIn 0.3s ease;
+}
+.win-overlay.hidden { display: none; }
+.win-content {
+    text-align: center; background: var(--surface);
+    padding: 36px 44px; border-radius: 16px;
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 40px rgba(34,211,238,0.15), 0 8px 32px rgba(0,0,0,0.5);
+    animation: popIn 0.4s ease;
+}
+.win-content h2 { font-size: 1.6rem; color: var(--accent); margin-bottom: 8px; font-weight: 800; }
+.win-content p { color: var(--text-dim); margin-bottom: 16px; }
+.win-rare-stats { color: var(--neon-yellow); font-weight: 700; font-size: 0.9rem; }
+.new-game-btn {
+    padding: 12px 28px; font-size: 0.95rem; font-weight: 700;
+    background: var(--primary); color: #fff; border: none;
+    border-radius: 8px; cursor: pointer; font-family: inherit;
+    text-transform: uppercase; letter-spacing: 1px;
+    box-shadow: 0 4px 12px rgba(244,63,94,0.3);
+    transition: all 0.2s;
+}
+.new-game-btn:hover { background: var(--primary-light); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(244,63,94,0.4); }
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+/* Error toast */
+.error-toast {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+    background: var(--surface); border: 2px solid var(--cell-border);
+    padding: 10px 20px; border-radius: 8px; font-size: 0.85rem;
+    color: var(--text); z-index: 999;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+.error-toast.hidden { display: none; }
+
+/* MP-specific styles */
+.mp-badge {
+    padding: 2px 8px; font-size: 0.65rem; font-weight: 800;
+    background: var(--primary); color: #fff; border-radius: 4px;
+    margin-left: 6px; text-transform: uppercase; letter-spacing: 2px;
+}
+
+/* Login screen (MP) */
+.login-screen {
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; height: 100vh; gap: 20px;
+}
+.login-card {
+    background: var(--surface); border: 2px solid var(--cell-border);
+    border-radius: 16px; padding: 40px; text-align: center;
+    max-width: 400px; width: 90%;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+}
+.login-card h2 { margin-bottom: 8px; color: var(--accent); font-weight: 800; }
+.login-card p { color: var(--text-dim); margin-bottom: 20px; font-size: 0.85rem; }
+.login-card .logo { font-size: 3rem; margin-bottom: 12px; }
+.discord-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 12px 24px; font-size: 0.95rem; font-weight: 700;
+    background: #5865F2; color: #fff; border: none;
+    border-radius: 8px; cursor: pointer; text-decoration: none;
+    font-family: inherit; text-transform: uppercase; letter-spacing: 1px;
+    transition: all 0.2s;
+}
+.discord-btn:hover { background: #4752c4; box-shadow: 0 4px 16px rgba(88,101,242,0.4); }
+
+.github-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 12px 24px; font-size: 0.95rem; font-weight: 700;
+    background: #333; color: #fff;
+    border-radius: 8px; cursor: pointer; text-decoration: none;
+    font-family: inherit; text-transform: uppercase; letter-spacing: 1px;
+    transition: all 0.2s;
+}
+.github-btn:hover { background: #24292e; box-shadow: 0 4px 16px rgba(0,0,0,0.3); }
+
+.login-divider {
+    display: flex; align-items: center; gap: 10px;
+    margin: 14px 0; color: var(--text-dim); font-size: 0.8rem;
+}
+.login-divider::before, .login-divider::after {
+    content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.1);
+}
+
+/* Top players (MP) */
+.top-players {
+    width: 100%; max-width: 500px;
+    display: flex; justify-content: center; gap: 6px;
+    min-height: 40px; margin-bottom: 6px; align-items: center;
+}
+.top-player-card {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 4px 10px 4px 4px; border-radius: 8px;
+    font-size: 0.8rem; animation: tagSlideIn 0.3s ease;
+}
+.top-player-card.gold { background: rgba(255,215,0,0.1); border: 1px solid rgba(255,215,0,0.3); }
+.top-player-card.silver { background: rgba(192,192,192,0.08); border: 1px solid rgba(192,192,192,0.25); }
+.top-player-card.bronze { background: rgba(205,127,50,0.08); border: 1px solid rgba(205,127,50,0.25); }
+
+.top-player-avatar-wrap { position: relative; width: 26px; height: 26px; flex-shrink: 0; }
+.top-player-crown { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); font-size: 0.7rem; z-index: 1; }
+.top-player-avatar { width: 26px; height: 26px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,0.15); }
+.top-player-avatar-fallback {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.7rem; font-weight: 800; color: #fff;
+    background: var(--surface-light); border: 2px solid rgba(255,255,255,0.15);
+}
+.top-player-name { font-weight: 700; max-width: 70px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.top-player-card.gold .top-player-name { color: #ffd700; }
+.top-player-card.silver .top-player-name { color: #c0c0c0; }
+.top-player-card.bronze .top-player-name { color: #cd7f32; }
+.top-player-score { color: var(--text-dim); font-size: 0.7rem; }
+@keyframes tagSlideIn { from { opacity:0; transform: translateY(8px) scale(0.9); } to { opacity:1; transform: translateY(0) scale(1); } }
+
+/* Countdown */
+.countdown-text { font-size: 1.1rem; color: var(--primary); font-weight: 700; margin-top: 12px; }
+
+/* ─── Puzzle Selector ─── */
+.puzzle-selector {
+    width: 100%; max-width: 500px;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 16px 12px;
+    position: relative;
+}
+.hub-btn {
+    position: absolute; top: 12px; left: 8px;
+    text-decoration: none; color: var(--text); font-size: 0.85rem;
+    background: rgba(255,255,255,.08); padding: 4px 10px; border-radius: 8px;
+    transition: background .2s;
+}
+.hub-btn:hover { background: rgba(255,255,255,.16); }
+.puzzle-selector h2 { margin-bottom: 12px; color: var(--accent); font-weight: 800; }
+.puzzle-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;
+    width: 100%; max-height: 70vh; overflow-y: auto;
+    padding: 4px;
+}
+.puzzle-card {
+    background: var(--surface); border: 2px solid var(--cell-border);
+    border-radius: 10px; padding: 12px 14px; cursor: pointer;
+    transition: all 0.2s; position: relative;
+}
+.puzzle-card:hover { background: var(--surface-light); border-color: var(--primary); box-shadow: 0 4px 16px rgba(244,63,94,0.15); }
+.puzzle-card.completed { border-color: var(--accent); }
+.puzzle-card.completed::after {
+    content: '\2713'; position: absolute; top: 8px; right: 10px;
+    color: var(--accent); font-weight: 900; font-size: 1rem;
+}
+.puzzle-card .puzzle-num { color: var(--text-dim); font-size: 0.7rem; font-weight: 700; letter-spacing: 1px; }
+.puzzle-card .puzzle-name { font-weight: 700; font-size: 0.85rem; margin: 2px 0; color: var(--text); }
+.puzzle-card .puzzle-theme { color: var(--text-dim); font-size: 0.7rem; }
+.puzzle-card .puzzle-size {
+    display: inline-block; margin-top: 4px; padding: 1px 6px;
+    font-size: 0.65rem; font-weight: 700; letter-spacing: 0.5px;
+    border-radius: 4px; color: var(--text-dim);
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+}
+.puzzle-card.archived-daily {
+    border-color: #ff6b35;
+    background: linear-gradient(135deg, rgba(255,107,53,.06), rgba(255,69,0,.03));
+}
+.puzzle-card.archived-weekly {
+    border-color: #d4a017;
+    background: linear-gradient(135deg, rgba(212,160,23,.06), rgba(212,160,23,.03));
+}
+.puzzle-pct {
+    font-size: 0.7rem; font-weight: 800; color: var(--neon-yellow);
+    margin-top: 4px; letter-spacing: 1px;
+}
+.puzzle-pct.complete { color: var(--accent); }
+.random-puzzle-btn {
+    padding: 12px 28px; font-size: 0.95rem; font-weight: 700;
+    background: var(--primary); color: #fff; border: none;
+    border-radius: 8px; cursor: pointer; margin-bottom: 12px;
+    font-family: inherit; text-transform: uppercase; letter-spacing: 1px;
+    box-shadow: 0 4px 12px rgba(244,63,94,0.3);
+    transition: all 0.2s;
+}
+.random-puzzle-btn:hover { background: var(--primary-light); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(244,63,94,0.4); }
+
+/* ─── Puzzle Info Badge ─── */
+.puzzle-info {
+    width: 100%; max-width: 500px;
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 6px; font-size: 0.8rem;
+}
+.puzzle-info.hidden { display: none; }
+.puzzle-info .puzzle-num { color: var(--text-dim); font-weight: 700; letter-spacing: 1px; }
+.puzzle-info .puzzle-name { font-weight: 700; color: var(--accent); }
+.puzzle-theme-badge {
+    padding: 2px 8px; font-size: 0.65rem; font-weight: 700;
+    background: rgba(244,63,94,0.1); color: var(--primary);
+    border-radius: 4px; border: 1px solid rgba(244,63,94,0.25);
+    text-transform: uppercase; letter-spacing: 1px;
+}
+
+/* ─── Rare Word Styling ─── */
+.found-word.rare {
+    color: var(--neon-yellow);
+    border-color: rgba(251,191,36,0.3);
+    background: rgba(251,191,36,0.08);
+}
+.rare-section {
+    margin-top: 8px;
+    border-top: 1px solid rgba(251,191,36,0.15);
+    padding-top: 8px;
+}
+.rare-header {
+    font-size: 0.8rem; color: var(--neon-yellow); margin-bottom: 4px;
+    display: flex; align-items: center; gap: 6px;
+    text-transform: uppercase; letter-spacing: 1px; font-weight: 600;
+}
+.rare-header span { font-weight: 700; }
+.rare-counter {
+    color: var(--neon-yellow); font-weight: 700; font-size: 0.8rem;
+    margin-left: 4px;
+}
+.rare-counter.hidden { display: none; }
+
+/* ─── Ultra Rare Word Styling ─── */
+.found-word.ultra-rare {
+    color: #7c3aed;
+    border-color: rgba(124,58,237,0.3);
+    background: rgba(124,58,237,0.08);
+}
+.ultra-rare-section {
+    margin-top: 8px;
+    border-top: 1px solid rgba(124,58,237,0.15);
+    padding-top: 8px;
+}
+.ultra-rare-header {
+    font-size: 0.8rem; color: #7c3aed; margin-bottom: 4px;
+    display: flex; align-items: center; gap: 6px;
+    text-transform: uppercase; letter-spacing: 1px; font-weight: 600;
+}
+.ultra-rare-header span { font-weight: 700; }
+.ultra-rare-counter {
+    color: #7c3aed; font-weight: 700; font-size: 0.8rem;
+    margin-left: 4px;
+}
+.ultra-rare-counter.hidden { display: none; }
+
+/* ─── Back to Puzzles Button ─── */
+.back-btn {
+    background: none; border: 2px solid var(--cell-border);
+    color: var(--text-dim); border-radius: 6px;
+    padding: 2px 10px; font-size: 0.7rem; cursor: pointer;
+    font-family: inherit; text-transform: uppercase; letter-spacing: 1px;
+    font-weight: 600; transition: all 0.2s;
+}
+.back-btn:hover { color: var(--accent); border-color: var(--accent); }
+
+/* ─── Rare Word Found Highlight ─── */
+.grid-cell.rare-highlight {
+    background: var(--neon-yellow) !important;
+    color: #0b0f19 !important;
+    border-color: var(--neon-yellow) !important;
+    transform: scale(1.1);
+    box-shadow: 0 0 22px rgba(251,191,36,0.6), 0 0 44px rgba(251,191,36,0.25);
+    text-shadow: none !important;
+    transition: background 0.2s, transform 0.2s, box-shadow 0.2s, color 0.2s, border-color 0.2s;
+}
+
+/* ─── Hidden/Ultra Rare Word Found Highlight ─── */
+.grid-cell.hidden-highlight {
+    background: #7c3aed !important;
+    color: #fff !important;
+    border-color: #7c3aed !important;
+    transform: scale(1.15);
+    box-shadow: 0 0 30px rgba(124,58,237,0.7), 0 0 60px rgba(124,58,237,0.3);
+    text-shadow: none !important;
+    transition: background 0.2s, transform 0.2s, box-shadow 0.2s, color 0.2s, border-color 0.2s;
+}
+
+/* ─── 3-Letter Word Styling ─── */
+.found-word.three-letter {
+    color: #4ade80;
+    border-color: rgba(74,222,128,0.3);
+    background: rgba(74,222,128,0.08);
+}
+.three-letter-section {
+    margin-top: 8px;
+    border-top: 1px solid rgba(74,222,128,0.15);
+    padding-top: 8px;
+}
+.three-letter-header {
+    font-size: 0.8rem; color: #4ade80; margin-bottom: 4px;
+    display: flex; align-items: center; gap: 6px;
+    text-transform: uppercase; letter-spacing: 1px; font-weight: 600;
+}
+.three-letter-header span { font-weight: 700; }
+
+/* ─── 3-Letter Word Found Highlight ─── */
+.grid-cell.three-letter-highlight {
+    background: #4ade80 !important;
+    color: #0b0f19 !important;
+    border-color: #4ade80 !important;
+    transform: scale(1.1);
+    box-shadow: 0 0 22px rgba(74,222,128,0.6), 0 0 44px rgba(74,222,128,0.25);
+    text-shadow: none !important;
+    transition: background 0.2s, transform 0.2s, box-shadow 0.2s, color 0.2s, border-color 0.2s;
+}
+
+/* ─── Drag-to-Connect Input ─── */
+.grid-cell.drag-active {
+    background: var(--primary) !important;
+    color: #fff !important;
+    border-color: var(--primary) !important;
+    transform: scale(1.08);
+    z-index: 2;
+    opacity: 1 !important;
+    box-shadow: 0 0 20px rgba(244,63,94,0.5), 0 4px 12px rgba(244,63,94,0.3);
+    transition: transform 0.1s ease, background 0.1s ease;
+    text-shadow: none !important;
+}
+.grid-cell.drag-active .cell-starts,
+.grid-cell.drag-active .cell-uses { display: none; }
+.grid-cell.drag-active .cell-letter { color: #fff !important; }
+
+.drag-preview {
+    width: 100%; max-width: 500px;
+    text-align: center;
+    font-size: 1.3rem; font-weight: 900;
+    letter-spacing: 4px; color: var(--primary-light);
+    height: 34px; line-height: 26px; padding: 4px 0;
+    text-transform: uppercase;
+    pointer-events: none;
+    overflow: hidden;
+}
+.drag-preview.hidden { visibility: hidden; }
+
+.drag-svg-overlay, .type-preview-svg-overlay {
+    position: absolute; top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none; z-index: 1;
+}
+.drag-line {
+    stroke: var(--primary); stroke-width: 3;
+    stroke-linecap: round; opacity: 0.5;
+    filter: drop-shadow(0 0 4px rgba(244,63,94,0.4));
+}
+
+.grid-container { position: relative; }
+
+@media (pointer: coarse) {
+    .grid-cell { cursor: pointer; }
+}
+
+/* ─── Viewport Pinning ─── */
+html {
+    overscroll-behavior: none;
+}
+body.game-active {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    overflow-y: auto;
+}
+body.game-active > #game-screen,
+body.game-active > #game-ui {
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    min-height: 100%;
+    width: 100%;
+    box-sizing: border-box;
+    overflow: visible;
+    padding: 8px 12px;
+    background: var(--bg);
+}
+
+/* Responsive */
+@media (max-width: 420px) {
+    body { padding: 6px 8px; }
+
+    /* Header */
+    .game-header { gap: 4px; }
+    .hub-link { font-size: 1.1rem; }
+    .game-title { font-size: 0.85rem; letter-spacing: 1px; }
+    .mp-badge { padding: 1px 5px; font-size: 0.55rem; margin-left: 3px; letter-spacing: 1px; }
+    .header-controls { gap: 4px; }
+    .word-counter { font-size: 0.9rem; }
+    .rare-counter { font-size: 0.65rem; }
+    .ultra-rare-counter { font-size: 0.65rem; }
+    .icon-btn { padding: 3px 6px; font-size: 0.85rem; }
+
+    /* Top players */
+    .top-players { gap: 4px; }
+    .top-player-card { padding: 3px 6px 3px 3px; font-size: 0.7rem; }
+    .top-player-avatar-wrap, .top-player-avatar, .top-player-avatar-fallback { width: 22px; height: 22px; }
+    .top-player-name { max-width: 50px; }
+    .top-player-score { font-size: 0.6rem; }
+}
+
+/* ─── Mobile: touch-only play, no keyboard, no scroll ─── */
+@media (pointer: coarse) {
+    html { overflow: hidden; overscroll-behavior: none; }
+    body {
+        position: fixed;
+        inset: 0;
+        overflow-y: auto;
+        overscroll-behavior: none;
+    }
+    .input-area { display: none; }
+    .game-board { margin-bottom: 4px; }
+}
+
+/* Scrollbar (desktop) */
+@media (pointer: fine) {
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: var(--surface); }
+    ::-webkit-scrollbar-thumb { background: var(--cell-border); border-radius: 4px; }
+}
+
+/* OBS word-found announcement */
+.word-announcement {
+    position: fixed;
+    right: 16px; bottom: 16px;
+    padding: 10px 16px;
+    border-radius: 10px;
+    background: rgba(11,15,25,0.92);
+    border: 2px solid var(--accent);
+    color: #fff;
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    animation: announce-in 0.4s ease-out;
+    z-index: 100;
+    pointer-events: none;
+}
+.word-announcement .announce-player { font-size: 0.85rem; opacity: 0.7; }
+.word-announcement .announce-word { font-size: 1.3rem; color: var(--accent); }
+.word-announcement.rare { border-color: var(--neon-yellow); }
+.word-announcement.rare .announce-word { color: var(--neon-yellow); }
+.word-announcement.ultra-rare { border-color: #7c3aed; }
+.word-announcement.ultra-rare .announce-word { color: #7c3aed; }
+.word-announcement.three-letter { border-color: #4ade80; }
+.word-announcement.three-letter .announce-word { color: #4ade80; }
+.word-announcement.fade-out { opacity: 0; transition: opacity 0.5s; }
+@keyframes announce-in {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+/* ─── Light Theme ─── */
+[data-theme="light"] {
+    --bg: #faf7f2;
+    --surface: #f0ebe3;
+    --surface-light: #e8e0d4;
+    --primary: #d94467;
+    --primary-light: #e5637e;
+    --accent: #0e9aa7;
+    --accent-dark: #0c8491;
+    --neon-yellow: #c48a12;
+    --text: #3d3329;
+    --text-dim: #8c7e6f;
+    --cell-bg: #ede7dc;
+    --cell-greyed: #f5f1eb;
+    --cell-border: #d5cbbf;
+    --incorrect: #d64545;
+    --already: #c48a12;
+    --glow-cyan: 0 0 10px rgba(14,154,167,0.2);
+    --glow-pink: 0 0 10px rgba(217,68,103,0.2);
+}
+[data-theme="light"] body {
+    background: var(--bg);
+}
+[data-theme="light"] .grid-cell {
+    background: linear-gradient(145deg, #fff, var(--cell-bg));
+    color: #3d3329;
+    border-color: var(--cell-border);
+    text-shadow: none;
+}
+[data-theme="light"] .grid-cell.greyed {
+    opacity: 0.35;
+    background: var(--cell-greyed);
+    color: var(--text-dim);
+}
+[data-theme="light"] .grid-cell.unrevealed {
+    background: #e8e0d4;
+    color: transparent;
+    border-color: rgba(0,0,0,0.06);
+    box-shadow: inset 0 0 8px rgba(0,0,0,0.08);
+}
+[data-theme="light"] .grid-cell.unrevealed .cell-letter { color: transparent; }
+
+
+[data-theme="light"] .grid-cell.found-highlight {
+    color: #fff !important;
+}
+[data-theme="light"] .grid-cell.drag-active {
+    color: #fff !important;
+}
+[data-theme="light"] .grid-cell.drag-active .cell-letter {
+    color: #fff !important;
+}
+[data-theme="light"] .cell-starts {
+    color: #16a34a;
+    text-shadow: 0 0 6px rgba(22,163,74,0.6), 0 0 12px rgba(22,163,74,0.3);
+}
+[data-theme="light"] .found-word {
+    background: rgba(14,154,167,0.08);
+    border-color: rgba(14,154,167,0.2);
+    color: var(--accent);
+}
+[data-theme="light"] .found-word.rare {
+    color: #a16c00;
+    border-color: rgba(196,138,18,0.25);
+    background: rgba(196,138,18,0.06);
+}
+[data-theme="light"] .found-word.three-letter {
+    color: #16a34a;
+    border-color: rgba(22,163,74,0.25);
+    background: rgba(22,163,74,0.06);
+}
+[data-theme="light"] .incorrect-word {
+    background: rgba(214,69,69,0.06);
+    border-color: rgba(214,69,69,0.2);
+}
+[data-theme="light"] .already-found-tag {
+    background: rgba(196,138,18,0.06);
+    border-color: rgba(196,138,18,0.2);
+}
+[data-theme="light"] .word-input {
+    background: #fff;
+    border-color: var(--cell-border);
+    color: var(--accent);
+}
+[data-theme="light"] .word-input:focus {
+    border-color: var(--primary);
+}
+[data-theme="light"] .win-overlay {
+    background: rgba(250,247,242,0.85);
+}
+[data-theme="light"] .win-content {
+    background: #fff;
+    border-color: var(--accent);
+    box-shadow: 0 0 40px rgba(14,154,167,0.1), 0 8px 32px rgba(0,0,0,0.08);
+}
+[data-theme="light"] .word-announcement {
+    background: rgba(255,255,255,0.95);
+    color: #3d3329;
+    border-color: var(--accent);
+}
+[data-theme="light"] .login-card {
+    background: #fff;
+    border-color: var(--cell-border);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.06);
+}
+[data-theme="light"] .login-divider::before,
+[data-theme="light"] .login-divider::after {
+    background: rgba(0,0,0,0.1);
+}
+[data-theme="light"] .progress-bar {
+    box-shadow: none;
+}
+[data-theme="light"] .grid-container {
+    background: var(--surface);
+    border-color: var(--cell-border);
+}
+[data-theme="light"] .puzzle-card:hover {
+    box-shadow: 0 4px 16px rgba(217,68,103,0.08);
+}
+[data-theme="light"] .rare-section {
+    border-top-color: rgba(196,138,18,0.2);
+}
+[data-theme="light"] .ultra-rare-section {
+    border-top-color: rgba(109,40,217,0.2);
+}
+[data-theme="light"] .three-letter-section {
+    border-top-color: rgba(124,92,191,0.2);
+}
+[data-theme="light"] .rare-header,
+[data-theme="light"] .rare-counter {
+    color: #a16c00;
+}
+[data-theme="light"] .ultra-rare-header,
+[data-theme="light"] .ultra-rare-counter {
+    color: #6d28d9;
+}
+[data-theme="light"] .found-word.ultra-rare {
+    color: #6d28d9;
+    border-color: rgba(109,40,217,0.25);
+    background: rgba(109,40,217,0.06);
+}
+[data-theme="light"] .three-letter-header {
+    color: #16a34a;
+}
+[data-theme="light"] .puzzle-pct {
+    color: #a16c00;
+}
+[data-theme="light"] .puzzle-theme-badge {
+    background: rgba(217,68,103,0.06);
+    color: var(--primary);
+    border-color: rgba(217,68,103,0.15);
+}
+[data-theme="light"] .puzzle-card .puzzle-size {
+    background: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.1);
+}
+/* Theme toggle */
+.theme-row {
+    display: flex; justify-content: center; margin-top: 10px;
+    padding-top: 8px; border-top: 1px solid var(--cell-border);
+}
+.theme-toggle {
+    background: var(--surface-light); border: 2px solid var(--cell-border);
+    border-radius: 8px; padding: 6px 14px; cursor: pointer;
+    color: var(--text-dim); transition: all 0.2s; line-height: 1;
+    display: flex; align-items: center; gap: 6px;
+    font-size: 0.75rem; font-weight: 600; font-family: inherit;
+    text-transform: uppercase; letter-spacing: 1px;
+}
+.theme-toggle:hover { border-color: var(--accent); color: var(--accent); }
+.theme-icon-light { display: none; }
+[data-theme="light"] .theme-icon-dark { display: none; }
+[data-theme="light"] .theme-icon-light { display: block; }
+[data-theme="light"] .size-btn.active {
+    color: #fff;
+}
+[data-theme="light"] .top-player-avatar-fallback {
+    color: #3d3329;
+}
+[data-theme="light"] .daily-badge {
+    color: #3d2800;
+}
+/* Scrollbar light */
+[data-theme="light"] ::-webkit-scrollbar-track { background: var(--surface); }
+[data-theme="light"] ::-webkit-scrollbar-thumb { background: var(--cell-border); }
+
+/* ─── Desktop 3-Column Layout (≥769px, pointer:fine) ──────────────────── */
+@media (min-width: 769px) {
+    body {
+        padding: 0;
+        align-items: stretch;
+    }
+
+    /* game-active override: stretch children, no padding, lock height */
+    body.game-active {
+        position: static;
+        overflow: hidden;
+    }
+    body.game-active > #game-screen,
+    body.game-active > #game-ui {
+        align-items: stretch !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+        height: 100vh;
+    }
+
+    /* Game containers fill viewport */
+    #game-ui, #game-screen {
+        width: 100%;
+        max-width: none;
+        height: 100vh;
+        overflow: hidden;
+        padding: 0;
+    }
+
+    /* Full-width header */
+    .game-header {
+        width: 100%;
+        max-width: none;
+        flex-shrink: 0;
+        padding: 12px 20px;
+        background: var(--surface);
+        border-bottom: 1px solid var(--cell-border);
+        margin-bottom: 0;
+    }
+
+    /* Stats dropdown: full-width strip below header */
+    #stats-dropdown {
+        width: 100%;
+        max-width: none;
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+        flex-shrink: 0;
+        margin-bottom: 0;
+    }
+
+    /* Puzzle info strip (outside sidebar on SP desktop) */
+    #puzzle-info {
+        max-width: none;
+        width: 100%;
+        margin-bottom: 0;
+    }
+
+    /* Three-column layout */
+    .game-layout {
+        display: flex;
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
+    }
+
+    .sidebar-left {
+        width: 220px;
+        flex-shrink: 0;
+        padding: 16px;
+        border-right: 1px solid var(--cell-border);
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .center-area {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+        gap: 8px;
+        overflow: hidden;
+    }
+
+    .sidebar-right {
+        width: 280px;
+        flex-shrink: 0;
+        padding: 16px;
+        border-left: 1px solid var(--cell-border);
+        overflow-y: auto;
+    }
+
+    /* Remove max-width constraints from desktop children */
+    .game-board,
+    .incorrect-area,
+    .found-wrapper,
+    .found-section,
+    .top-players,
+    .drag-preview {
+        max-width: none;
+        width: 100%;
+    }
+
+    /* Grid: fill center area, capped by viewport height */
+    .game-board {
+        max-width: min(100%, 80vh);
+        flex-shrink: 0;
+        margin: 0;
+    }
+
+    /* Progress bar and input match game-board width exactly */
+    .center-area .progress-container,
+    .center-area .input-area {
+        width: 100%;
+        max-width: var(--board-max-width, min(100%, 80vh));
+    }
+
+    /* Found word lists: taller in sidebar */
+    .found-words-list {
+        max-height: 260px;
+    }
+
+    /* Top players: vertical list in sidebar */
+    .top-players {
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: flex-start;
+        min-height: unset;
+        margin-bottom: 0;
+    }
+    .top-player-card {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    /* Sidebar section headers */
+    .sidebar-left h4,
+    .sidebar-right h4 {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--text-dim);
+        margin-bottom: 8px;
+        font-weight: 700;
+    }
+
+    /* Light theme sidebar borders */
+    [data-theme="light"] .sidebar-left { border-right-color: var(--cell-border); }
+    [data-theme="light"] .sidebar-right { border-left-color: var(--cell-border); }
+}
+
+@media (max-width: 480px) {
+    .grid-cell {
+        font-size: clamp(0.6rem, calc(100cqw / var(--grid-cols) * 0.56), 3rem);
+    }
+}
+
+/* Letter refresh animation — useless cells get new letters on ring advance */
+@keyframes letterRefresh {
+    0%   { opacity: 1; transform: scale(1); }
+    30%  { opacity: 0; transform: scale(0.5) rotate(10deg); }
+    70%  { opacity: 0; transform: scale(0.5) rotate(-10deg); }
+    100% { opacity: 1; transform: scale(1); }
+}
+.grid-cell.letter-refresh {
+    animation: letterRefresh 0.6s ease-in-out forwards;
+}
+
+/* Optimized letter — red flash when a cell's letter is swapped during ring refresh */
+@keyframes letterOptimized {
+    0%   { background: #cc2222; color: #fff; transform: scale(1.2); box-shadow: 0 0 18px rgba(200,40,40,0.9); border-color: #ff4444; }
+    40%  { background: #991111; color: #ffd0d0; transform: scale(1.05); }
+    100% { background: linear-gradient(160deg, #16254a, #0f1a36); color: #b8d0ff; transform: scale(1); box-shadow: none; }
+}
+.grid-cell.letter-optimized {
+    animation: letterOptimized 0.9s ease-out both;
+}
+
+/* Final ring: cells whose letter was replaced by the final ring refresh — persistent lighter blue */
+.grid-cell.letter-final-refresh {
+    opacity: 0.55 !important;
+    background: linear-gradient(145deg, #182840, #101b30) !important;
+    border-color: rgba(60, 110, 180, 0.28) !important;
+    color: #7090b8 !important;
+    text-shadow: none !important;
+}
+.grid-cell.letter-final-refresh.has-words {
+    opacity: 1 !important;
+    background: linear-gradient(145deg, #1e3560, #122240) !important;
+    border-color: rgba(90, 150, 220, 0.40) !important;
+    color: #fff !important;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5) !important;
+}
+
+
+/* ════════════════════════════════════════════════════════════════════
+   3D extruded tiles · green hint border · press-on-swipe · found bounce
+   Added 2026-07-27.
+
+   Deliberately additive: nothing above this line is edited, and no
+   property that affects layout (border-width, gap, aspect-ratio,
+   font-size) is touched — grid geometry is unchanged, so the OBS
+   overlay and the cqw-based sizing keep working exactly as before.
+
+   NOTE the offsets are written out FLAT, never nested inside another
+   custom property: a custom property is substituted where it is
+   DECLARED and then inherits as an already-resolved string, so nesting
+   var(--tile-slab) inside --tile-extrude would freeze the slab colour
+   at the :root value and no state could ever recolour it.
+   ════════════════════════════════════════════════════════════════════ */
+
+:root {
+    --tile-slab: #0c1424;
+    --tile-extrude:
+        inset 0 1.5px 0 rgba(255,255,255,0.20), inset 0 -2px 0 rgba(0,0,0,0.40), 0 4px 0 #0c1424, 0 5px 1px rgba(0,0,0,0.55), 0 9px 16px rgba(0,0,0,0.45);
+    --tile-extrude-green:
+        inset 0 1.5px 0 rgba(255,255,255,0.20), inset 0 -2px 0 rgba(0,0,0,0.40), 0 4px 0 #17512f, 0 5px 1px rgba(0,0,0,0.55), 0 9px 16px rgba(0,0,0,0.45), 0 0 14px rgba(74,222,128,0.22);
+    --tile-extrude-pressed:
+        inset 0 1px 0 rgba(255,255,255,0.10), inset 0 -1px 0 rgba(0,0,0,0.35), 0 1px 0 #0c1424, 0 2px 6px rgba(0,0,0,0.55);
+    --tile-extrude-pressed-green:
+        inset 0 1px 0 rgba(255,255,255,0.10), inset 0 -1px 0 rgba(0,0,0,0.35), 0 1px 0 #17512f, 0 2px 6px rgba(0,0,0,0.55);
+    --tile-extrude-dim:
+        inset 0 1px 0 rgba(255,255,255,0.10), 0 3px 0 #150e1c, 0 5px 12px rgba(0,0,0,0.40);
+    --ctl-extrude:
+        inset 0 1px 0 rgba(255,255,255,0.14), inset 0 -1px 0 rgba(0,0,0,0.35), 0 2px 0 #0c1424, 0 3px 6px rgba(0,0,0,0.55);
+    --ctl-pressed:
+        inset 0 1px 0 rgba(255,255,255,0.08), 0 1px 0 #0c1424, 0 1px 3px rgba(0,0,0,0.55);
+    --tray-recess:
+        inset 0 4px 12px rgba(0,0,0,0.75), inset 0 -1px 0 rgba(255,255,255,0.04);
+}
+
+[data-theme="light"], body.light-mode {
+    --tile-slab: #cbb99e;
+    --tile-extrude:
+        inset 0 1.5px 0 rgba(255,255,255,0.90), inset 0 -2px 0 rgba(0,0,0,0.10), 0 4px 0 #cbb99e, 0 5px 1px rgba(0,0,0,0.10), 0 9px 16px rgba(0,0,0,0.10);
+    --tile-extrude-green:
+        inset 0 1.5px 0 rgba(255,255,255,0.90), inset 0 -2px 0 rgba(0,0,0,0.10), 0 4px 0 #9fcfae, 0 5px 1px rgba(0,0,0,0.10), 0 9px 16px rgba(0,0,0,0.10), 0 0 14px rgba(22,163,74,0.20);
+    --tile-extrude-pressed:
+        inset 0 1px 0 rgba(255,255,255,0.10), inset 0 -1px 0 rgba(0,0,0,0.35), 0 1px 0 #cbb99e, 0 2px 6px rgba(0,0,0,0.10);
+    --tile-extrude-pressed-green:
+        inset 0 1px 0 rgba(255,255,255,0.10), inset 0 -1px 0 rgba(0,0,0,0.35), 0 1px 0 #9fcfae, 0 2px 6px rgba(0,0,0,0.10);
+    --tile-extrude-dim:
+        inset 0 1px 0 rgba(255,255,255,0.10), 0 3px 0 #150e1c, 0 5px 12px rgba(0,0,0,0.40);
+    --ctl-extrude:
+        inset 0 1px 0 rgba(255,255,255,0.85), inset 0 -1px 0 rgba(0,0,0,0.10), 0 2px 0 #cbb99e, 0 3px 6px rgba(0,0,0,0.10);
+    --ctl-pressed:
+        inset 0 1px 0 rgba(255,255,255,0.60), 0 1px 0 #cbb99e, 0 1px 3px rgba(0,0,0,0.10);
+    --tray-recess:
+        inset 0 3px 9px rgba(0,0,0,0.12), inset 0 -1px 0 rgba(255,255,255,0.60);
+}
+
+/* ── Rotation correction. The container can sit at 90/180/270 (desktop
+      defaults to 90), and box-shadow offsets are in the tile's LOCAL
+      space, so without this the extrusion and its cast shadow point
+      sideways. Same idea as the existing .cell-letter counter-rotation
+      and the .cell-starts/.cell-uses corner fixes above.            ── */
+.grid-container.rotated-90 {
+    --tile-extrude:
+        inset 1.5px 0 0 rgba(255,255,255,0.20), inset -2px 0 0 rgba(0,0,0,0.40), 4px 0 0 #0c1424, 5px 0 1px rgba(0,0,0,0.55), 9px 0 16px rgba(0,0,0,0.45);
+    --tile-extrude-green:
+        inset 1.5px 0 0 rgba(255,255,255,0.20), inset -2px 0 0 rgba(0,0,0,0.40), 4px 0 0 #17512f, 5px 0 1px rgba(0,0,0,0.55), 9px 0 16px rgba(0,0,0,0.45), 0 0 14px rgba(74,222,128,0.22);
+    --tile-extrude-pressed:
+        inset 1px 0 0 rgba(255,255,255,0.10), inset -1px 0 0 rgba(0,0,0,0.35), 1px 0 0 #0c1424, 2px 0 6px rgba(0,0,0,0.55);
+    --tile-extrude-pressed-green:
+        inset 1px 0 0 rgba(255,255,255,0.10), inset -1px 0 0 rgba(0,0,0,0.35), 1px 0 0 #17512f, 2px 0 6px rgba(0,0,0,0.55);
+    --tile-extrude-dim:
+        inset 1px 0 0 rgba(255,255,255,0.10), 3px 0 0 #150e1c, 5px 0 12px rgba(0,0,0,0.40);
+    --ctl-extrude:
+        inset 1px 0 0 rgba(255,255,255,0.14), inset -1px 0 0 rgba(0,0,0,0.35), 2px 0 0 #0c1424, 3px 0 6px rgba(0,0,0,0.55);
+    --ctl-pressed:
+        inset 1px 0 0 rgba(255,255,255,0.08), 1px 0 0 #0c1424, 1px 0 3px rgba(0,0,0,0.55);
+    --tray-recess:
+        inset 4px 0 12px rgba(0,0,0,0.75), inset -1px 0 0 rgba(255,255,255,0.04);
+}
+[data-theme="light"] .grid-container.rotated-90,
+body.light-mode .grid-container.rotated-90 {
+    --tile-extrude:
+        inset 1.5px 0 0 rgba(255,255,255,0.90), inset -2px 0 0 rgba(0,0,0,0.10), 4px 0 0 #cbb99e, 5px 0 1px rgba(0,0,0,0.10), 9px 0 16px rgba(0,0,0,0.10);
+    --tile-extrude-green:
+        inset 1.5px 0 0 rgba(255,255,255,0.90), inset -2px 0 0 rgba(0,0,0,0.10), 4px 0 0 #9fcfae, 5px 0 1px rgba(0,0,0,0.10), 9px 0 16px rgba(0,0,0,0.10), 0 0 14px rgba(22,163,74,0.20);
+    --tile-extrude-pressed:
+        inset 1px 0 0 rgba(255,255,255,0.10), inset -1px 0 0 rgba(0,0,0,0.35), 1px 0 0 #cbb99e, 2px 0 6px rgba(0,0,0,0.10);
+    --tile-extrude-pressed-green:
+        inset 1px 0 0 rgba(255,255,255,0.10), inset -1px 0 0 rgba(0,0,0,0.35), 1px 0 0 #9fcfae, 2px 0 6px rgba(0,0,0,0.10);
+    --tile-extrude-dim:
+        inset 1px 0 0 rgba(255,255,255,0.10), 3px 0 0 #150e1c, 5px 0 12px rgba(0,0,0,0.40);
+    --ctl-extrude:
+        inset 1px 0 0 rgba(255,255,255,0.85), inset -1px 0 0 rgba(0,0,0,0.10), 2px 0 0 #cbb99e, 3px 0 6px rgba(0,0,0,0.10);
+    --ctl-pressed:
+        inset 1px 0 0 rgba(255,255,255,0.60), 1px 0 0 #cbb99e, 1px 0 3px rgba(0,0,0,0.10);
+    --tray-recess:
+        inset 3px 0 9px rgba(0,0,0,0.12), inset -1px 0 0 rgba(255,255,255,0.60);
+}
+.grid-container.rotated-180 {
+    --tile-extrude:
+        inset 0 -1.5px 0 rgba(255,255,255,0.20), inset 0 2px 0 rgba(0,0,0,0.40), 0 -4px 0 #0c1424, 0 -5px 1px rgba(0,0,0,0.55), 0 -9px 16px rgba(0,0,0,0.45);
+    --tile-extrude-green:
+        inset 0 -1.5px 0 rgba(255,255,255,0.20), inset 0 2px 0 rgba(0,0,0,0.40), 0 -4px 0 #17512f, 0 -5px 1px rgba(0,0,0,0.55), 0 -9px 16px rgba(0,0,0,0.45), 0 0 14px rgba(74,222,128,0.22);
+    --tile-extrude-pressed:
+        inset 0 -1px 0 rgba(255,255,255,0.10), inset 0 1px 0 rgba(0,0,0,0.35), 0 -1px 0 #0c1424, 0 -2px 6px rgba(0,0,0,0.55);
+    --tile-extrude-pressed-green:
+        inset 0 -1px 0 rgba(255,255,255,0.10), inset 0 1px 0 rgba(0,0,0,0.35), 0 -1px 0 #17512f, 0 -2px 6px rgba(0,0,0,0.55);
+    --tile-extrude-dim:
+        inset 0 -1px 0 rgba(255,255,255,0.10), 0 -3px 0 #150e1c, 0 -5px 12px rgba(0,0,0,0.40);
+    --ctl-extrude:
+        inset 0 -1px 0 rgba(255,255,255,0.14), inset 0 1px 0 rgba(0,0,0,0.35), 0 -2px 0 #0c1424, 0 -3px 6px rgba(0,0,0,0.55);
+    --ctl-pressed:
+        inset 0 -1px 0 rgba(255,255,255,0.08), 0 -1px 0 #0c1424, 0 -1px 3px rgba(0,0,0,0.55);
+    --tray-recess:
+        inset 0 -4px 12px rgba(0,0,0,0.75), inset 0 1px 0 rgba(255,255,255,0.04);
+}
+[data-theme="light"] .grid-container.rotated-180,
+body.light-mode .grid-container.rotated-180 {
+    --tile-extrude:
+        inset 0 -1.5px 0 rgba(255,255,255,0.90), inset 0 2px 0 rgba(0,0,0,0.10), 0 -4px 0 #cbb99e, 0 -5px 1px rgba(0,0,0,0.10), 0 -9px 16px rgba(0,0,0,0.10);
+    --tile-extrude-green:
+        inset 0 -1.5px 0 rgba(255,255,255,0.90), inset 0 2px 0 rgba(0,0,0,0.10), 0 -4px 0 #9fcfae, 0 -5px 1px rgba(0,0,0,0.10), 0 -9px 16px rgba(0,0,0,0.10), 0 0 14px rgba(22,163,74,0.20);
+    --tile-extrude-pressed:
+        inset 0 -1px 0 rgba(255,255,255,0.10), inset 0 1px 0 rgba(0,0,0,0.35), 0 -1px 0 #cbb99e, 0 -2px 6px rgba(0,0,0,0.10);
+    --tile-extrude-pressed-green:
+        inset 0 -1px 0 rgba(255,255,255,0.10), inset 0 1px 0 rgba(0,0,0,0.35), 0 -1px 0 #9fcfae, 0 -2px 6px rgba(0,0,0,0.10);
+    --tile-extrude-dim:
+        inset 0 -1px 0 rgba(255,255,255,0.10), 0 -3px 0 #150e1c, 0 -5px 12px rgba(0,0,0,0.40);
+    --ctl-extrude:
+        inset 0 -1px 0 rgba(255,255,255,0.85), inset 0 1px 0 rgba(0,0,0,0.10), 0 -2px 0 #cbb99e, 0 -3px 6px rgba(0,0,0,0.10);
+    --ctl-pressed:
+        inset 0 -1px 0 rgba(255,255,255,0.60), 0 -1px 0 #cbb99e, 0 -1px 3px rgba(0,0,0,0.10);
+    --tray-recess:
+        inset 0 -3px 9px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.60);
+}
+.grid-container.rotated-270 {
+    --tile-extrude:
+        inset -1.5px 0 0 rgba(255,255,255,0.20), inset 2px 0 0 rgba(0,0,0,0.40), -4px 0 0 #0c1424, -5px 0 1px rgba(0,0,0,0.55), -9px 0 16px rgba(0,0,0,0.45);
+    --tile-extrude-green:
+        inset -1.5px 0 0 rgba(255,255,255,0.20), inset 2px 0 0 rgba(0,0,0,0.40), -4px 0 0 #17512f, -5px 0 1px rgba(0,0,0,0.55), -9px 0 16px rgba(0,0,0,0.45), 0 0 14px rgba(74,222,128,0.22);
+    --tile-extrude-pressed:
+        inset -1px 0 0 rgba(255,255,255,0.10), inset 1px 0 0 rgba(0,0,0,0.35), -1px 0 0 #0c1424, -2px 0 6px rgba(0,0,0,0.55);
+    --tile-extrude-pressed-green:
+        inset -1px 0 0 rgba(255,255,255,0.10), inset 1px 0 0 rgba(0,0,0,0.35), -1px 0 0 #17512f, -2px 0 6px rgba(0,0,0,0.55);
+    --tile-extrude-dim:
+        inset -1px 0 0 rgba(255,255,255,0.10), -3px 0 0 #150e1c, -5px 0 12px rgba(0,0,0,0.40);
+    --ctl-extrude:
+        inset -1px 0 0 rgba(255,255,255,0.14), inset 1px 0 0 rgba(0,0,0,0.35), -2px 0 0 #0c1424, -3px 0 6px rgba(0,0,0,0.55);
+    --ctl-pressed:
+        inset -1px 0 0 rgba(255,255,255,0.08), -1px 0 0 #0c1424, -1px 0 3px rgba(0,0,0,0.55);
+    --tray-recess:
+        inset -4px 0 12px rgba(0,0,0,0.75), inset 1px 0 0 rgba(255,255,255,0.04);
+}
+[data-theme="light"] .grid-container.rotated-270,
+body.light-mode .grid-container.rotated-270 {
+    --tile-extrude:
+        inset -1.5px 0 0 rgba(255,255,255,0.90), inset 2px 0 0 rgba(0,0,0,0.10), -4px 0 0 #cbb99e, -5px 0 1px rgba(0,0,0,0.10), -9px 0 16px rgba(0,0,0,0.10);
+    --tile-extrude-green:
+        inset -1.5px 0 0 rgba(255,255,255,0.90), inset 2px 0 0 rgba(0,0,0,0.10), -4px 0 0 #9fcfae, -5px 0 1px rgba(0,0,0,0.10), -9px 0 16px rgba(0,0,0,0.10), 0 0 14px rgba(22,163,74,0.20);
+    --tile-extrude-pressed:
+        inset -1px 0 0 rgba(255,255,255,0.10), inset 1px 0 0 rgba(0,0,0,0.35), -1px 0 0 #cbb99e, -2px 0 6px rgba(0,0,0,0.10);
+    --tile-extrude-pressed-green:
+        inset -1px 0 0 rgba(255,255,255,0.10), inset 1px 0 0 rgba(0,0,0,0.35), -1px 0 0 #9fcfae, -2px 0 6px rgba(0,0,0,0.10);
+    --tile-extrude-dim:
+        inset -1px 0 0 rgba(255,255,255,0.10), -3px 0 0 #150e1c, -5px 0 12px rgba(0,0,0,0.40);
+    --ctl-extrude:
+        inset -1px 0 0 rgba(255,255,255,0.85), inset 1px 0 0 rgba(0,0,0,0.10), -2px 0 0 #cbb99e, -3px 0 6px rgba(0,0,0,0.10);
+    --ctl-pressed:
+        inset -1px 0 0 rgba(255,255,255,0.60), -1px 0 0 #cbb99e, -1px 0 3px rgba(0,0,0,0.10);
+    --tray-recess:
+        inset -3px 0 9px rgba(0,0,0,0.12), inset 1px 0 0 rgba(255,255,255,0.60);
+}
+
+/* "body .grid-cell" (0,1,1), not ".grid-cell" (0,1,0), on purpose: the SOLO
+   pages (mobile-sp.html / sp.html) redeclare .grid-cell in their own inline
+   <style> with "box-shadow: none; border-radius: 12px" — same specificity,
+   but inline <style> comes after the <link>, so a bare .grid-cell loses on
+   source order and the extrusion never appeared in solo at all.
+   State rules below are (0,2,0) and still out-rank this. */
+body .grid-cell {
+    border-radius: 14px;
+    background:
+        linear-gradient(180deg, rgba(255,255,255,0.11), rgba(255,255,255,0) 44%),
+        linear-gradient(160deg, #22304a, #141d33);
+    box-shadow: var(--tile-extrude);
+}
+[data-theme="light"] .grid-cell {
+    background:
+        linear-gradient(180deg, rgba(255,255,255,0.85), rgba(255,255,255,0) 46%),
+        linear-gradient(160deg, #ffffff, var(--cell-bg));
+}
+
+/* ── green corner number is showing → the tile wears a green border ── */
+.grid-cell.starts-revealed {
+    border-color: #4ade80;
+    --tile-slab: #17512f;
+    box-shadow: var(--tile-extrude-green);
+}
+[data-theme="light"] .grid-cell.starts-revealed {
+    border-color: #16a34a;
+    --tile-slab: #9fcfae;
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   Press on swipe — the keycap sinks into its own extrusion.
+
+   transform is deliberately NOT used: cacheCellCenters() reads
+   getBoundingClientRect() once at touchstart, so moving the tile would
+   put the drawn swipe trail out of register with the tiles it connects
+   (and under rotation it would move sideways). Collapsing the slab from
+   4px to 1px and pulling the cast shadow in reads as a press while the
+   tile's own box never moves — zero geometry change, rotation-safe.
+   ════════════════════════════════════════════════════════════════════ */
+.grid-cell.swipe-path,
+.grid-cell.typing-path {
+    box-shadow: var(--tile-extrude-pressed);
+}
+.grid-cell.swipe-path.starts-revealed,
+.grid-cell.typing-path.starts-revealed {
+    box-shadow: var(--tile-extrude-pressed-green);
+}
+
+/* ── dimmed tiles sit lower, with a shorter slab and no deep cast ── */
+.grid-cell.greyed,
+.grid-cell:not(.greyed):not(.unrevealed):not(.ring-unrevealed):not(.has-words) {
+    --tile-slab: #150e1c;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.10), 0 3px 0 var(--tile-slab), 0 5px 12px rgba(0,0,0,0.40);
+}
+
+/* ── ring states: unrevealed tiles are recessed, not raised. Inset-only,
+      no transform, so swipe hitboxes are untouched.                    ── */
+.grid-cell.unrevealed,
+.grid-cell.ring-unrevealed {
+    box-shadow: inset 0 3px 8px rgba(0,0,0,0.85), inset 0 -1px 0 rgba(255,255,255,0.03) !important;
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   Found-word bounce — staggered first letter to last (flashCells sets
+   the stagger; cellIndices arrives in path order).
+
+   transform-only, so it stays on the compositor. The depth half
+   repaints and is gated OFF on the OBS surface: render1 has no GPU and
+   repaint-heavy CSS animation has already cost us 3.8 cores once.
+
+   Ends at scale(1.1) — exactly where the pre-existing static
+   "transform: scale(1.1)" on the *-highlight rules left the tile — so
+   with "both" fill the handoff back to the old behaviour is seamless.
+   ════════════════════════════════════════════════════════════════════ */
+/* ── Rotation axis for the bounce. The container sits at 90/180/270 on
+      desktop (90 by default), and BOTH translate and box-shadow offsets
+      are in the tile's LOCAL space — so a hardcoded "up" hop and a
+      hardcoded "down" slab come out sideways the moment the board turns.
+      These two unit vectors carry visual-up (--found-pop-*) and
+      visual-down (--found-dep-*) written in local space; the keyframes
+      multiply them instead of naming an axis. Signs match the
+      --tile-extrude rotation-correction block above. Doing it with vars
+      rather than four keyframe copies keeps the animation on ONE rule,
+      so the prefers-reduced-motion override below still wins.       ── */
+.grid-container             { --found-pop-x:  0; --found-pop-y: -1; --found-dep-x:  0; --found-dep-y:  1; }
+.grid-container.rotated-90  { --found-pop-x: -1; --found-pop-y:  0; --found-dep-x:  1; --found-dep-y:  0; }
+.grid-container.rotated-180 { --found-pop-x:  0; --found-pop-y:  1; --found-dep-x:  0; --found-dep-y: -1; }
+.grid-container.rotated-270 { --found-pop-x:  1; --found-pop-y:  0; --found-dep-x: -1; --found-dep-y:  0; }
+
+@keyframes tileFoundPop {
+    0%   { transform: translate(0, 0) scale(1);    }
+    22%  { transform: translate(calc(var(--found-pop-x) * 10px), calc(var(--found-pop-y) * 10px)) scale(1.16); }
+    44%  { transform: translate(0, 0) scale(1.02); }
+    62%  { transform: translate(calc(var(--found-pop-x) * 3px),  calc(var(--found-pop-y) * 3px))  scale(1.13); }
+    80%  { transform: translate(0, 0) scale(1.08); }
+    100% { transform: translate(0, 0) scale(1.1);  }
+}
+
+/* Depth: the slab stretches on the lift and compresses on the landing.
+   Every frame carries the SAME five layers — box-shadow only
+   interpolates between equal-length lists, otherwise it snaps. */
+@keyframes tileFoundSlab {
+    0%   { box-shadow:
+             inset calc(var(--found-dep-x) * 1.5px) calc(var(--found-dep-y) * 1.5px) 0    rgba(255,255,255,0.20),
+             inset calc(var(--found-dep-x) * -2px)  calc(var(--found-dep-y) * -2px)  0    rgba(0,0,0,0.40),
+                   calc(var(--found-dep-x) * 4px)   calc(var(--found-dep-y) * 4px)   0    var(--tile-slab),
+                   calc(var(--found-dep-x) * 5px)   calc(var(--found-dep-y) * 5px)   1px  rgba(0,0,0,0.55),
+                   calc(var(--found-dep-x) * 9px)   calc(var(--found-dep-y) * 9px)   16px rgba(0,0,0,0.45); }
+    22%  { box-shadow:
+             inset calc(var(--found-dep-x) * 1.5px) calc(var(--found-dep-y) * 1.5px) 0    rgba(255,255,255,0.50),
+             inset calc(var(--found-dep-x) * -2px)  calc(var(--found-dep-y) * -2px)  0    rgba(0,0,0,0.40),
+                   calc(var(--found-dep-x) * 11px)  calc(var(--found-dep-y) * 11px)  0    var(--tile-slab),
+                   calc(var(--found-dep-x) * 12px)  calc(var(--found-dep-y) * 12px)  1px  rgba(0,0,0,0.55),
+                   calc(var(--found-dep-x) * 16px)  calc(var(--found-dep-y) * 16px)  22px rgba(0,0,0,0.50); }
+    44%  { box-shadow:
+             inset calc(var(--found-dep-x) * 1.5px) calc(var(--found-dep-y) * 1.5px) 0    rgba(255,255,255,0.50),
+             inset calc(var(--found-dep-x) * -2px)  calc(var(--found-dep-y) * -2px)  0    rgba(0,0,0,0.40),
+                   calc(var(--found-dep-x) * 2px)   calc(var(--found-dep-y) * 2px)   0    var(--tile-slab),
+                   calc(var(--found-dep-x) * 3px)   calc(var(--found-dep-y) * 3px)   1px  rgba(0,0,0,0.55),
+                   calc(var(--found-dep-x) * 5px)   calc(var(--found-dep-y) * 5px)   10px rgba(0,0,0,0.50); }
+    100% { box-shadow:
+             inset calc(var(--found-dep-x) * 1.5px) calc(var(--found-dep-y) * 1.5px) 0    rgba(255,255,255,0.50),
+             inset calc(var(--found-dep-x) * -2px)  calc(var(--found-dep-y) * -2px)  0    rgba(0,0,0,0.40),
+                   calc(var(--found-dep-x) * 4px)   calc(var(--found-dep-y) * 4px)   0    var(--tile-slab),
+                   calc(var(--found-dep-x) * 5px)   calc(var(--found-dep-y) * 5px)   1px  rgba(0,0,0,0.55),
+                   calc(var(--found-dep-x) * 9px)   calc(var(--found-dep-y) * 9px)   16px rgba(0,0,0,0.45); }
+}
+
+.grid-cell.found-highlight,
+.grid-cell.three-letter-highlight,
+.grid-cell.rare-highlight,
+.grid-cell.hidden-highlight {
+    animation: tileFoundPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    /* The server emits 'game-state' (which greys the cells this word just burned
+       into ringUsedCells) BEFORE 'word-found', so the flash lands on tiles the
+       client has already dimmed. .greyed / .all-found set opacity and the
+       highlight rules never did, so the celebration rendered at 35% — read as
+       "it highlighted the dead letters". overlay.css already carries this fix
+       per-rule; this is the same fix for the play surfaces. */
+    opacity: 1 !important;
+}
+
+/* slab colours per rarity, so the extrusion matches the flash */
+.grid-cell.found-highlight        { --tile-slab: #0d6b7d; }
+.grid-cell.three-letter-highlight { --tile-slab: #16803f; }
+.grid-cell.rare-highlight         { --tile-slab: #8a6d09; }
+.grid-cell.hidden-highlight       { --tile-slab: #5b3fa8; }
+
+/* the repainting half — players only, never the stream renderer */
+html:not(.obs-mode) .grid-cell.found-highlight,
+html:not(.obs-mode) .grid-cell.three-letter-highlight,
+html:not(.obs-mode) .grid-cell.rare-highlight,
+html:not(.obs-mode) .grid-cell.hidden-highlight {
+    animation:
+        tileFoundPop  0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both,
+        tileFoundSlab 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .grid-cell.found-highlight,
+    .grid-cell.three-letter-highlight,
+    .grid-cell.rare-highlight,
+    .grid-cell.hidden-highlight,
+    html:not(.obs-mode) .grid-cell.found-highlight,
+    html:not(.obs-mode) .grid-cell.three-letter-highlight,
+    html:not(.obs-mode) .grid-cell.rare-highlight,
+    html:not(.obs-mode) .grid-cell.hidden-highlight {
+        animation: none;
+    }
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   THE CHROME AROUND THE GRID
+
+   Selectors are written "body .x" (0,1,1) on purpose: most of these
+   classes are also declared in the page's inline <style>, which comes
+   AFTER the <link> to this file, so a bare ".x" (0,1,0) would lose on
+   source order. One extra element bumps specificity and wins outright
+   without reaching for !important.
+
+   Rules that change a BACKGROUND are scoped to html:not(.obs-mode).
+   body.obs-mode deliberately makes this UI see-through over the stream
+   feed, and an opaque fill would punch a solid box into the broadcast.
+   Shadow-only rules are safe everywhere and are left global.
+   ════════════════════════════════════════════════════════════════════ */
+
+/* ── the board becomes a recessed tray the keycaps sit inside ── */
+html:not(.obs-mode) .grid-container {
+    background: #070b13;
+    border-color: rgba(255,255,255,0.06);
+    box-shadow: var(--tray-recess);
+}
+html:not(.obs-mode) body.light-mode .grid-container,
+html:not(.obs-mode) [data-theme="light"] .grid-container {
+    background: rgba(0,0,0,0.05);
+    border-color: rgba(0,0,0,0.10);
+}
+
+/* ── toolbar controls become small keycaps. The three buttons carry an
+      inline style= attribute in the markup; the visual declarations are
+      stripped there so these ID rules can own them and :active can fire. ── */
+body #rotate-btn,
+body #share-btn,
+body #sound-btn,
+body #theme-btn {
+    font-size: 0.85rem;
+    padding: 5px 10px;
+    border-radius: 8px;
+    color: #9fb6d0;
+    border: 1px solid rgba(120,150,190,0.28);
+    box-shadow: var(--ctl-extrude);
+    transition: box-shadow 0.12s ease, color 0.2s ease;
+}
+html:not(.obs-mode) #rotate-btn,
+html:not(.obs-mode) #share-btn,
+html:not(.obs-mode) #sound-btn,
+html:not(.obs-mode) #theme-btn {
+    background:
+        linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0) 60%),
+        linear-gradient(160deg, #22304a, #141d33);
+}
+body #theme-btn { color: var(--neon-yellow); }
+
+/* ── SOLO pages use a real class instead of inline styles. Its rule lives in
+      each page's inline <style> at (0,1,0), so "body ." (0,1,1) wins. ── */
+body .solo-toolbar-btn {
+    box-shadow: var(--ctl-extrude);
+    transition: box-shadow 0.12s ease, border-color 0.16s ease, color 0.16s ease;
+}
+body .solo-toolbar-btn:active { box-shadow: var(--ctl-pressed); }
+body #rotate-btn:active,
+body #share-btn:active,
+body #sound-btn:active,
+body #theme-btn:active { box-shadow: var(--ctl-pressed); }
+
+/* ── same vocabulary, quieter, for the small stuff ── */
+body .rk-item,
+body .wp,
+body .incorrect-word,
+body .already-found-tag,
+body .mobile-rare-badge { box-shadow: var(--ctl-extrude); }
+
+body .rk-item { padding: 4px 4px; border-radius: 7px; }
+body .wp       { border-radius: 7px; }
+body .mobile-rare-badge {
+    border-radius: 6px;
+    padding: 0 9px;
+    height: 19px;
+    align-items: center;
+    font-size: clamp(0.6rem, 2.1vw, 0.68rem);
+}
+
+/* ── both rails keep their content (intentional, one per rotation);
+      they just stop shearing a pill in half at the edge.            ── */
+body .mp-incorrect-area {
+    height: 34px;
+    padding-left: 6px;
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 20px, #000 calc(100% - 4px), transparent 100%);
+            mask-image: linear-gradient(90deg, transparent 0, #000 20px, #000 calc(100% - 4px), transparent 100%);
+}
+
+/* ── header: the count stops out-shouting the logo ── */
+body .mobile-wordcount { font-size: clamp(1.1rem, 4.2vw, 1.32rem); }
+body .mobile-wordcount .label { font-size: clamp(0.66rem, 2.3vw, 0.78rem); }
+
+/* ── "swipe or type" was louder than the input it labels ── */
+body .swipe-or-type-label {
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    color: #5b6c82;
+    margin: 9px 0 5px;
+}
+
+/* ── the input becomes a recessed well. font-size is deliberately NOT
+      touched: it is 16px to stop iOS auto-zooming on focus.        ── */
+body .keyboard-prompt {
+    border-radius: 10px;
+    border-width: 2px;
+    border-color: rgba(34,211,238,0.55);
+    padding: 9px 13px;
+}
+html:not(.obs-mode) .keyboard-prompt {
+    background: #080c14;
+    box-shadow: inset 0 2px 6px rgba(0,0,0,0.70);
+}
+html:not(.obs-mode) .keyboard-prompt:focus {
+    border-color: var(--accent);
+    box-shadow: inset 0 2px 6px rgba(0,0,0,0.70), 0 0 0 3px rgba(34,211,238,0.12);
+}
+
+/* ── progress track recessed, same language as the tray ── */
+body .progress-container { height: 5px; }
+html:not(.obs-mode) .progress-container {
+    background: #080c14;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.80);
+}
+
+/* ── word lists invert: the panel is a tray, the words are keys in it.
+      The .wl-rare / .wl-hidden / .wl-three border tints are (0,2,0) and
+      keep winning over this (0,1,1) rule, which is what we want.     ── */
+body .wl-section { border-radius: 12px; }
+html:not(.obs-mode) .wl-section {
+    background: #080c14;
+    border-color: rgba(255,255,255,0.06);
+    box-shadow: inset 0 3px 9px rgba(0,0,0,0.70);
+}
+html:not(.obs-mode) body.light-mode .wl-section,
+html:not(.obs-mode) body.light-mode .keyboard-prompt,
+html:not(.obs-mode) body.light-mode .progress-container {
+    background: rgba(0,0,0,0.04);
+    box-shadow: inset 0 2px 6px rgba(0,0,0,0.10);
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   OBS SURFACE CORRECTIONS
+
+   Two things only show up on the stream, both found 2026-07-27:
+
+   1. The green hint border lost the cascade. The page's inline <style>
+      sets border-color on
+          body.obs-mode .grid-cell:not(.greyed)   (0,3,1)  RecTangled
+          body.obs-mode .grid-cell.has-words      (0,3,0)  erecTangled
+      and both beat .grid-cell.starts-revealed (0,2,0) — and being inline
+      they also win any tie on source order. So on stream the border drew
+      blue/white and the only green left was the slab UNDER the tile,
+      which reads as "green only on the underside, and darker".
+      (0,3,2) puts it back.
+
+   2. The toolbar buttons went light grey. Their visual declarations were
+      moved out of the inline style= attribute so :active could fire, but
+      the replacement background was scoped html:not(.obs-mode) — leaving
+      nothing on the stream, so they fell back to the browser's default
+      ButtonFace. That is the "white mode" leak.
+   ════════════════════════════════════════════════════════════════════ */
+html body.obs-mode .grid-cell.starts-revealed {
+    border-color: #4ade80;
+}
+
+body.obs-mode #rotate-btn,
+body.obs-mode #share-btn,
+body.obs-mode #sound-btn,
+body.obs-mode #theme-btn {
+    /* translucent, to keep the see-through treatment the stream expects —
+       but never absent, or the UA default paints them light grey */
+    background:
+        linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0) 60%),
+        linear-gradient(160deg, rgba(34,48,74,0.45), rgba(20,29,51,0.45));
+}

@@ -1,0 +1,21 @@
+{
+  "name": "colour500",
+  "version": "1.0.0",
+  "description": "Colour 500 — classic Mastermind played with colours, driven by TikTok chat",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "test": "node test/engine.test.js && node test/solo.test.js && node test/session.test.js && node test/chat-integration.test.js",
+    "test:engine": "node test/engine.test.js",
+    "test:solo": "node test/solo.test.js",
+    "test:chat": "node test/chat-integration.test.js",
+    "test:session": "node test/session.test.js"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "express": "^4.18.2",
+    "socket.io": "^4.7.4",
+    "socket.io-client": "^4.7.4"
+  }
+}

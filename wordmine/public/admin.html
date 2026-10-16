@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Word Mine — Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/wordmine.css"/>
+</head>
+<body>
+  <div class="game-screen" style="max-width:700px;">
+    <div class="game-header">
+      <span class="mine-name">&#9935; Word Mine — Admin</span>
+    </div>
+
+    <!-- Auth -->
+    <div id="auth-panel" class="depth-meter" style="margin-top:12px;">
+      <input id="admin-key" type="password" placeholder="Admin key" style="width:100%;padding:8px;border-radius:6px;border:1px solid var(--border);background:var(--surface-light);color:var(--text);font-family:inherit;margin-bottom:8px;"/>
+      <button id="auth-btn" class="dig-btn" style="width:100%;">Authenticate</button>
+    </div>
+
+    <!-- Controls (hidden until authed) -->
+    <div id="admin-controls" style="display:none;">
+
+      <!-- Status -->
+      <div class="depth-meter" style="margin-top:12px;">
+        <div class="depth-title">STATUS</div>
+        <div id="game-status" style="font-size:1.2rem;font-weight:800;margin:4px 0;">idle</div>
+        <div id="mine-info-text" style="color:var(--text-dim);font-size:0.8rem;"></div>
+      </div>
+
+      <!-- Mine Selection -->
+      <div class="depth-meter" style="margin-top:8px;">
+        <div class="depth-title">LOAD MINE</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;">
+          <button id="load-daily" class="action-btn" style="background:#ff6b35;color:#fff;">Load Daily</button>
+          <button id="load-weekly" class="action-btn" style="background:var(--gold);color:#000;">Load Weekly</button>
+          <button id="load-random" class="action-btn" style="background:var(--surface-light);color:var(--text);">Load Random</button>
+        </div>
+        <div style="margin-top:6px;display:flex;gap:6px;">
+          <select id="mine-select" style="flex:1;padding:6px;border-radius:6px;border:1px solid var(--border);background:var(--surface-light);color:var(--text);font-family:inherit;"></select>
+          <button id="load-selected" class="action-btn" style="background:var(--surface-light);color:var(--text);">Load</button>
+        </div>
+      </div>
+
+      <!-- Game Controls -->
+      <div class="depth-meter" style="margin-top:8px;">
+        <div class="depth-title">GAME CONTROLS</div>
+        <div style="display:flex;gap:6px;margin-top:6px;">
+          <button id="btn-start" class="dig-btn">Start</button>
+          <button id="btn-pause" class="action-btn" style="background:var(--surface-light);color:var(--text);">Pause</button>
+          <button id="btn-resume" class="action-btn" style="background:var(--surface-light);color:var(--text);">Resume</button>
+          <button id="btn-end" class="action-btn delete-btn">End</button>
+        </div>
+        <div style="margin-top:6px;">
+          <label style="font-size:0.75rem;color:var(--text-dim);">Timer (seconds, 0 = no limit):</label>
+          <input id="timer-input" type="number" value="0" min="0" style="width:80px;padding:4px;border-radius:4px;border:1px solid var(--border);background:var(--surface-light);color:var(--text);font-family:inherit;"/>
+        </div>
+      </div>
+
+      <!-- Depth Meter -->
+      <div class="depth-meter" style="margin-top:8px;">
+        <div class="depth-title">&#9935; DEPTH</div>
+        <div id="admin-depth-tiers" class="depth-tiers"></div>
+      </div>
+
+      <!-- Leaderboard -->
+      <div class="found-words" style="margin-top:8px;">
+        <div class="found-header"><span>Leaderboard</span><span id="admin-word-count"></span></div>
+        <div id="admin-leaderboard" class="found-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

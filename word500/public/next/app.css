@@ -1,0 +1,1459 @@
+/* === Word5000 next — unified shell === */
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --text: #ffffff;
+  --text-dim: #8b8f9d;
+  --red: #e74c3c;
+  --red-glow: rgba(231, 76, 60, 0.55);
+  --green: #4ade80;
+  --green-glow: rgba(74, 222, 128, 0.6);
+  --yellow: #f1c40f;
+  --yellow-glow: rgba(241, 196, 15, 0.5);
+  --hairline: rgba(255, 255, 255, 0.10);
+  /* Shared "glass chrome" tokens — identical to Figural / PixeLetters / Betwixt
+     so the top bar reads as the same app family across the fleet. */
+  --glass-top: rgba(255, 255, 255, 0.14);
+  --glass-bottom: rgba(0, 0, 0, 0.26);
+  --glass-shadow: rgba(0, 0, 0, 0.58);
+  --blue: #4d96ff;
+  --font: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --keyboard-dock-height: 144px;
+  --keyboard-dock-gap: 8px;
+  /* Letter-tile height. JS (sizeBoard in app.js) overrides this per-device so the
+     8-row board fills the space between header and keyboard on any phone, in both
+     the app (tall viewport) and a browser tab (shorter, URL bar). Everything in a
+     row — tile width, font, triangle, corner radius, triangle overlap — derives
+     from it, so the whole board scales from this one value. */
+  --tile-h: 62px;
+  /* MP avatar disc. Tracks the fluid tile height (rows must never grow past the
+     8.6-tile budget sizeBoard() allots, and a fixed-size avatar was flooring the
+     row height and clipping the top/bottom rows) — capped at the old fixed size
+     per width tier so it never gets cartoonish on large tiles. */
+  --avatar-h: min(44px, calc(var(--tile-h) * 1.02));
+}
+
+html, body {
+  height: 100%;
+  background: #000;
+  color: var(--text);
+  font-family: var(--font);
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  min-height: 100svh;
+  min-height: 100dvh;
+}
+
+body:not([data-mode="overlay"]) {
+  padding-bottom: calc(var(--keyboard-dock-height) + var(--keyboard-dock-gap) + env(safe-area-inset-bottom));
+}
+
+/* === Top chrome ===
+   Fleet header: same geometry and glass tokens as Figural / PixeLetters /
+   Betwixt — hairline-underlined transparent bar, 32px round glass icon buttons
+   at both ends, plain uppercase title, small glass status pills between. */
+
+.top-chrome {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  min-height: 42px;
+  padding: 6px 10px 8px;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+}
+
+/* Round glass icon buttons: hub (left) + stats / help / word-length (right) */
+.hub-btn,
+.stats-toggle-btn,
+.icon-pill,
+.ws-btn {
+  width: 32px;
+  height: 32px;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  background: linear-gradient(180deg, var(--glass-top), var(--glass-bottom));
+  color: var(--text-dim);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.10),
+    0 4px 14px var(--glass-shadow);
+  font-family: inherit;
+  cursor: pointer;
+  text-decoration: none;
+  transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+.hub-btn:hover,
+.stats-toggle-btn:hover,
+.stats-toggle-btn.active,
+.icon-pill:hover,
+.ws-btn:hover {
+  color: var(--text);
+  border-color: rgba(255, 255, 255, 0.24);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.06));
+}
+/* Word-length cycle button — green like the other solo games' ws-btn */
+.ws-btn {
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--green);
+  border-color: rgba(74, 222, 128, 0.40);
+  box-shadow: 0 0 16px rgba(74, 222, 128, 0.18);
+}
+.ws-btn:disabled { opacity: 0.45; cursor: default; }
+
+.title {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 15px;
+  line-height: 1;
+  font-weight: 900;
+  letter-spacing: 0;
+  color: var(--text);
+  text-shadow: 0 0 18px rgba(255, 255, 255, 0.16);
+}
+.title-num { color: var(--green); }
+
+/* Mode sub-label. Solo says DEMO/DAILY/PRACTICE — redundant next to the gold
+   DAILY pill, so it's hidden there (same as the fleet's plain titles). In MP it
+   carries real info (MULTIPLAYER / @streamer-handle), so it shows as the blue
+   glass badge the other games use for their MP tag. */
+.title-sub { display: none; }
+body[data-mode="mp"] .title-sub,
+body[data-mode="overlay"] .title-sub {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 30vw;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-height: 30px;
+  padding: 5px 10px;
+  border: 1px solid rgba(77, 150, 255, 0.36);
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(77, 150, 255, 0.17), rgba(77, 150, 255, 0.055));
+  color: var(--blue);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0;
+  vertical-align: baseline;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.10),
+    0 4px 14px var(--glass-shadow);
+}
+
+/* Status pills (DAILY / XP / frenzy / mode cross-link) */
+.chrome-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-height: 30px;
+  padding: 5px 10px;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0;
+  white-space: nowrap;
+  color: var(--text-dim);
+  background: linear-gradient(180deg, var(--glass-top), var(--glass-bottom));
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.10),
+    0 4px 14px var(--glass-shadow);
+  cursor: pointer;
+  font-family: inherit;
+  transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+.chrome-pill:hover {
+  color: var(--text);
+  border-color: rgba(255, 255, 255, 0.24);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.06));
+}
+.chrome-pill.is-daily {
+  color: #111827;
+  border-color: rgba(250, 204, 21, 0.55);
+  background: linear-gradient(135deg, #fde68a, #f59e0b);
+  animation: daily-glow 2s ease-in-out infinite alternate;
+}
+.chrome-pill.is-daily:hover {
+  color: #111827;
+  border-color: rgba(250, 204, 21, 0.8);
+  background: linear-gradient(135deg, #fde68a, #f59e0b);
+}
+@keyframes daily-glow {
+  from { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.10), 0 0 6px rgba(250, 204, 21, 0.20); }
+  to   { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.10), 0 0 16px rgba(250, 204, 21, 0.45); }
+}
+a.chrome-pill.mode-link {
+  text-decoration: none;
+}
+
+#jackpot {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+/* 🔴 XP pot and last-winner are STREAM-ONLY. On the site they were the two
+   widest chips in a header that already can't fit one line at 360px, and
+   neither one changes a decision the player makes. They stay in the markup —
+   and stay visible in the OBS browser source, which renders this very page —
+   because stream viewers have nowhere else to see them. Hidden by CSS rather
+   than deleted so bootMP()'s style.display='' keeps working untouched.
+
+   🔴 The gate is .obs-mode, NOT data-mode="overlay". Chat Relay embeds this
+   game as `word5000.com/<handle>?obs=1` (_STREAM_VIEW_GAME_URLS), and a bare
+   /<handle> path makes detectMode() return 'mp' — so the stream runs as
+   data-mode="mp" and an overlay-mode test would blank both chips on air. The
+   data-mode="overlay" arm covers the /overlay/<handle> path, which nothing
+   currently points at but which detectMode() still honours.
+
+   Specificity (2,1,2) clears #last-winner.is-visible; the html class is set by
+   the inline <head> script before first paint, so there's no flash. */
+html:not(.obs-mode) body:not([data-mode="overlay"]) #jackpot,
+html:not(.obs-mode) body:not([data-mode="overlay"]) #last-winner { display: none; }
+#jackpot .jp-label { color: var(--text-dim); font-size: 10px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase; }
+#jackpot .jp-amount { color: var(--green); font-weight: 900; }
+
+/* Last winner rides the same glass pill as the other status chips */
+#last-winner {
+  display: none;             /* shown when populated */
+  align-items: center;
+  gap: 6px;
+  min-height: 30px;
+  padding: 4px 10px 4px 4px;
+  font-size: 11px;
+  font-weight: 900;
+  color: var(--text-dim);
+  background: linear-gradient(180deg, var(--glass-top), var(--glass-bottom));
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.10),
+    0 4px 14px var(--glass-shadow);
+  max-width: 30vw;
+  overflow: hidden;
+  white-space: nowrap;
+}
+#last-winner.is-visible { display: inline-flex; }
+#last-winner-pic {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #333;
+}
+#last-winner-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 900;
+  color: var(--text);
+}
+
+/* Frenzy multiplier pill — pulses while active */
+.frenzy-pill {
+  background: linear-gradient(135deg, rgba(255, 80, 0, 0.85), rgba(255, 200, 0, 0.85));
+  border-color: rgba(255, 200, 0, 0.45);
+  color: #fff;
+  animation: frenzyPulse 1.4s ease-in-out infinite;
+}
+@keyframes frenzyPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 140, 0, 0.5); }
+  50%      { box-shadow: 0 0 14px 0 rgba(255, 140, 0, 0.7); }
+}
+
+/* MP win banner — slides in from top, auto-dismisses */
+#mp-banner {
+  position: fixed;
+  top: 64px;
+  left: 50%;
+  transform: translate(-50%, -12px);
+  z-index: 1100;
+  display: none;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 18px;
+  background: linear-gradient(135deg, rgba(74, 222, 128, 0.95), rgba(34, 197, 94, 0.95));
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 999px;
+  color: #0f1a0a;
+  font-size: 14px;
+  font-weight: 800;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6);
+  opacity: 0;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+#mp-banner.is-visible {
+  display: inline-flex;
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+#mp-banner img {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+}
+#mp-banner .banner-word {
+  letter-spacing: 2px;
+  padding: 2px 8px;
+  background: rgba(0, 0, 0, 0.18);
+  border-radius: 6px;
+}
+
+/* === Icon pill ("?" help button) ===
+   Geometry, glass and the toon slab all come from the .hub-btn/.stats-toggle-btn
+   group above — this block used to redeclare them (and, sitting later in the
+   file, quietly won the cascade with an un-skinned background). All that's left
+   is the glyph itself. */
+.icon-pill {
+  font-size: 16px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+/* === User pill (auth state) === */
+.user-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 30px;
+  padding: 4px 10px 4px 4px;
+  background: linear-gradient(180deg, var(--glass-top), var(--glass-bottom));
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.10),
+    0 4px 14px var(--glass-shadow);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+.user-pill:hover {
+  border-color: rgba(255, 255, 255, 0.24);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.06));
+}
+/* Signed out = call to action, so it keeps an accent — but the fleet's blue
+   glass tint rather than the old solid purple/discord gradient. */
+.user-pill:not(.is-authed) {
+  padding: 5px 10px;
+  color: var(--blue);
+  border-color: rgba(77, 150, 255, 0.36);
+  background: linear-gradient(180deg, rgba(77, 150, 255, 0.17), rgba(77, 150, 255, 0.055));
+}
+.user-pill:not(.is-authed):hover {
+  border-color: rgba(77, 150, 255, 0.6);
+  background: linear-gradient(180deg, rgba(77, 150, 255, 0.26), rgba(77, 150, 255, 0.10));
+}
+.user-pill-avatar {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #333;
+}
+.user-pill-name {
+  max-width: 110px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Mobile: shrink the chips so hub + title + status pills + actions fit one line.
+   Placed after the base rules so these overrides win on equal specificity. */
+@media (max-width: 520px) {
+  .title { font-size: 14px; }
+  .chrome-pill { padding: 5px 9px; }
+  .user-pill-name { max-width: 84px; }
+}
+
+/* Phones (S23 360 → iPhone 15 393 → Pixel 412): the full chip set — hub, title,
+   mode tag, DAILY/XP/frenzy/winner, cross-link, size, stats, user — cannot fit
+   one line at these widths, and the title is the only flexible item, so without
+   this block it ellipses away to nothing. Tighten everything that carries no
+   information: paddings, gaps, the jackpot caption and the signed-in name. */
+@media (max-width: 430px) {
+  .top-chrome { padding: 6px 8px 8px; gap: 4px; }
+  .header-actions { gap: 4px; }
+  .title { font-size: 13px; }
+  .chrome-pill { padding: 4px 8px; font-size: 10px; }
+  .hub-btn, .stats-toggle-btn, .icon-pill, .ws-btn { width: 30px; height: 30px; }
+  .user-pill { padding: 4px 8px 4px 4px; font-size: 10px; }
+  .user-pill-name { max-width: 64px; }
+  .user-pill-avatar { width: 20px; height: 20px; }
+  body[data-mode="mp"] .title-sub { padding: 4px 8px; font-size: 10px; }
+  /* Every chip that can show at once (hub + title + DAILY/XP/frenzy/winner +
+     link + size + stats + user) doesn't fit 360px, and the title is the only
+     flexible item — without these it collapses to an ellipsis. Signed-in shows
+     the avatar alone (the name is already in the sign-in menu) and the jackpot
+     drops its "XP" caption, which hands ~65px back to the title. */
+  .user-pill.is-authed { padding: 4px; }
+  .user-pill.is-authed .user-pill-name { display: none; }
+  #jackpot .jp-label { display: none; }
+  /* Winner name truncates before the game's own title does */
+  #last-winner { max-width: 16vw; }
+}
+
+/* === Guess stack (8 slots) === */
+
+#guesses {
+  flex: 1 1 auto;               /* fill the space between header and footer/keyboard */
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;      /* board sits centred; slack becomes inter-row gap below */
+  gap: var(--row-gap, 2px);     /* sizeBoard() sets this to spread rows into the slack,
+                                   capped so a very tall phone doesn't get sparse rows */
+  padding: 2px 8px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.guess-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  padding: 0 4px;
+  color: #fff;
+}
+.row-empty { opacity: 0.18; }
+.row-active { opacity: 1; }
+
+/* Variant F — letter stamp. Applied only to a row the first time it
+   appears (via .row-new), so existing committed rows don't re-animate
+   on every re-render — that's what was making the grid blink. */
+.row-new .guess-letters {
+  animation: pillFadeIn 0.18s ease both;
+}
+.row-new .letter-tile {
+  animation: letterStamp 0.42s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation-delay: calc(var(--i, 0) * 0.07s);
+}
+@keyframes pillFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes letterStamp {
+  0%   { opacity: 0; transform: scale(0); }
+  60%  { opacity: 1; transform: scale(1.18); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+/* === Avatar (MP) === */
+
+.guess-player {
+  position: relative;
+  z-index: 5;
+  margin-right: -8px;          /* sits just over the pill edge, clear of the first letter */
+  flex-shrink: 0;
+}
+
+.player-pic,
+.player-pic-fb {
+  width: var(--avatar-h);
+  height: var(--avatar-h);
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+  box-shadow:
+    0 0 0 2px rgba(0, 0, 0, 0.6),
+    0 0 0 3px rgba(255, 255, 255, 0.18),
+    0 4px 12px rgba(0, 0, 0, 0.7);
+}
+
+/* Branded logo PFPs (WT profile-logos, game/app icons, etc.).
+   These are already complete circular badges with their own neon/gold/etc.
+   border art baked in — wrapping them with our own ring crusts the design.
+   Just let the badge be the disc and add a soft drop shadow to lift it. */
+.player-pic.player-pic--branded {
+  background: transparent;
+  padding: 0;
+  object-fit: cover;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.7);
+}
+.player-pic-fb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: calc(var(--avatar-h) * 0.36);
+  color: #fff;
+  object-fit: initial;
+}
+
+/* === Liquid-glass letter pill === */
+
+.guess-letters {
+  position: relative;
+  display: inline-flex;
+  gap: 0;
+  flex: 0 0 auto;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: calc(var(--tile-h) * 0.45);
+  clip-path: inset(0 round calc(var(--tile-h) * 0.45));
+  padding: 0;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.4),
+    0 8px 24px rgba(0, 0, 0, 0.6),
+    0 2px 6px rgba(0, 0, 0, 0.45);
+}
+
+/* Solo & MP rows without avatar: shift padding so triangle has room */
+.row-committed .guess-letters,
+.row-active .guess-letters,
+.row-empty .guess-letters {
+  /* same padding */
+}
+
+.pill-base {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background-image:
+    radial-gradient(ellipse 60% 60% at 22% 28%, rgba(255, 255, 255, 0.7) 0%, transparent 55%),
+    radial-gradient(ellipse 55% 55% at 78% 72%, rgba(0, 0, 0, 0.55) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 90% at 55% 50%, rgba(255, 255, 255, 0.3) 0%, transparent 70%),
+    var(--guess-gradient, linear-gradient(180deg, #3a3a55, #2a2a40));
+}
+
+.pill-glass {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  background: linear-gradient(180deg,
+    rgba(255, 255, 255, 0.16) 0%,
+    rgba(255, 255, 255, 0.04) 50%,
+    rgba(0, 0, 0, 0.1) 100%);
+  backdrop-filter: blur(14px) saturate(180%);
+  -webkit-backdrop-filter: blur(14px) saturate(180%);
+  pointer-events: none;
+}
+
+.pill-spec {
+  position: absolute;
+  top: 0; left: 6%; right: 6%; height: 55%;
+  z-index: 2;
+  background: linear-gradient(180deg,
+    rgba(255, 255, 255, 0.4) 0%,
+    rgba(255, 255, 255, 0.1) 55%,
+    rgba(255, 255, 255, 0) 100%);
+  border-radius: 50% / 50%;
+  filter: blur(2px);
+  pointer-events: none;
+}
+
+/* Active pill: muted glass shell, no rightness gradient */
+.row-active .guess-letters {
+  --guess-gradient: linear-gradient(180deg, #2a2a3a, #18181f);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.4),
+    0 4px 16px rgba(0, 0, 0, 0.5);
+}
+
+/* Empty pill: heavily muted, no shadows */
+.row-empty .guess-letters {
+  --guess-gradient: linear-gradient(180deg, #1a1a22, #0d0d12);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+/* === Letter tiles === */
+
+.letter-tile {
+  position: relative;
+  z-index: 3;
+  width: calc(var(--tile-h) * 0.92);
+  height: var(--tile-h);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(var(--tile-h) * 0.435);
+  font-weight: 800;
+  background: transparent;
+  border: none;
+  color: inherit;
+  text-transform: uppercase;
+}
+.letter-tile:not(:last-child) {
+  border-right: 1px solid rgba(0, 0, 0, 0.32);
+}
+
+/* Committed letters are always near-black with a soft white halo. The colour
+   never differs between positions — the gradient pill carries the signal. */
+.row-committed .guess-letters {
+  color: #0a0a0a;
+}
+.row-committed .letter-tile {
+  text-shadow:
+    0 0 3px rgba(255, 255, 255, 0.45),
+    0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+/* Active / empty rows: white letters with a dark outline for legibility on
+   the muted dark gradient. */
+.row-active .guess-letters,
+.row-empty .guess-letters {
+  color: #ffffff;
+}
+.row-active .letter-tile,
+.row-empty .letter-tile {
+  text-shadow:
+    -1px -1px 0 rgba(0, 0, 0, 0.7),
+     1px -1px 0 rgba(0, 0, 0, 0.7),
+    -1px  1px 0 rgba(0, 0, 0, 0.7),
+     1px  1px 0 rgba(0, 0, 0, 0.7),
+     0 0 5px rgba(0, 0, 0, 0.55);
+}
+
+/* Win flash — letters light up in the player's cosmetic word_color (or a
+   default green fallback if no cosmetic equipped), then fade to black. */
+.row-committed.all-correct .guess-letters {
+  --cosmetic-color: var(--green);
+  animation: winFlash 2.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+@keyframes winFlash {
+  0%   { color: var(--cosmetic-color); }
+  35%  { color: var(--cosmetic-color); }
+  100% { color: #0a0a0a; }
+}
+
+/* === Personal tile marks (player-controlled tap-cycle) ===
+   The game never colours tiles itself. Players tap a committed tile to
+   cycle through their own marks: default → green → yellow → red → default.
+   Marks are local annotations only, never sent to the server. Tapping
+   the triangle resets all marks on that row. */
+.row-committed .letter-tile {
+  cursor: pointer;
+  transition: transform 0.1s ease, background 0.15s ease;
+}
+.row-committed .letter-tile:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+.row-committed .letter-tile.tile-tap {
+  transform: scale(0.88);
+}
+/* (Per-wedge cursors + hover live near the triangle styles above.) */
+
+/* Marks fill the tile's background. Letter glyph stays default near-black
+   so position info is never leaked by the glyph itself — the colour is the
+   tile, the way a sticker would sit on it. */
+.row-committed .letter-tile.mark-green  { background: var(--green); }
+.row-committed .letter-tile.mark-yellow { background: var(--yellow); }
+.row-committed .letter-tile.mark-red    { background: var(--red); }
+
+/* Preserve the mark colour while hovered (otherwise the white hover overlay
+   would replace it). */
+.row-committed .letter-tile.mark-green:hover  { background: var(--green); }
+.row-committed .letter-tile.mark-yellow:hover { background: var(--yellow); }
+.row-committed .letter-tile.mark-red:hover    { background: var(--red); }
+
+.letter-cursor::after {
+  content: '';
+  position: absolute;
+  bottom: 8px;
+  left: 25%;
+  right: 25%;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.7);
+  animation: cursorPulse 1s ease-in-out infinite;
+}
+@keyframes cursorPulse {
+  0%, 100% { opacity: 0.2; }
+  50%      { opacity: 0.9; }
+}
+
+/* Glow rings on extreme rows */
+.row-committed.all-absent .guess-letters {
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.4),
+    0 0 26px var(--red-glow),
+    0 8px 24px rgba(0, 0, 0, 0.6);
+}
+.row-committed.all-correct .guess-letters {
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.26),
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.4),
+    0 0 30px var(--green-glow),
+    0 8px 24px rgba(0, 0, 0, 0.6);
+}
+
+/* === Triangle stats — perches on right === */
+
+.guess-counts {
+  position: relative;
+  z-index: 5;
+  margin-left: calc(var(--tile-h) * -0.323);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.guess-triangle {
+  width: calc(var(--tile-h) * 1.226);
+  height: auto;
+  display: block;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.8));
+}
+.guess-triangle .tri-wedge-correct { fill: var(--green); }
+.guess-triangle .tri-wedge-present { fill: var(--yellow); }
+.guess-triangle .tri-wedge-absent  { fill: var(--red); }
+.guess-triangle .tri-outline {
+  fill: none;
+  stroke: rgba(0, 0, 0, 0.6);
+  stroke-width: 1.25;
+  stroke-linejoin: round;
+}
+.guess-triangle .tri-spokes {
+  fill: none;
+  stroke: rgba(0, 0, 0, 0.45);
+  stroke-width: 1;
+  stroke-linecap: round;
+}
+.guess-triangle text {
+  font-family: inherit;
+  font-weight: 900;
+  text-anchor: middle;
+  dominant-baseline: central;
+  font-size: 19px;
+  paint-order: stroke;
+  stroke-width: 2.6;
+  stroke-linejoin: round;
+  pointer-events: none;       /* clicks go to the wedge polygons underneath */
+}
+/* Simple black/white contrast: light wedges get black text + white border,
+   the red wedge gets white text + black border. */
+.guess-triangle .t-correct { fill: #000; stroke: #fff; }
+.guess-triangle .t-present { fill: #000; stroke: #fff; }
+.guess-triangle .t-absent  { fill: #fff; stroke: #000; }
+
+/* Wedges become clickable on committed rows */
+.row-committed .guess-triangle .tri-wedge-correct,
+.row-committed .guess-triangle .tri-wedge-present,
+.row-committed .guess-triangle .tri-wedge-absent {
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+.row-committed .guess-triangle .tri-wedge-correct:hover,
+.row-committed .guess-triangle .tri-wedge-present:hover,
+.row-committed .guess-triangle .tri-wedge-absent:hover {
+  filter: brightness(1.15);
+}
+
+/* Active / empty rows: hide the triangle slot (caller doesn't append one anyway) */
+
+/* === Mini-glass keyboard === */
+
+#keyboard {
+  position: fixed;
+  left: 50%;
+  right: auto;
+  bottom: calc(var(--keyboard-dock-gap) + env(safe-area-inset-bottom));
+  z-index: 900;
+  transform: translateX(-50%);
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  padding: 8px 8px 14px;
+  /* Allowed to grow past the pill width, but capped so the keys stay small.
+     Per-key max-width below provides the second cap. */
+  max-width: 360px;
+  width: calc(100vw - 16px);
+  margin: 0;
+}
+
+.kb-row {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+}
+
+.kb-key {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  max-width: 40px;
+  aspect-ratio: 1;
+  height: auto;
+  border: 0;
+  outline: 0;
+  cursor: pointer;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: 10px;
+  background: transparent;
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 14px;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: transform 0.08s ease;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.35),
+    0 2px 6px rgba(0, 0, 0, 0.4);
+}
+.kb-key.wide { flex: 1.5; aspect-ratio: auto; align-self: stretch; max-width: 60px; font-size: 11px; }
+
+.kb-key:active {
+  transform: scale(0.94);
+}
+
+.kb-base {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background-image:
+    radial-gradient(ellipse 70% 70% at 30% 25%, rgba(255, 255, 255, 0.35) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 60% at 75% 75%, rgba(0, 0, 0, 0.4) 0%, transparent 65%),
+    linear-gradient(180deg, #2a2a3a 0%, #181820 100%);
+}
+.kb-glass {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  background: linear-gradient(180deg,
+    rgba(255, 255, 255, 0.12) 0%,
+    rgba(255, 255, 255, 0.02) 50%,
+    rgba(0, 0, 0, 0.08) 100%);
+  backdrop-filter: blur(6px) saturate(140%);
+  -webkit-backdrop-filter: blur(6px) saturate(140%);
+  pointer-events: none;
+}
+.kb-spec {
+  position: absolute;
+  top: 0; left: 12%; right: 12%; height: 50%;
+  z-index: 2;
+  background: linear-gradient(180deg,
+    rgba(255, 255, 255, 0.35) 0%,
+    rgba(255, 255, 255, 0) 100%);
+  border-radius: 50% / 50%;
+  filter: blur(1.5px);
+  pointer-events: none;
+}
+
+.kb-label {
+  position: relative;
+  z-index: 3;
+  text-shadow:
+    -1px -1px 0 rgba(0, 0, 0, 0.6), 1px -1px 0 rgba(0, 0, 0, 0.6),
+    -1px  1px 0 rgba(0, 0, 0, 0.6), 1px  1px 0 rgba(0, 0, 0, 0.6);
+}
+
+/* Used keys = letters the player has typed in any committed guess.
+   Keyboard never reveals correct/present/absent — that would leak the answer.
+   Used = just dimmer + flatter base. */
+.kb-key.used {
+  opacity: 0.5;
+  transition: opacity 0.25s ease;
+}
+.kb-key.used .kb-base {
+  background-image:
+    linear-gradient(180deg, #1a1a22 0%, #0d0d12 100%);
+}
+.kb-key.used .kb-spec {
+  opacity: 0.4;
+}
+
+/* === Win/loss overlay (lightweight; replaces old win-bubble) === */
+#overlay {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 1000;
+  backdrop-filter: blur(6px);
+}
+#overlay.is-open { display: flex; }
+#overlay .card {
+  background: linear-gradient(180deg, #1a1a22, #0d0d12);
+  border: 1px solid var(--hairline);
+  border-radius: 22px;
+  padding: 28px 32px;
+  text-align: center;
+  max-width: 88vw;
+  width: 360px;
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.8);
+}
+#overlay .card h2 {
+  font-size: 24px;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+#overlay .card .word {
+  font-size: 32px;
+  letter-spacing: 4px;
+  font-weight: 800;
+  color: var(--green);
+  margin: 10px 0;
+}
+#overlay .card .detail { color: var(--text-dim); font-size: 14px; margin-bottom: 16px; }
+#overlay .card button {
+  background: linear-gradient(135deg, #5865F2, #a855f7);
+  color: #fff;
+  font-weight: 800;
+  padding: 12px 28px;
+  border: 0;
+  border-radius: 12px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+/* === Stats + help overlays ===
+   One scrim, two dialogs. The help modal reuses .stats-card / .stats-close so
+   the toon block at the foot of this file re-skins both from a single rule. */
+#stats-overlay,
+#help-overlay {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.78);
+  z-index: 1050;
+  backdrop-filter: blur(6px);
+  padding: 16px;
+}
+#stats-overlay.is-open,
+#help-overlay.is-open { display: flex; }
+.stats-card {
+  position: relative;
+  background: linear-gradient(180deg, #15151f, #0a0a12);
+  border: 1px solid var(--hairline);
+  border-radius: 18px;
+  padding: 22px 22px 18px;
+  max-width: 420px;
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.8);
+}
+.stats-card h2 {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+  color: #fff;
+}
+.stats-close {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  width: 30px;
+  height: 30px;
+  background: transparent;
+  border: 0;
+  color: #fff;
+  font-size: 22px;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.15s ease;
+}
+.stats-close:hover { opacity: 1; }
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 18px;
+}
+.stat-card {
+  text-align: center;
+  padding: 10px 6px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+}
+.stat-value {
+  font-size: 20px;
+  font-weight: 800;
+  color: #fff;
+}
+.stat-value.green  { color: var(--green); }
+.stat-value.yellow { color: var(--yellow); }
+.stat-value.purple { color: #b44aff; }
+.stat-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-top: 4px;
+}
+
+.stats-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin: 6px 0 8px;
+}
+.stats-history {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 280px;
+  overflow-y: auto;
+}
+.stats-empty {
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 13px;
+  padding: 18px;
+}
+.stats-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 8px;
+  font-size: 13px;
+}
+.stats-row-word {
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  color: #fff;
+}
+.stats-row-result.win  { color: var(--green); font-weight: 800; }
+.stats-row-result.loss { color: var(--red);   font-weight: 800; }
+.stats-row-tag {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-dim);
+  padding: 2px 6px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 6px;
+}
+
+/* === Help modal body ===
+   Card, close button and headings are borrowed from the stats overlay; only the
+   prose needs styling. The colour swatches match the triangle wedges so the
+   legend reads against the real board. */
+.help-card p {
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text);
+  margin-bottom: 10px;
+}
+.help-card .stats-section-title { margin-top: 16px; }
+.help-card .help-muted { color: var(--text-dim); }
+.help-card strong { font-weight: 900; color: #fff; }
+.help-legend {
+  list-style: none;
+  margin: 0 0 10px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.help-legend li {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+.help-legend i {
+  flex: 0 0 auto;
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  box-shadow: 0 0 0 1px #0a0b12;
+}
+.hl-correct { background: var(--green); }
+.hl-present { background: var(--yellow); }
+.hl-absent  { background: var(--red); }
+
+/* === Session-redirect modal (streamer-private sessions) === */
+#session-redirect-modal {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.85);
+  z-index: 1200;
+  font-family: inherit;
+}
+.srm-card {
+  background: linear-gradient(180deg, #15151f, #0a0a12);
+  border: 1px solid var(--hairline);
+  border-radius: 18px;
+  padding: 24px 26px;
+  max-width: 340px;
+  width: 88%;
+  text-align: center;
+  color: #fff;
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.85);
+}
+.srm-title {
+  font-size: 17px;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+.srm-body {
+  opacity: 0.82;
+  font-size: 14px;
+  margin-bottom: 18px;
+}
+.srm-btn {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: 0;
+  margin-bottom: 8px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.srm-follow {
+  background: linear-gradient(135deg, #5865F2, #a855f7);
+  color: #fff;
+}
+.srm-public {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--hairline);
+  color: #cbd5e1;
+}
+
+/* === Overlay mode (OBS browser source) ===
+   No input, no keyboard, no sign-in pill — just the live guess feed and
+   the top chrome (jackpot / last winner / frenzy / daily badge / banner). */
+body[data-mode="overlay"] #keyboard,
+body[data-mode="overlay"] .user-pill,
+body[data-mode="overlay"] #stats-btn,
+body[data-mode="overlay"] .hub-btn,
+body[data-mode="overlay"] footer.legal {
+  display: none !important;
+}
+/* The "?" is a control and a broadcast has nobody to click it. Gated on
+   .obs-mode as well as the overlay mode, because the stream embed reaches this
+   page as /<handle>?obs=1 → data-mode="mp" (see the #jackpot note above). */
+html.obs-mode #help-btn,
+body[data-mode="overlay"] #help-btn {
+  display: none !important;
+}
+body[data-mode="overlay"] #guesses {
+  padding: 6px 12px;
+}
+body[data-mode="overlay"] {
+  padding-bottom: 0;
+}
+
+/* === Toast === */
+#toast-stack {
+  position: fixed;
+  top: 64px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1100;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  pointer-events: none;
+}
+.toast {
+  background: rgba(20, 20, 28, 0.9);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--hairline);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  opacity: 0;
+  transform: translateY(-8px);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+.toast.toast-in  { opacity: 1; transform: translateY(0); }
+.toast.toast-out { opacity: 0; transform: translateY(-8px); }
+
+/* === Row shake (invalid guess) === */
+.row-shake { animation: rowShake 0.36s ease both; }
+@keyframes rowShake {
+  10%, 90% { transform: translateX(-2px); }
+  20%, 80% { transform: translateX( 4px); }
+  30%, 50%, 70% { transform: translateX(-6px); }
+  40%, 60% { transform: translateX( 6px); }
+}
+
+/* === Footer === */
+footer.legal {
+  flex: 0 0 auto;
+  /* No margin-top:auto — #guesses (flex:1) now fills the space and centres the
+     board, so the footer sits directly beneath it, just above the keyboard. An
+     auto margin here would instead absorb all the slack and reopen the gap. */
+  text-align: center;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.35);
+  padding: 6px 12px 10px;
+}
+footer.legal a {
+  color: inherit;
+  text-decoration: none;
+  margin: 0 4px;
+}
+footer.legal a:hover { text-decoration: underline; }
+
+/* === Responsive === */
+/* === Responsive — keyboard + avatars only ===
+   Tile/triangle sizing is fully fluid via --tile-h (set by sizeBoard() in JS),
+   so it is NOT overridden here. These tiers only tune the keyboard dock and the
+   MP avatar for wider screens. */
+@media (min-width: 520px) {
+  :root { --keyboard-dock-height: 164px; --avatar-h: min(62px, calc(var(--tile-h) * 1.02)); }
+  #keyboard { max-width: 420px; }
+  .kb-key { max-width: 44px; font-size: 16px; }
+  .kb-key.wide { max-width: 66px; font-size: 12px; }
+  #guesses { padding: 6px 12px; }
+}
+
+@media (min-width: 900px) {
+  :root { --keyboard-dock-height: 188px; --avatar-h: min(70px, calc(var(--tile-h) * 1.02)); }
+  .guess-player { margin-right: -10px; }
+  #keyboard { max-width: 480px; }
+  .kb-key { max-width: 50px; font-size: 18px; }
+  .kb-key.wide { max-width: 76px; font-size: 13px; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   TOON SKIN — 1px ink · flat saturated fills · one hard highlight band ·
+   coloured slab · no soft cast.                Added 2026-07-27.
+
+   Matches Word5000 Solo (play.css), Color 500 (app.css) and
+   RecTangled/erecTangled, so the fleet reads as one family.
+
+   ── FOUR RULES THIS BLOCK IS BUILT AROUND ────────────────────────────────
+   1. Every slab is written FLAT. `--a: … var(--b) …` freezes --b at the
+      DECLARING element and inherits already-resolved, so a child can never
+      recolour it (verified). Each state repeats its own shadow in full.
+   2. Every slab darkens ITS OWN FACE COLOUR — a near-black slab is invisible
+      on a dark shell and the extrusion reads as nothing.
+   3. 🔴 NO LAYOUT PROPERTY IS TOUCHED, and in particular no per-row margin.
+      sizeBoard() in app.js derives --tile-h from an 8.6-tile budget and sets
+      --row-gap (2px…10px) to fill the slack, with #guesses{overflow:hidden}.
+      Any margin added here is invisible to that maths and clips the top and
+      bottom rows. The pill slab is therefore 4px — small enough to live
+      inside the minimum 2px gap once the next pill paints over it, instead
+      of demanding space the board does not have.
+   4. 🔴 EVERY BACKGROUND FILL IS SCOPED html:not(.obs-mode). ?obs=1 puts
+      .obs-mode on html AND body and the page's own inline <style> makes them
+      transparent so the stream shows through. An unscoped fill punches a
+      solid box into the broadcast. Shadow-only rules are safe and stay global.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── shell lifts so a 1px ink line has something to sit on ── */
+html:not(.obs-mode) body { background: #232c4d; }
+.top-chrome { border-bottom: 1px solid #0a0b12; }
+
+.title {
+  color: #fff;
+  text-shadow:
+    -1px -1px 0 #0a0b12, 1px -1px 0 #0a0b12,
+    -1px  1px 0 #0a0b12, 1px  1px 0 #0a0b12, 0 2px 0 #0a0b12;
+}
+.title-num { color: #4ade80; }
+
+/* ── chrome pills ── */
+.hub-btn,
+.icon-pill,
+.chrome-pill,
+.user-pill {
+  border: 0;
+  box-shadow: 0 0 0 1px #0a0b12, 0 4px 0 #141230, 0 4px 0 1px #0a0b12;
+}
+html:not(.obs-mode) .hub-btn,
+html:not(.obs-mode) .icon-pill,
+html:not(.obs-mode) .chrome-pill,
+html:not(.obs-mode) .user-pill { background: #33306b; }
+/* 🔴 DAILY needs its own twin here. The flat #33306b above scores (0,2,1) and
+   sits later in the sheet than .chrome-pill.is-daily at (0,2,0), so it won and
+   the badge painted the same blue-purple as every other chip. The reason it
+   turned yellow "only when you click it" is .chrome-pill.is-daily:hover at
+   (0,3,0) — the one is-daily rule that outranks the toon fill — latching on
+   after a tap. Same shape of bug as the light-theme twins in UnWordle: an
+   accent state declared before the toon block has to be restated inside it.
+   Scoped html:not(.obs-mode) so the OBS fill stays untouched. */
+html:not(.obs-mode) .chrome-pill.is-daily,
+html:not(.obs-mode) .chrome-pill.is-daily:hover,
+html:not(.obs-mode) .chrome-pill.is-daily:active {
+  background: linear-gradient(135deg, #fde68a, #f59e0b);
+  color: #111827;
+}
+.hub-btn:active,
+.icon-pill:active,
+.chrome-pill:active,
+.user-pill:active {
+  box-shadow: 0 0 0 1px #0a0b12, 0 1px 0 #141230, 0 1px 0 1px #0a0b12;
+}
+
+/* ── the guess pill ──
+      clip-path has to go: it clips the element's own box-shadow and would eat
+      both the ink ring and the slab. The radius keeps its --tile-h ratio so
+      the pill still scales with sizeBoard(). */
+.guess-letters {
+  clip-path: none;
+  overflow: visible;
+  border-radius: calc(var(--tile-h) * 0.30);
+  box-shadow: 0 0 0 1px #0a0b12, 0 4px 0 #151a30, 0 4px 0 1px #0a0b12;
+}
+.row-active .guess-letters {
+  --guess-gradient: linear-gradient(180deg, #39406f, #39406f);
+  box-shadow: 0 0 0 1px #0a0b12, 0 4px 0 #1b2040, 0 4px 0 1px #0a0b12;
+}
+.row-empty .guess-letters {
+  --guess-gradient: linear-gradient(180deg, #1b2138, #1b2138);
+  box-shadow: 0 0 0 1px #0a0b12;
+}
+
+/* flat fill + ONE hard highlight band cut off square at 34% */
+.pill-base { background-image: var(--guess-gradient, linear-gradient(180deg, #3a3a55, #2a2a40)); }
+.pill-glass {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: linear-gradient(180deg,
+    rgba(255, 255, 255, 0.34) 0%,
+    rgba(255, 255, 255, 0.34) 34%,
+    rgba(255, 255, 255, 0) 34.5%);
+}
+.pill-spec { display: none; }
+
+.letter-tile {
+  color: #fff;
+  text-shadow:
+    -1px -1px 0 #0a0b12, 1px -1px 0 #0a0b12,
+    -1px  1px 0 #0a0b12, 1px  1px 0 #0a0b12, 0 2px 0 #0a0b12;
+}
+
+/* ── feedback triangle ──
+      stroke-width is in viewBox units, not px. The viewBox is 64 wide and the
+      svg renders at calc(--tile-h * 1.226) ≈ 76px at the default 62px tile,
+      so 1px on screen is 64/76 ≈ 0.85. The digit halo stays heavier: it is
+      legibility, not outline. */
+.guess-triangle { filter: none; }
+.guess-triangle .tri-wedge-correct { fill: #2fbe62; }
+.guess-triangle .tri-wedge-present { fill: #ffcc22; }
+.guess-triangle .tri-wedge-absent  { fill: #f0554a; }
+.guess-triangle .tri-outline { stroke: #0a0b12; stroke-width: 0.85; }
+.guess-triangle .tri-spokes  { stroke: #0a0b12; stroke-width: 0.85; }
+.guess-triangle .t-correct,
+.guess-triangle .t-present,
+.guess-triangle .t-absent {
+  fill: #ffffff;
+  stroke: #0a0b12;
+  stroke-width: 1.6;
+  paint-order: stroke;
+}
+
+/* ── avatar ── */
+.guess-player img,
+.guess-player .player-pic,
+.guess-player .player-pic-fb {
+  box-shadow: 0 0 0 1px #0a0b12, 0 4px 0 rgba(0, 0, 0, 0.45);
+}
+
+/* ── keyboard ──
+      Sizing and the horizontal gap are deliberately untouched: app.css sets
+      per-breakpoint .kb-key max-widths and --keyboard-dock-height in media
+      queries ABOVE this block, and anything set here would win the cascade
+      and break the phone layout. The 6px row gap already clears the 5px slab. */
+.kb-key {
+  box-shadow: 0 0 0 1px #0a0b12, 0 5px 0 #241a52, 0 5px 0 1px #0a0b12;
+}
+.kb-key:active {
+  transform: none;
+  box-shadow: 0 0 0 1px #0a0b12, 0 1px 0 #241a52, 0 1px 0 1px #0a0b12;
+}
+.kb-key.used {
+  box-shadow: 0 0 0 1px #0a0b12, 0 5px 0 #141230, 0 5px 0 1px #0a0b12;
+}
+html:not(.obs-mode) .kb-base { background-image: linear-gradient(180deg, #4b3fa8 0%, #4b3fa8 100%); }
+html:not(.obs-mode) .kb-key.used .kb-base { background-image: linear-gradient(180deg, #33306b 0%, #33306b 100%); }
+.kb-glass {
+  background: linear-gradient(180deg,
+    rgba(255, 255, 255, 0.30) 0%,
+    rgba(255, 255, 255, 0.30) 32%,
+    rgba(255, 255, 255, 0) 32.5%);
+}
+.kb-spec { display: none; }
+.kb-label {
+  font-weight: 900;
+  text-shadow:
+    -1px -1px 0 #0a0b12, 1px -1px 0 #0a0b12,
+    -1px  1px 0 #0a0b12, 1px  1px 0 #0a0b12;
+}
+
+/* ── overlays ── */
+.card,
+.stats-card {
+  border: 1px solid #0a0b12;
+  box-shadow: 0 0 0 1px #0a0b12, 0 8px 0 #141a30, 0 8px 0 1px #0a0b12;
+}
+html:not(.obs-mode) .card,
+html:not(.obs-mode) .stats-card { background: #2b3560; }
+.stats-toggle-btn,
+.ws-btn {
+  border: 0;
+  box-shadow: 0 0 0 1px #0a0b12, 0 4px 0 #141230, 0 4px 0 1px #0a0b12;
+}
+html:not(.obs-mode) .stats-toggle-btn,
+html:not(.obs-mode) .ws-btn { background: #33306b; }

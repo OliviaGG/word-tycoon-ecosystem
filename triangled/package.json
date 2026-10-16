@@ -1,0 +1,24 @@
+{
+  "name": "triangled",
+  "version": "1.0.0",
+  "description": "Triangle-shaped Strands word game for Word Tycoon ecosystem",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test-gen": "node test-generator.js",
+    "generate:month": "node scripts/generate-month.js"
+  },
+  "dependencies": {
+    "express": "^4.22.2",
+    "socket.io": "^4.7.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "sql.js": "^1.8.0"
+  },
+  "overrides": {
+    "path-to-regexp": "^0.1.13",
+    "qs": "^6.15.2",
+    "socket.io-parser": "^4.2.6",
+    "ws": "^8.21.0"
+  }
+}

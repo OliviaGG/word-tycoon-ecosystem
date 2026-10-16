@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Word Tycoon - Income Bubbles</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { height: 100vh; }
+
+    body {
+      background: transparent;
+      overflow: hidden;
+      font-family: 'Inter', sans-serif;
+      color: #fff;
+      width: 1920px;
+      height: 1080px;
+      position: relative;
+    }
+
+    #bubble-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .income-bubble {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(0, 0, 0, 0.75);
+      border-radius: 28px;
+      padding: 6px 14px 6px 6px;
+      border: 1px solid rgba(255, 215, 0, 0.3);
+      white-space: nowrap;
+      position: absolute;
+      bottom: -80px;
+      opacity: 0;
+    }
+
+    @keyframes bubbleFloat {
+      0%   { transform: translateY(0) scale(0.8); }
+      5%   { transform: translateY(-20px) scale(1); }
+      100% { transform: translateY(-500px) scale(0.9); }
+    }
+
+    .bubble-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 900;
+      color: #fff;
+      flex-shrink: 0;
+      text-transform: uppercase;
+    }
+
+    .bubble-avatar-img {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid rgba(255, 215, 0, 0.4);
+    }
+
+    .bubble-coins {
+      font-size: 15px;
+      font-weight: 700;
+      color: #ffd700;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+    }
+  </style>
+</head>
+<body>
+  <div id="bubble-container"></div>
+
+  <script>
+  // ===== Viewport Scaling =====
+  (function () {
+    var BASE = 1920;
+    var actualW = window.innerWidth;
+    var actualH = window.innerHeight;
+    var scale = actualW / BASE;
+    var baseH = Math.round(actualH / scale);
+    window.__gameScale = scale;
+    window.__gameViewport = { width: BASE, height: baseH };
+    if (Math.abs(scale - 1) > 0.01) {
+      var html = document.documentElement;
+      html.style.width = BASE + 'px';
+      html.style.height = baseH + 'px';
+      html.style.overflow = 'hidden';
+      html.style.transformOrigin = '0 0';
+      html.style.transform = 'scale(' + scale + ')';
+    }
+    document.documentElement.style.setProperty('--base-width', BASE + 'px');
+    document.documentElement.style.setProperty('--base-height', baseH + 'px');
+  })();
+  </script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    var socket = io({ reconnection: true, reconnectionDelay: 1000, reconnectionDelayMax: 5000, reconnectionAttempts: Infinity });
+    var bubbleContainerEl = document.getElementById('bubble-container');
+
+    socket.on('connect', function() {
+      console.log('[Overlay2] Connected');
+      socket.emit('request-state');
+    });
+
+    var AVATAR_COLORS = [
+      '#ef4444', '#f97316', '#eab308', '#22c55e', '#14b8a6',
+      '#3b82f6', '#6366f1', '#a855f7', '#ec4899', '#f43f5e'
+    ];
+    var MAX_BUBBLES = 30;
+    var activeBubbleCount = 0;
+
+    function formatNumber(num) {
+      if (num === undefined || num === null) return '0';
+      num = Number(num);
+      if (num >= 1e12) return (num / 1e12).toFixed(1) + 'T';
+      if (num >= 1e9) return (num / 1e9).toFixed(1) + 'B';
+      if (num >= 1e6) return (num / 1e6).toFixed(1) + 'M';
+      if (num >= 1e4) return (num / 1e3).toFixed(1) + 'K';
+      return Math.floor(num).toLocaleString();
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      var div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    function getAvatarColor(name) {
+      var hash = 0;
+      for (var i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+      return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+    }
+
+    socket.on('income-bubbles', function(bubbles) {
+      if (bubbles && bubbles.length > 0) {
+        for (var i = 0; i < bubbles.length; i++) {
+          var b = bubbles[i];
+          if (!b.coins || b.coins <= 0) continue;
+          (function(bb, delay) {
+            setTimeout(function() { spawnBubble(bb); }, delay);
+          })(b, i * 150);
+        }
+      }
+    });
+
+    function spawnBubble(data) {
+      // Cap max bubbles
+      if (activeBubbleCount >= MAX_BUBBLES) {
+        var oldest = bubbleContainerEl.firstElementChild;
+        if (oldest) { oldest.remove(); activeBubbleCount--; }
+      }
+
+      var vp = window.__gameViewport || { width: 1920, height: 1080 };
+      var xPos = 50 + Math.random() * (vp.width - 100);
+      var dur = 8 + Math.random() * 4; // 8-12 seconds
+
+      var bubble = document.createElement('div');
+      bubble.className = 'income-bubble';
+      bubble.style.left = xPos + 'px';
+      bubble.style.animation = 'bubbleFloat ' + dur + 's linear forwards';
+
+      var name = data.name || '?';
+      var letter = name.charAt(0).toUpperCase();
+      var color = getAvatarColor(name);
+      var coinStr = '+' + formatNumber(data.coins);
+
+      var avatarHtml;
+      if (data.pic) {
+        avatarHtml = '<img class="bubble-avatar bubble-avatar-img" src="' + escapeHtml(data.pic) + '" alt="" onerror="this.outerHTML=\'<div class=\\\'bubble-avatar\\\' style=\\\'background:' + color + '\\\'>' + escapeHtml(letter) + '</div>\'">';
+      } else {
+        avatarHtml = '<div class="bubble-avatar" style="background:' + color + '">' + escapeHtml(letter) + '</div>';
+      }
+
+      bubble.innerHTML = avatarHtml + '<span class="bubble-coins">' + escapeHtml(coinStr) + '</span>';
+      bubbleContainerEl.appendChild(bubble);
+      activeBubbleCount++;
+
+      // Fade in
+      requestAnimationFrame(function() {
+        bubble.style.transition = 'opacity 0.4s ease-out';
+        bubble.style.opacity = '1';
+      });
+
+      // Fade out near end of life, then remove
+      var fadeOutTime = (dur - 3) * 1000; // start fading 3s before end
+      (function(bbl) {
+        setTimeout(function() {
+          if (!bbl.parentNode) return;
+          bbl.style.transition = 'opacity 3s ease-in';
+          bbl.style.opacity = '0';
+        }, fadeOutTime);
+        setTimeout(function() {
+          if (bbl.parentNode) { bbl.remove(); activeBubbleCount--; }
+        }, dur * 1000 + 500);
+      })(bubble);
+    }
+  </script>
+</body>
+</html>

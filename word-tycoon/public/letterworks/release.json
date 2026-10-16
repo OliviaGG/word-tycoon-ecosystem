@@ -1,0 +1,21 @@
+{
+  "game": "letterworks",
+  "version": "beta-1",
+  "builtAt": "2026-09-21T04:07:45.616Z",
+  "path": "/letterworks/",
+  "racks": 2000,
+  "files": {
+    "index.html": "fea8e46c5e938f22458893169416140ed0bef3074c77f526ce5904c04741d5ca",
+    "styles.css": "2658c1b847de6c75dfa9afbb4e0c3c5004428b595838fcc33d7ba00e45200f0e",
+    "catalog.js": "e631b8ed49cccd3d320ac906543c8a55d20a724ff84292c6ba17a7da250d1579",
+    "core.js": "bdf7cee937139da8e01f58ab598c4fae4ef02797ac08725508ff20bff1345011",
+    "rack-display.js": "bff6697eaa0b6b74b489a565723fa39510b40dfdce43500ee607dd3d30a647e2",
+    "game.js": "e9b502b5a2108c339a3979997bfd60013abc7dc9b0f5ede8588270b881c3a8a2",
+    "guess-ticker.js": "5a40edbcb6f30b80491da373b8e4d2b2893c89752f432ad8b18c4bcba7e0962e",
+    "icon.svg": "bc816279b2960cd21c9c9ce0182c7b5eed0883f1b324c831fbd03345e7e962c8",
+    "game-card.svg": "acab194d0afb6f751ddffeba8fa5576b45d5f8674ea345958ea13cf28cc5feb6",
+    "stream.html": "6395cafe7e34a83e29f6c943022a5da93e7a63da87816762bfe02ffe18728cac",
+    "stream.css": "a8e9a4ab922e4cadc959bddb6a74efba1a76c4f9650d63a715a3ae8f8b21cbb2",
+    "stream.js": "a826191ba07626da30527de0a37da576f6908fbec73b599321372c149d17af24"
+  }
+}

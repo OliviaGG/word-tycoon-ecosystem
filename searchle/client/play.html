@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-18066640610"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'AW-18066640610');
+</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Searchle</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #0a0a10;
+      --surface: #14141e;
+      --surface2: #1c1c2a;
+      --border: #2a2a3a;
+      --text: #e0e0e0;
+      --dim: #666;
+      --accent: #a78bfa;
+      --accent2: #7c3aed;
+      --green: #4fc34f;
+      --yellow: #ffab00;
+      --red: #f87171;
+      --blue: #4a9eff;
+    }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .app {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      height: 100dvh;
+    }
+
+    /* ─── Header ─── */
+    .header {
+      padding: 12px 16px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo {
+      font-size: 22px;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent), var(--blue));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .game-status {
+      font-size: 12px;
+      color: var(--dim);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      animation: pulse 2s infinite;
+    }
+
+    .status-dot.won {
+      background: var(--yellow);
+      animation: none;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 13px;
+      color: var(--dim);
+    }
+
+    .guess-count {
+      background: var(--surface2);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    /* ─── Win Banner ─── */
+    .win-banner {
+      background: linear-gradient(135deg, rgba(255, 171, 0, 0.15), rgba(167, 139, 250, 0.15));
+      border-bottom: 1px solid rgba(255, 171, 0, 0.3);
+      padding: 12px 16px;
+      text-align: center;
+      flex-shrink: 0;
+      display: none;
+    }
+
+    .win-banner.show { display: block; }
+
+    .win-word {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--yellow);
+    }
+
+    .win-info {
+      font-size: 12px;
+      color: var(--dim);
+      margin-top: 2px;
+    }
+
+    .win-winner {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    /* ─── Guess List ─── */
+    .guess-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 12px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .guess-list::-webkit-scrollbar { width: 4px; }
+    .guess-list::-webkit-scrollbar-track { background: transparent; }
+    .guess-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: var(--dim);
+      gap: 8px;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .empty-state .emoji { font-size: 48px; }
+    .empty-state .title { font-size: 18px; font-weight: 700; color: var(--text); }
+    .empty-state .sub { font-size: 14px; line-height: 1.5; }
+
+    .guess-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      margin-bottom: 4px;
+      transition: background 0.15s;
+      animation: slideIn 0.25s ease-out;
+    }
+
+    .guess-row:hover { background: var(--surface); }
+    .guess-row.highlight {
+      background: rgba(167, 139, 250, 0.1);
+      border: 1px solid rgba(167, 139, 250, 0.2);
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .guess-rank {
+      min-width: 48px;
+      text-align: right;
+      font-weight: 700;
+      font-size: 14px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .guess-word {
+      font-weight: 700;
+      font-size: 15px;
+      min-width: 90px;
+    }
+
+    .guess-bar-wrap {
+      flex: 1;
+      height: 6px;
+      background: var(--surface2);
+      border-radius: 3px;
+      overflow: hidden;
+      min-width: 40px;
+    }
+
+    .guess-bar {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.4s ease-out;
+    }
+
+    .guess-user {
+      font-size: 12px;
+      color: var(--dim);
+      max-width: 120px;
+      white-space: nowrap;
+      text-align: right;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      justify-content: flex-end;
+      flex-shrink: 0;
+    }
+
+    .guess-user-name {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .guess-avatar {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      object-fit: cover;
+      flex-shrink: 0;
+    }
+
+    /* ─── Input Bar ─── */
+    .input-bar {
+      flex-shrink: 0;
+      padding: 10px 12px;
+      padding-bottom: max(10px, env(safe-area-inset-bottom));
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+    }
+
+    .input-wrap {
+      display: flex;
+      gap: 8px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .guess-input {
+      flex: 1;
+      padding: 14px 16px;
+      background: var(--bg);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      font-size: 16px;
+      font-family: inherit;
+      font-weight: 600;
+      outline: none;
+      transition: border-color 0.2s;
+      /* prevent zoom on iOS */
+      font-size: max(16px, 1em);
+    }
+
+    .guess-input:focus {
+      border-color: var(--accent);
+    }
+
+    .guess-input::placeholder {
+      color: var(--dim);
+      font-weight: 400;
+    }
+
+    .send-btn {
+      padding: 14px 20px;
+      background: var(--accent2);
+      border: none;
+      border-radius: 12px;
+      color: white;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      font-family: inherit;
+    }
+
+    .send-btn:hover { background: #6d28d9; }
+    .send-btn:active { transform: scale(0.96); }
+    .send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* ─── Toast ─── */
+    .toast {
+      position: fixed;
+      top: 70px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-20px);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 20px;
+      font-size: 14px;
+      font-weight: 600;
+      z-index: 200;
+      opacity: 0;
+      transition: all 0.3s ease;
+      pointer-events: none;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .toast.error { border-color: rgba(248, 113, 113, 0.4); color: var(--red); }
+    .toast.success { border-color: rgba(79, 195, 79, 0.4); color: var(--green); }
+    .toast.info { border-color: rgba(167, 139, 250, 0.4); color: var(--accent); }
+
+    /* ─── Nickname Modal ─── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 300;
+    }
+
+    .modal-overlay.hidden { display: none; }
+
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      width: 340px;
+      max-width: 90vw;
+      text-align: center;
+    }
+
+    .modal h2 {
+      font-size: 22px;
+      color: var(--accent);
+      margin-bottom: 6px;
+    }
+
+    .modal p {
+      color: var(--dim);
+      font-size: 14px;
+      margin-bottom: 20px;
+    }
+
+    .modal input {
+      width: 100%;
+      padding: 12px 14px;
+      background: var(--bg);
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 16px;
+      font-family: inherit;
+      outline: none;
+      text-align: center;
+      font-weight: 600;
+    }
+
+    .modal input:focus { border-color: var(--accent); }
+
+    .modal button {
+      width: 100%;
+      margin-top: 12px;
+      padding: 12px;
+      background: var(--accent2);
+      border: none;
+      border-radius: 10px;
+      color: white;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .modal button:hover { background: #6d28d9; }
+
+    .modal .anon-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--dim);
+      font-size: 14px;
+      font-weight: 600;
+      margin-top: 6px;
+    }
+    .modal .anon-btn:hover { background: var(--surface2); color: var(--text); border-color: var(--accent); }
+
+    /* ─── Rank Colors ─── */
+    .rank-amazing { color: #ffd700; }
+    .rank-great { color: #4fc34f; }
+    .rank-good { color: #4a9eff; }
+    .rank-ok { color: var(--accent); }
+    .rank-far { color: var(--dim); }
+    .rank-cold { color: #555; }
+
+    /* Mobile tweaks */
+    @media (max-width: 480px) {
+      .header { padding: 10px 12px; }
+      .logo { font-size: 18px; }
+      .guess-user-name { display: none; }
+      .guess-user { max-width: 28px; }
+      .guess-rank { min-width: 40px; font-size: 13px; }
+      .guess-word { font-size: 14px; min-width: 70px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <!-- Header -->
+    <div class="header">
+      <div class="header-left">
+        <span class="logo">Searchle</span>
+        <div class="game-status">
+          <span class="status-dot" id="status-dot"></span>
+          <span id="status-text">Connecting...</span>
+        </div>
+      </div>
+      <div class="header-right">
+        <span id="vocab-size"></span>
+        <span class="guess-count" id="guess-count">0 guesses</span>
+      </div>
+    </div>
+
+    <!-- Win Banner -->
+    <div class="win-banner" id="win-banner">
+      <div class="win-word" id="win-word"></div>
+      <div class="win-info">found by <span class="win-winner" id="win-winner"></span> &bull; <span id="win-pot"></span> coins</div>
+    </div>
+
+    <!-- Guess List -->
+    <div class="guess-list" id="guess-list">
+      <div class="empty-state" id="empty-state">
+        <div class="emoji">🔍</div>
+        <div class="title">Guess the secret word!</div>
+        <div class="sub">Type any word below. The closer your rank to #1, the warmer you are.</div>
+      </div>
+    </div>
+
+    <!-- Input Bar -->
+    <div class="input-bar">
+      <div class="input-wrap">
+        <input type="text" id="guess-input" class="guess-input" inputmode="search" placeholder="Type a word to guess..." autocomplete="off" autocapitalize="off" enterkeyhint="send" data-lpignore="true" data-1p-ignore="true">
+        <button id="send-btn" class="send-btn">Go</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <!-- Nickname Modal -->
+  <div class="modal-overlay" id="nick-modal">
+    <div class="modal">
+      <h2>Welcome to Searchle</h2>
+      <p>Pick a nickname, or play as Anonymous</p>
+      <input type="text" id="nick-input" placeholder="Your nickname (optional)" maxlength="20" autofocus>
+      <button id="nick-btn">Play</button>
+      <button id="anon-btn" class="anon-btn">Skip — Play as Anonymous</button>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    // ─── State ────────────────────────────────────────────────────
+    const DEFAULT_AVATAR = 'https://wordtycoon.live/portal/img/logo.png';
+
+    let socket = null;
+    let guesses = [];
+    let totalRankedWords = 0;
+    let isWon = false;
+    let nickname = localStorage.getItem('searchle_nick') || '';
+    let myGuesses = new Set();
+    let toastTimer = null;
+
+    // ─── Elements ─────────────────────────────────────────────────
+    const guessList = document.getElementById('guess-list');
+    const emptyState = document.getElementById('empty-state');
+    const guessInput = document.getElementById('guess-input');
+    const sendBtn = document.getElementById('send-btn');
+    const statusDot = document.getElementById('status-dot');
+    const statusText = document.getElementById('status-text');
+    const guessCountEl = document.getElementById('guess-count');
+    const vocabEl = document.getElementById('vocab-size');
+    const winBanner = document.getElementById('win-banner');
+    const toastEl = document.getElementById('toast');
+    const nickModal = document.getElementById('nick-modal');
+    const nickInput = document.getElementById('nick-input');
+    const nickBtn = document.getElementById('nick-btn');
+    const anonBtn = document.getElementById('anon-btn');
+
+    // ─── Init ─────────────────────────────────────────────────────
+    // Hide modal if they've ever set a name or explicitly chosen anonymous
+    if (localStorage.getItem('searchle_nick') !== null) {
+      nickModal.classList.add('hidden');
+    }
+
+    nickInput.value = nickname;
+    nickBtn.addEventListener('click', setNickname);
+    nickInput.addEventListener('keydown', e => { if (e.key === 'Enter') setNickname(); });
+    anonBtn.addEventListener('click', playAnonymous);
+
+    function setNickname() {
+      const val = nickInput.value.trim().replace(/[^a-zA-Z0-9_\- ]/g, '');
+      if (!val) {
+        // Empty input = play anonymous
+        playAnonymous();
+        return;
+      }
+      nickname = val;
+      localStorage.setItem('searchle_nick', nickname);
+      nickModal.classList.add('hidden');
+      guessInput.focus();
+    }
+
+    function playAnonymous() {
+      nickname = '';
+      localStorage.setItem('searchle_nick', '');
+      nickModal.classList.add('hidden');
+      guessInput.focus();
+    }
+
+    // ─── Socket ───────────────────────────────────────────────────
+    socket = io({ reconnection: true, reconnectionDelay: 2000, reconnectionDelayMax: 10000, reconnectionAttempts: Infinity, transports: ['polling', 'websocket'] });
+
+    socket.on('connect', () => {
+      statusDot.classList.remove('won');
+      statusText.textContent = 'Live';
+    });
+
+    socket.on('disconnect', () => {
+      statusText.textContent = 'Reconnecting...';
+    });
+
+    socket.on('game-state', (state) => {
+      guesses = (state.guesses || []).slice().sort((a, b) => a.rank - b.rank);
+      totalRankedWords = state.totalRankedWords || 1;
+      isWon = state.isWon || false;
+      vocabEl.textContent = formatNum(totalRankedWords) + ' words';
+
+      if (isWon && state.targetWord) {
+        showWin(state.targetWord, state.winner, null);
+      } else {
+        winBanner.classList.remove('show');
+      }
+
+      renderGuesses();
+    });
+
+    socket.on('new-guess', (guess) => {
+      isWon = false;
+      winBanner.classList.remove('show');
+      if (guess.totalRankedWords) totalRankedWords = guess.totalRankedWords;
+
+      // Remove existing if word was already guessed (shouldn't happen, but defensive)
+      guesses = guesses.filter(g => g.word !== guess.word);
+      guesses.push(guess);
+      guesses.sort((a, b) => a.rank - b.rank);
+      renderGuesses();
+
+      // Highlight if it's our guess
+      if (myGuesses.has(guess.word)) {
+        setTimeout(() => {
+          const row = document.querySelector(`[data-word="${guess.word}"]`);
+          if (row) {
+            row.classList.add('highlight');
+            row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 50);
+      }
+    });
+
+    socket.on('bump-guess', (data) => {
+      // Move bumped guess to end (most recent), re-sort
+      const idx = guesses.findIndex(g => g.word === data.word);
+      if (idx !== -1 && data.bumper) {
+        guesses[idx].lastBumper = data.bumper;
+      }
+      renderGuesses();
+    });
+
+    socket.on('game-won', (data) => {
+      isWon = true;
+      showWin(data.targetWord, data.user, data.pot);
+
+      // Update guess in list
+      const idx = guesses.findIndex(g => g.word === data.word);
+      if (idx !== -1) guesses[idx].rank = 1;
+      guesses.sort((a, b) => a.rank - b.rank);
+      renderGuesses();
+
+      showToast(`🎉 ${data.user?.displayName || 'Someone'} found it! "${data.targetWord}"`, 'success', 5000);
+    });
+
+    socket.on('new-game', (data) => {
+      guesses = [];
+      isWon = false;
+      myGuesses.clear();
+      winBanner.classList.remove('show');
+      if (data.totalRankedWords) totalRankedWords = data.totalRankedWords;
+      renderGuesses();
+      showToast('🔄 New game started!', 'info', 3000);
+    });
+
+    // ─── Submit Guess ─────────────────────────────────────────────
+    guessInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') submitGuess();
+    });
+    sendBtn.addEventListener('click', submitGuess);
+
+    function submitGuess() {
+      const word = guessInput.value.trim().toLowerCase();
+      if (!word || !/^[a-z]+$/.test(word)) {
+        if (word) showToast('Letters only!', 'error');
+        return;
+      }
+
+      if (isWon) {
+        showToast('Game is over — new round starting soon!', 'info');
+        return;
+      }
+
+      const displayName = nickname || 'Anonymous';
+      const userId = nickname
+        ? 'web_' + nickname.toLowerCase().replace(/\s+/g, '_')
+        : 'web_anonymous';
+
+      myGuesses.add(word);
+
+      socket.emit('test-guess', {
+        message: word,
+        user: {
+          id: userId,
+          username: displayName,
+          displayName: displayName,
+          profilePic: DEFAULT_AVATAR,
+          customColor: null
+        },
+        platform: 'web'
+      });
+
+      guessInput.value = '';
+      guessInput.focus();
+    }
+
+    // ─── Render ───────────────────────────────────────────────────
+    function renderGuesses() {
+      const count = guesses.length;
+      guessCountEl.textContent = count + (count === 1 ? ' guess' : ' guesses');
+
+      if (count === 0) {
+        emptyState.style.display = 'flex';
+        // Remove all rows but keep empty state
+        guessList.querySelectorAll('.guess-row').forEach(r => r.remove());
+        return;
+      }
+      emptyState.style.display = 'none';
+
+      // Build HTML
+      const html = guesses.map(g => {
+        const pct = rankToPercent(g.rank);
+        const color = rankToColor(g.rank);
+        const rankClass = rankToClass(g.rank);
+        const isMine = myGuesses.has(g.word);
+
+          const avatar = g.user?.profilePic || DEFAULT_AVATAR;
+        const name = g.user?.displayName || 'Anonymous';
+        return `<div class="guess-row${isMine ? ' highlight' : ''}" data-word="${escapeAttr(g.word)}">
+          <span class="guess-rank ${rankClass}">#${formatNum(g.rank)}</span>
+          <span class="guess-word">${escapeHtml(g.word)}</span>
+          <div class="guess-bar-wrap"><div class="guess-bar" style="width:${pct}%;background:${color}"></div></div>
+          <span class="guess-user">
+            <img class="guess-avatar" src="${escapeAttr(avatar)}" onerror="this.src='${DEFAULT_AVATAR}'">
+            <span class="guess-user-name">${escapeHtml(name)}</span>
+          </span>
+        </div>`;
+      }).join('');
+
+      guessList.innerHTML = html;
+      // Re-add empty state (hidden)
+      guessList.appendChild(emptyState);
+    }
+
+    // ─── Rank Helpers ─────────────────────────────────────────────
+    function rankToPercent(rank) {
+      if (totalRankedWords <= 1) return 50;
+      // Logarithmic scale: rank 1 = 100%, high ranks compress near 0%
+      const logRank = Math.log(rank + 1);
+      const logTotal = Math.log(totalRankedWords + 1);
+      return Math.max(2, Math.round((1 - logRank / logTotal) * 100));
+    }
+
+    function rankToColor(rank) {
+      const pct = rankToPercent(rank);
+      if (pct >= 95) return '#ffd700'; // gold
+      if (pct >= 75) return '#4fc34f'; // green
+      if (pct >= 55) return '#4a9eff'; // blue
+      if (pct >= 35) return '#a78bfa'; // purple
+      if (pct >= 15) return '#666';    // gray
+      return '#444';                    // dark
+    }
+
+    function rankToClass(rank) {
+      const pct = rankToPercent(rank);
+      if (pct >= 95) return 'rank-amazing';
+      if (pct >= 75) return 'rank-great';
+      if (pct >= 55) return 'rank-good';
+      if (pct >= 35) return 'rank-ok';
+      if (pct >= 15) return 'rank-far';
+      return 'rank-cold';
+    }
+
+    // ─── Win Banner ───────────────────────────────────────────────
+    function showWin(word, winner, pot) {
+      document.getElementById('win-word').textContent = word;
+      document.getElementById('win-winner').textContent = winner?.displayName || 'Someone';
+      document.getElementById('win-pot').textContent = pot ? formatNum(pot) : '???';
+      winBanner.classList.add('show');
+      statusDot.classList.add('won');
+      statusText.textContent = 'Game won!';
+    }
+
+    // ─── Toast ────────────────────────────────────────────────────
+    function showToast(msg, type, duration = 2500) {
+      toastEl.textContent = msg;
+      toastEl.className = 'toast show ' + (type || 'info');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => { toastEl.classList.remove('show'); }, duration);
+    }
+
+    // ─── Utils ────────────────────────────────────────────────────
+    function formatNum(n) {
+      if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M';
+      if (n >= 1e3) return (n / 1e3).toFixed(1) + 'K';
+      return n.toLocaleString();
+    }
+
+    function escapeHtml(s) {
+      if (!s) return '';
+      const d = document.createElement('div');
+      d.textContent = s;
+      return d.innerHTML;
+    }
+
+    function escapeAttr(s) {
+      return (s || '').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+    }
+  </script>
+  <script src="/portal/js/library-toast.js?v=2" data-mode="player"></script>
+  <script src="/portal/js/cosmetic-reward.js"></script>
+  <script src="/portal/js/progress-card.js"></script>
+  <footer class="wt-legal-footer">
+    <a href="https://wordtycoon.live/privacy" target="_blank" rel="noopener">Privacy</a> &middot; <a href="https://wordtycoon.live/terms" target="_blank" rel="noopener">Terms</a> &middot; <a href="https://discord.gg/C8Nm2jEZFC" target="_blank" rel="noopener">Discord</a> &middot; <a href="https://www.jorry.live" target="_blank" rel="noopener">jorry.live</a> &middot; <a href="https://wordtycoon.live/portal">&copy; 2026 Word Tycoon</a>
+  </footer>
+  <style>
+    .wt-legal-footer{padding:14px 16px 18px;text-align:center;font:12px/1.4 "Segoe UI",Tahoma,sans-serif;color:#7a8a9b;opacity:.75}
+    .wt-legal-footer a{color:inherit;text-decoration:none;margin:0 2px}
+    .wt-legal-footer a:hover{text-decoration:underline;opacity:1}
+  </style>
+</body>
+</html>

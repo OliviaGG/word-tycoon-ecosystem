@@ -1,0 +1,247 @@
+{
+  "passed": true,
+  "results": [
+    {
+      "word": "basketball",
+      "length": 10,
+      "rankedWords": 102939,
+      "top": [
+        "basketball",
+        "volleyball",
+        "hoopster",
+        "football",
+        "soccer",
+        "tennis",
+        "nba",
+        "softball",
+        "ncaa",
+        "athletic",
+        "rebounder",
+        "hockey"
+      ],
+      "zipf": 4.56,
+      "wordnet": {
+        "n": 2
+      },
+      "targetRank": 1
+    },
+    {
+      "word": "television",
+      "length": 10,
+      "rankedWords": 102939,
+      "top": [
+        "television",
+        "tv",
+        "telly",
+        "broadcasting",
+        "broadcast",
+        "televised",
+        "radio",
+        "broadcaster",
+        "televisual",
+        "cable",
+        "telecasting",
+        "telecast"
+      ],
+      "zipf": 4.79,
+      "wordnet": {
+        "n": 3
+      },
+      "targetRank": 1
+    },
+    {
+      "word": "electricity",
+      "length": 11,
+      "rankedWords": 102939,
+      "top": [
+        "electricity",
+        "electric",
+        "electrical",
+        "hydroelectricity",
+        "energy",
+        "hydroelectric",
+        "galvanism",
+        "nonelectric",
+        "hydropower",
+        "power",
+        "generator",
+        "thermoelectricity"
+      ],
+      "zipf": 4.43,
+      "wordnet": {
+        "n": 3
+      },
+      "targetRank": 1
+    },
+    {
+      "word": "photography",
+      "length": 11,
+      "rankedWords": 102939,
+      "top": [
+        "photography",
+        "photographic",
+        "photographer",
+        "photographing",
+        "macrophotography",
+        "photograph",
+        "photojournalism",
+        "camera",
+        "microphotography",
+        "astrophotography",
+        "photo",
+        "photojournalistic"
+      ],
+      "zipf": 4.45,
+      "wordnet": {
+        "n": 3
+      },
+      "targetRank": 1
+    },
+    {
+      "word": "architecture",
+      "length": 12,
+      "rankedWords": 102939,
+      "top": [
+        "architecture",
+        "architectural",
+        "architect",
+        "architecturally",
+        "design",
+        "urbanism",
+        "architectonic",
+        "building",
+        "functionalistic",
+        "engineering",
+        "antefixa",
+        "modernism"
+      ],
+      "zipf": 4.42,
+      "wordnet": {
+        "n": 4
+      },
+      "targetRank": 1
+    },
+    {
+      "word": "technology",
+      "length": 10,
+      "rankedWords": 102939,
+      "top": [
+        "technology",
+        "technological",
+        "tech",
+        "innovation",
+        "technologically",
+        "science",
+        "engineering",
+        "biotechnology",
+        "nanotechnology",
+        "software",
+        "technologist",
+        "gadgetry"
+      ],
+      "zipf": 5.09,
+      "wordnet": {
+        "n": 2
+      },
+      "targetRank": 1
+    },
+    {
+      "word": "literature",
+      "length": 10,
+      "rankedWords": 102939,
+      "top": [
+        "literature",
+        "literary",
+        "poetry",
+        "fiction",
+        "historiography",
+        "prose",
+        "literariness",
+        "scholarly",
+        "bibliography",
+        "belletristic",
+        "philology",
+        "book"
+      ],
+      "zipf": 4.62,
+      "wordnet": {
+        "n": 4
+      },
+      "targetRank": 1
+    },
+    {
+      "word": "university",
+      "length": 10,
+      "rankedWords": 102939,
+      "top": [
+        "university",
+        "college",
+        "campus",
+        "undergraduate",
+        "faculty",
+        "polytechnic",
+        "student",
+        "collegiate",
+        "academic",
+        "graduate",
+        "professor",
+        "institution"
+      ],
+      "zipf": 5.39,
+      "wordnet": {
+        "n": 3
+      },
+      "targetRank": 1
+    },
+    {
+      "word": "government",
+      "length": 10,
+      "rankedWords": 102939,
+      "top": [
+        "government",
+        "governmental",
+        "federal",
+        "administration",
+        "officialdom",
+        "legislature",
+        "parliament",
+        "bureaucracy",
+        "ministry",
+        "governance",
+        "state",
+        "judiciary"
+      ],
+      "zipf": 5.57,
+      "wordnet": {
+        "n": 4
+      },
+      "targetRank": 1
+    }
+  ],
+  "sourceSnapshotSha256": "57685b30517f3bc59659e4301f08556614cb1b2153f0b8b8bf3ced21a1a6142c",
+  "activeModels": [
+    "numberbatch",
+    "fasttext"
+  ],
+  "modelWeights": {
+    "numberbatch": 1,
+    "fasttext": 0.75
+  },
+  "rrfK": 60,
+  "frequencyGateMinZipf": 2.5,
+  "productionModelHashes": {
+    "data/models/numberbatch/index.json": "c7a54b57e379d0acd57eb592ad367b2a8bc39ec5d6c766acbf3231a2f2350444",
+    "data/models/numberbatch/vectors.bin": "b172e6a61b1e16754c43cf328ef4826820419c16158be1dbc6c8b52cf35e5fba",
+    "data/models/fasttext/index.json": "4d5094c02bb11a7039c3802cc323be27ba9cab2c04f1636eac30ce52385de017",
+    "data/models/fasttext/vectors.bin": "657c9e9dfbaaa3a62df898dee936747539bd1ee8a2f1ce56c5662df74141bbc9"
+  },
+  "selectionChecks": {
+    "absentFromCanonicalTargetBank": true,
+    "canonicalSingularAmericanForm": true,
+    "presentInCanonicalDictionary": true,
+    "presentInActiveModelVocabulary": true,
+    "allowedByCanonicalPolicy": true,
+    "excludedProperNameAmbiguitiesPreserved": true,
+    "unchangedShorterBankBuckets": true
+  }
+}

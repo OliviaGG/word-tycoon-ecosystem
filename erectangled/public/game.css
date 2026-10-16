@@ -1,0 +1,377 @@
+/* Sproutle — Shared Styles */
+:root {
+    --bg: #0d0d14;
+    --surface: #14141f;
+    --surface2: #1c1c2e;
+    --border: #2a2a3e;
+    --cell-hidden: #1a1a2e;
+    --cell-hidden-border: #252540;
+    --cell-revealed: #1e2a4a;
+    --cell-revealed-border: #3a5080;
+    --cell-revealed-text: #c8d8f0;
+    --cell-found: #1a3a28;
+    --cell-found-border: #2a8040;
+    --cell-found-text: #80ff80;
+    --cell-path: #2a4a1a;
+    --cell-path-border: #5a9030;
+    --accent: #5588cc;
+    --accent2: #44aaff;
+    --gold: #ffd700;
+    --rare: #cc88ff;
+    --text: #e0e0f0;
+    --text2: #8888aa;
+    --common-color: #88ccff;
+    --rare-color: #cc88ff;
+    --hidden-color: #aaaaaa;
+    --green: #44cc77;
+    --radius: 6px;
+    --grid-cols: 6;
+    --gap: 3px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    min-height: 100vh;
+}
+
+/* ─── Grid ─────────────────────────────────────────────────────────────── */
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(var(--grid-cols), 1fr);
+    gap: 3px;
+    padding: 4px;
+    background: linear-gradient(160deg, #0a0c1a 0%, #0d1020 50%, #080d18 100%);
+    border-radius: 14px;
+    border: 1px solid rgba(60, 80, 160, 0.5);
+    width: 100%;
+    max-width: min(98vw, 88vh);
+    touch-action: none;
+    box-shadow:
+        0 0 0 1px rgba(40, 60, 140, 0.3),
+        0 0 40px rgba(40, 60, 200, 0.15),
+        0 12px 48px rgba(0, 0, 0, 0.7);
+}
+
+.grid-cell {
+    aspect-ratio: 1;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: clamp(0.85rem, calc(10vw - var(--grid-cols) * 0.4vw), 2.4rem);
+    font-weight: 900;
+    letter-spacing: 0;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+    transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.12s, box-shadow 0.2s;
+    position: relative;
+    user-select: none;
+    touch-action: none;
+}
+
+.grid-cell.hidden {
+    background: linear-gradient(160deg, #0e1024, #0a0d1e);
+    border: 1px solid #1a1d38;
+    color: transparent;
+}
+
+.grid-cell.hidden::after {
+    content: '';
+    width: 5px;
+    height: 5px;
+    background: radial-gradient(circle, #2a2d52, #18193a);
+    border-radius: 50%;
+}
+
+.grid-cell.revealed {
+    background: linear-gradient(160deg, #16254a, #0f1a36);
+    border: 1px solid #2a4278;
+    color: #b8d0ff;
+    text-transform: uppercase;
+    box-shadow: inset 0 1px 0 rgba(100,150,255,0.1);
+}
+
+.grid-cell.center {
+    background: linear-gradient(160deg, #1a3068, #101e4c);
+    border: 1px solid #3d60b8;
+    color: #b8d0ff;
+    box-shadow: inset 0 1px 0 rgba(120,170,255,0.15), 0 0 12px rgba(50,90,200,0.2);
+}
+
+.grid-cell.path-highlight {
+    background: linear-gradient(160deg, #1e3a10, #122408);
+    border-color: #3e6e1a;
+    color: #a8f050;
+    transform: scale(1.07);
+    z-index: 2;
+    box-shadow: 0 0 10px rgba(70,150,20,0.35);
+}
+
+/* ─── Swipe Path ─────────────────────────────────────────────────────────── */
+.grid-cell.swipe-path {
+    background: linear-gradient(160deg, #244818, #172e0e);
+    border-color: #52901e;
+    color: #b8f050;
+    transform: scale(1.05);
+    z-index: 3;
+    transition: transform 0.05s, background 0.05s, box-shadow 0.05s;
+    box-shadow: 0 0 12px rgba(90,180,30,0.45);
+}
+
+.grid-cell.swipe-last {
+    background: linear-gradient(160deg, #2e5818, #1c3a0e);
+    border-color: #80cc38;
+    color: #d8ffaa;
+    transform: scale(1.14);
+    z-index: 4;
+    transition: transform 0.05s, background 0.05s, box-shadow 0.05s;
+    box-shadow: 0 0 22px rgba(130,210,50,0.65), 0 0 6px rgba(180,255,70,0.35);
+}
+
+.grid-cell.common-found {
+    background: linear-gradient(160deg, #163622, #0c2216);
+    border-color: #28783e;
+    color: #60e080;
+    box-shadow: inset 0 1px 0 rgba(70,200,90,0.12);
+}
+
+/* Reveal animation */
+@keyframes cellReveal {
+    0%   { transform: scale(0.2) rotate(-15deg); opacity: 0; filter: brightness(4) saturate(2); }
+    50%  { transform: scale(1.2) rotate(4deg);   opacity: 1; filter: brightness(1.8) saturate(1.5); }
+    75%  { transform: scale(0.93); filter: brightness(1.2); }
+    100% { transform: scale(1) rotate(0deg);     opacity: 1; filter: brightness(1); }
+}
+
+.grid-cell.revealing {
+    animation: cellReveal 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    z-index: 5;
+}
+
+/* Word found flash */
+@keyframes wordFlash {
+    0%   { background: linear-gradient(145deg, #2a6020, #1a4015); border-color: #70ee40; box-shadow: 0 0 20px rgba(100,240,50,0.5); }
+    50%  { background: linear-gradient(145deg, #357028, #22501a); border-color: #aaff70; box-shadow: 0 0 30px rgba(150,255,80,0.4); }
+    100% { background: linear-gradient(145deg, #1a4028, #0f2818); border-color: #30904a; box-shadow: none; }
+}
+
+.grid-cell.word-flash {
+    animation: wordFlash 0.9s ease-out forwards;
+}
+
+/* ─── Word Lists ─────────────────────────────────────────────────────────── */
+.word-list {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.word-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 9px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.word-tag.common {
+    background: rgba(30,60,100,0.5);
+    border: 1px solid rgba(60,100,170,0.4);
+    color: #80aaee;
+}
+
+.word-tag.common.found {
+    background: rgba(20,60,35,0.6);
+    border-color: rgba(50,130,70,0.5);
+    color: #58d878;
+}
+
+.word-tag.rare {
+    background: rgba(50,25,80,0.5);
+    border: 1px solid rgba(110,60,180,0.4);
+    color: var(--rare-color);
+}
+
+.word-tag.rare.found {
+    background: rgba(40,20,70,0.6);
+    border-color: rgba(130,80,210,0.5);
+    color: #cc88ff;
+}
+
+.word-tag.found:not(.common):not(.rare) {
+    background: rgba(20,25,45,0.5);
+    border: 1px solid rgba(60,70,110,0.4);
+    color: rgba(160,175,220,0.7);
+}
+
+/* ─── Jackpot ─────────────────────────────────────────────────────────── */
+.jackpot-display {
+    font-size: 2rem;
+    font-weight: 900;
+    color: var(--gold);
+    text-shadow: 0 0 20px rgba(255,215,0,0.5);
+    font-variant-numeric: tabular-nums;
+}
+
+/* ─── Progress ───────────────────────────────────────────────────────── */
+.progress-bar-wrap {
+    background: var(--surface2);
+    border-radius: 8px;
+    height: 10px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+}
+
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #3366cc, #55aaff);
+    border-radius: 8px;
+    transition: width 0.5s ease;
+}
+
+/* ─── Leaderboard ────────────────────────────────────────────────────── */
+.leaderboard .player-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border-radius: var(--radius);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    margin-bottom: 4px;
+}
+
+.player-row .rank {
+    font-weight: 700;
+    color: var(--text2);
+    width: 24px;
+}
+
+.player-row .name {
+    flex: 1;
+    font-weight: 600;
+}
+
+.player-row .score {
+    color: var(--gold);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ─── Ticker (found words) ─────────────────────────────────────────── */
+.ticker {
+    overflow: hidden;
+    white-space: nowrap;
+    background: var(--surface2);
+    border-radius: var(--radius);
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    border: 1px solid var(--border);
+}
+
+.ticker-item {
+    display: inline-block;
+    padding: 0 24px;
+    opacity: 0;
+    animation: tickerFade 4s ease forwards;
+}
+
+.ticker-item.common  { color: var(--common-color); }
+.ticker-item.rare    { color: var(--rare-color); }
+.ticker-item.hidden  { color: var(--hidden-color); }
+
+@keyframes tickerFade {
+    0%   { opacity: 0; transform: translateX(40px); }
+    10%  { opacity: 1; transform: translateX(0); }
+    80%  { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+/* ─── Status Badge ───────────────────────────────────────────────────── */
+.badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.badge.daily { background: #4a3000; color: var(--gold); border: 1px solid #8a6000; }
+.badge.live  { background: #3a0010; color: #ff4466; border: 1px solid #880030; }
+
+/* ─── Panel ──────────────────────────────────────────────────────────── */
+.panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+}
+
+.panel h3 {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text2);
+    margin-bottom: 10px;
+}
+
+/* ─── Frenzy ──────────────────────────────────────────────────────────── */
+.frenzy-badge {
+    display: inline-block;
+    padding: 4px 14px;
+    border-radius: 20px;
+    background: #3a1800;
+    border: 1px solid #aa5500;
+    color: #ff9944;
+    font-weight: 700;
+    font-size: 0.9rem;
+    transition: opacity 0.3s;
+}
+
+/* ─── Complete overlay ───────────────────────────────────────────────── */
+@keyframes completePulse {
+    0%, 100% { box-shadow: 0 0 30px rgba(255,215,0,0.3); }
+    50%       { box-shadow: 0 0 60px rgba(255,215,0,0.7); }
+}
+
+.complete-banner {
+    background: linear-gradient(135deg, #1a1000, #2a2000);
+    border: 2px solid var(--gold);
+    border-radius: 12px;
+    padding: 20px 32px;
+    text-align: center;
+    animation: completePulse 2s ease infinite;
+}
+
+.complete-banner h2 { color: var(--gold); font-size: 2rem; margin-bottom: 8px; }
+.complete-banner p  { color: var(--text2); }
+
+
+/* ─── Mobile Responsive ──────────────────────────────────────────────── */
+@media (max-width: 768px) {
+    .panel { padding: 12px; }
+    .panel h3 { font-size: 0.7rem; margin-bottom: 8px; }
+
+    .word-tag { font-size: 0.73rem; padding: 3px 8px; gap: 4px; }
+
+    .leaderboard .player-row { padding: 6px 10px; gap: 8px; }
+
+    .complete-banner { padding: 16px 20px; }
+    .complete-banner h2 { font-size: 1.5rem; }
+
+    .jackpot-display { font-size: 1.5rem; }
+}
+
+@media (max-width: 480px) {
+    .grid-cell { border-radius: 5px; }
+}

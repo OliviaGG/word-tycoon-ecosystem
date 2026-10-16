@@ -1,0 +1,88 @@
+/* WikiWord mode overrides.
+   Loaded only by /wikiword so the classic game is untouched. */
+
+/* Stack everything vertically above the grid:
+   title → target-card pyramid → found words → grid. */
+body.wikiword-mode .layout.mini-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: min(640px, 100%);
+}
+
+body.wikiword-mode .title-block {
+  padding: 0;
+}
+
+/* The WikiWord page removes the podium, so the found-words card no longer needs
+   the fixed height that was pinned to the podium bottom. */
+body.wikiword-mode .found-words-card {
+  height: auto;
+  min-height: 62px;
+}
+
+/* Target-card pyramid: 1 large on top, 2 in the middle, 3 on the bottom. */
+body.wikiword-mode .right-col {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+body.wikiword-mode .target-row {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  justify-content: center;
+}
+body.wikiword-mode .target-row .tcard {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 58px;
+}
+body.wikiword-mode .target-row-1 .tcard {
+  height: 78px;
+}
+body.wikiword-mode .target-row-1 .tcard .tlabel {
+  height: 58px;
+  padding: 0 22px;
+}
+body.wikiword-mode .target-row-1 .tcard .tword {
+  font-size: 2.2rem;
+}
+body.wikiword-mode .target-row-3 .tcard {
+  height: 48px;
+}
+body.wikiword-mode .target-row-3 .tcard .tlabel {
+  height: 38px;
+  padding: 0 10px;
+}
+body.wikiword-mode .target-row-3 .tcard .tword {
+  font-size: 1.05rem;
+}
+body.wikiword-mode .target-row-3 .tcard .tfinder {
+  padding: 4px 8px 4px 4px;
+  height: 36px;
+}
+body.wikiword-mode .target-row-3 .tcard .tpfp {
+  width: 26px;
+  height: 26px;
+}
+body.wikiword-mode .target-row-3 .tcard .tname {
+  display: none;
+}
+
+/* Row-2 cards are narrow; hide the finder name so the rank/word + avatar fit
+   without clipping or spilling into the neighbouring card. */
+body.wikiword-mode .target-row-2 .tname { display: none; }
+
+/* Prevent the global cosmetic-glow overflow:visible changes from making the
+   WikiWord layout wider than the viewport or letting target-card contents overlap. */
+body.wikiword-mode { overflow-x: hidden; }
+body.wikiword-mode .tcard-body { overflow: hidden; }
+body.wikiword-mode .found-word-item { overflow: hidden; }
+
+/* Make the compact 5×7 grid feel a little more prominent on desktop. */
+@media (min-width: 900px) and (pointer: fine) {
+  body.wikiword-mode .grid-wrap {
+    max-width: min(680px, 100%);
+  }
+}

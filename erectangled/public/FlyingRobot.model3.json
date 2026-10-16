@@ -1,0 +1,39 @@
+{
+	"Version": 3,
+	"FileReferences": {
+		"Moc": "FlyingRobot.moc3",
+		"Textures": [
+			"FlyingRobot.2048/texture_00.png"
+		],
+		"DisplayInfo": "FlyingRobot.cdi3.json",
+		"Expressions": [
+			{ "Name": "Exp-Angry", "File": "Expression/Exp-Angry.exp3.json" },
+			{ "Name": "Exp-Blush", "File": "Expression/Exp-Blush.exp3.json" },
+			{ "Name": "Exp-Charging", "File": "Expression/Exp-Charging.exp3.json" },
+			{ "Name": "Exp-Cry", "File": "Expression/Exp-Cry.exp3.json" },
+			{ "Name": "Exp-DarkFace", "File": "Expression/Exp-DarkFace.exp3.json" },
+			{ "Name": "Exp-Drop", "File": "Expression/Exp-Drop.exp3.json" },
+			{ "Name": "Exp-HeartEyes", "File": "Expression/Exp-HeartEyes.exp3.json" },
+			{ "Name": "Exp-LightEffect", "File": "Expression/Exp-LightEffect.exp3.json" },
+			{ "Name": "Exp-LightEyes", "File": "Expression/Exp-LightEyes.exp3.json" },
+			{ "Name": "Exp-Loading", "File": "Expression/Exp-Loading.exp3.json" },
+			{ "Name": "Exp-Nowords", "File": "Expression/Exp-Nowords.exp3.json" },
+			{ "Name": "Exp-Question", "File": "Expression/Exp-Question.exp3.json" },
+			{ "Name": "Exp-StarEyes", "File": "Expression/Exp-StarEyes.exp3.json" },
+			{ "Name": "Exp-X-Eyes", "File": "Expression/Exp-X-Eyes.exp3.json" }
+		],
+		"Motions": {}
+	},
+	"Groups": [
+		{
+			"Target": "Parameter",
+			"Name": "LipSync",
+			"Ids": []
+		},
+		{
+			"Target": "Parameter",
+			"Name": "EyeBlink",
+			"Ids": ["ParamEyeLOpen", "ParamEyeROpen"]
+		}
+	]
+}

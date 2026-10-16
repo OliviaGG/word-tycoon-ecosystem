@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fdf6e9">
+  <meta name="description" content="Word5000x5: guess one word in all five spots. One combined colour triangle scores 25 letters, and every new guess replaces the board.">
+  <title>Word5000x5 — Five Words, One Puzzle</title>
+  <link rel="canonical" href="https://word5000.com/x5/">
+  <link rel="icon" href="../favicon-32-v3.png">
+  <link rel="stylesheet" href="./app.css?v=4">
+  <script>try { if (localStorage.getItem('wt-night') === '1') document.documentElement.classList.add('night'); } catch {}</script>
+  <script type="module" src="./app.js?v=4"></script>
+</head>
+<body>
+  <a href="#game" class="skip-link">Skip to puzzle</a>
+  <div class="sky" aria-hidden="true"><span class="cloud cloud-one"></span><span class="cloud cloud-two"></span></div>
+  <header class="topbar">
+    <a class="brand" href="../" aria-label="Word5000 home">WORD<span>5000</span><b>×5</b></a>
+    <nav aria-label="Game navigation">
+      <a class="toon-button home-link" href="https://wordtycoon.live/">Hub</a>
+      <button class="toon-button" id="theme-button" aria-label="Switch to night" type="button">☀</button>
+      <button class="toon-button" id="help-button" aria-label="How to play" type="button">?</button>
+    </nav>
+  </header>
+  <main id="game">
+    <div class="game-topline">
+      <div class="mode-controls" aria-label="Puzzle mode">
+        <button class="mode-button" id="daily-button" type="button" aria-pressed="true">Daily</button>
+        <button class="mode-button" id="practice-button" type="button" aria-pressed="false">Practice</button>
+      </div>
+      <span class="date-tag" id="date-tag">Five words. One puzzle.</span>
+    </div>
+    <div class="game-layout">
+      <section class="puzzle-panel toon-panel" aria-labelledby="puzzle-title">
+        <div class="panel-heading"><h1 id="puzzle-title"><span id="board-guess">The latest guess</span></h1><span class="solved-chip" id="solved-count" aria-label="Words found">0 / 5</span></div>
+        <div id="crossword" class="crossword" aria-label="Crossing word puzzle"></div>
+        <form id="guess-form" autocomplete="off">
+          <label class="sr-only" for="guess-input">Type a five-letter guess</label>
+          <div class="entry-row" id="entry-row">
+            <div class="entry-tiles" id="entry-tiles" aria-hidden="true"></div>
+            <input id="guess-input" type="text" maxlength="5" inputmode="none" autocapitalize="characters" spellcheck="false" aria-label="Five-letter guess for all five words">
+          </div>
+          <button class="toon-button submit-button" type="submit" id="submit-button">Guess all five <span aria-hidden="true">↵</span></button>
+        </form>
+        <div class="puzzle-bottom"><span id="guess-budget">25 guesses left</span><span class="five-tag">5 × 5 letters</span></div>
+      </section>
+      <section class="guess-panel toon-panel" aria-labelledby="entry-title">
+        <div class="panel-heading"><h2 id="entry-title">One guess. All five.</h2></div>
+        <div class="feedback-key" aria-label="Triangle key"><span class="key-correct">Right spot</span><span class="key-present">Wrong spot</span><span class="key-absent">Absent</span></div>
+        <div class="combined-feedback"><div id="combined-triangle" aria-label="Combined totals"></div><span id="combined-label">One triangle for all five words</span></div>
+        <div class="status-message" id="status-message" role="status" aria-live="polite">Loading the word bank…</div>
+        <div class="result-actions" id="result-actions" hidden>
+          <button class="toon-button" id="share-button" type="button">Share result</button>
+          <button class="toon-button" id="new-puzzle-button" type="button">Play another</button>
+        </div>
+        <button class="toon-button" id="retry-button" type="button" hidden>Try again</button>
+      </section>
+    </div>
+    <div id="keyboard" class="keyboard" aria-label="On-screen keyboard"></div>
+  </main>
+  <footer><a href="../">Word5000</a><span>Made in Toon Tower</span><a href="https://wordtycoon.live/">Word Tycoon</a></footer>
+  <dialog id="help-dialog" class="help-dialog">
+    <div class="dialog-heading"><h2>Five words. One puzzle.</h2><button class="toon-button" id="help-close" type="button" aria-label="Close help">×</button></div>
+    <p>Find five crossing five-letter answers using <strong>25 guesses</strong>. Type one word: it goes into <strong>all five spots at once</strong> and costs one guess.</p>
+    <div class="help-triangle" id="help-triangle"></div>
+    <ul>
+      <li><strong class="key-correct">Green:</strong> letters in the right spot.</li>
+      <li><strong class="key-present">Yellow:</strong> letters in the word, in a different spot.</li>
+      <li><strong class="key-absent">Red:</strong> letters absent from the word.</li>
+    </ul>
+    <p>One triangle combines <strong>all 25 letter comparisons</strong>, including words already found. It gives counts, not individual letters or separate word scores. Letters can repeat.</p>
+    <p>Each word's tiles share <strong>its own match colour</strong>, scored against that answer: red for no matching letters, through yellow, to green for an exact answer. The colour describes the whole word, not individual letters.</p>
+    <p>At crossings, <strong>→</strong> shows the across copy and <strong>↓</strong> shows the down copy. Each reads the same guessed word independently and keeps its own word colour.</p>
+    <p>Every new guess <strong>replaces the previous board and triangle</strong>. The words-found count increases when you guess an exact answer. Find all five to win. Invalid and repeated guesses cost nothing.</p>
+    <p>Tap a board letter to add your own green, yellow or red note. Notes are your deductions and clear with the next guess.</p>
+    <p>Your progress saves in this browser. The daily changes at midnight in Edmonton; practice has fresh puzzles whenever you want.</p>
+  </dialog>
+  <noscript><p class="noscript">Enable JavaScript to play Word5000x5.</p></noscript>
+</body>
+</html>

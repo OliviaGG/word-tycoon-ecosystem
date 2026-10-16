@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-18066640610"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag("js", new Date());
+  gtag("config", "AW-18066640610");
+</script>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
+  <meta name="theme-color" content="#151a22"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="Spelling Bee"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <title>Play Spelling Bee on Word Tycoon — Free Daily Hive Word Puzzle</title>
+  <meta name="description" content="Play Spelling Bee on Word Tycoon — a free daily hive word puzzle game. Find as many words as you can from seven letters. Daily puzzle and unlimited practice mode — no account needed."/>
+  <link rel="canonical" href="https://wordtycoon.live/spellingbee/"/>
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Spelling Bee">
+  <meta property="og:title" content="Play Spelling Bee on Word Tycoon — Free Daily Hive Word Puzzle">
+  <meta property="og:description" content="Play Spelling Bee on Word Tycoon — a free daily hive word puzzle game. Find as many words as you can from seven letters. Daily puzzle and unlimited practice mode.">
+  <meta property="og:url" content="https://wordtycoon.live/spellingbee/">
+  <meta property="og:image" content="https://wordtycoon.live/spellingbee/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Play Spelling Bee on Word Tycoon — Free Daily Hive Word Puzzle">
+  <meta name="twitter:description" content="Play Spelling Bee on Word Tycoon — a free daily hive word puzzle game. Find as many words as you can from seven letters.">
+  <meta name="twitter:image" content="https://wordtycoon.live/spellingbee/og-image.png">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "VideoGame",
+    "name": "Spelling Bee",
+    "url": "https://wordtycoon.live/spellingbee/",
+    "image": "https://wordtycoon.live/spellingbee/og-image.png",
+    "description": "Play Spelling Bee on Word Tycoon — a free daily hive word puzzle game. Find as many words as you can from seven letters. Daily puzzle and unlimited practice mode — no account needed.",
+    "genre": ["Word Game", "Puzzle"],
+    "playMode": "SinglePlayer",
+    "applicationCategory": "Game",
+    "operatingSystem": "Web Browser",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD",
+      "availability": "https://schema.org/InStock"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "Word Tycoon",
+      "url": "https://wordtycoon.live/"
+    }
+  }
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <link rel="manifest" href="manifest.webmanifest"/>
+  <link rel="icon" type="image/svg+xml" href="app-icon.svg"/>
+  <link rel="apple-touch-icon" href="app-icon.svg"/>
+  <link rel="stylesheet" href="css/spellingbee-play.css?v=16"/>
+</head>
+<body>
+  <!-- Puzzle selector screen -->
+  <div id="puzzle-selector" class="puzzle-selector">
+    <a href="/me" class="hub-btn" title="Back to Hub"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" style="vertical-align:-2px"><path d="M8.354 1.146a.5.5 0 0 0-.708 0l-6 6A.5.5 0 0 0 1.5 7.5v7a.5.5 0 0 0 .5.5h4.5a.5.5 0 0 0 .5-.5v-4h2v4a.5.5 0 0 0 .5.5H14a.5.5 0 0 0 .5-.5v-7a.5.5 0 0 0-.146-.354L8.354 1.146Z"/></svg></a>
+    <h2>Choose a Puzzle</h2>
+    <button id="random-puzzle-btn" class="random-puzzle-btn">&#127922; Random Puzzle</button>
+    <div id="puzzle-grid" class="puzzle-grid"></div>
+  </div>
+
+  <!-- Game screen (hidden until puzzle is chosen) -->
+  <div id="game-screen" style="display:none">
+    <header class="game-header">
+      <a href="/portal/" class="hub-link" title="Hub">&#127968;</a>
+      <button id="back-to-puzzles" class="back-btn" title="Back to Puzzles">&#9664; Puzzles</button>
+      <h1 class="game-title">
+        <span class="letter" style="color:#7ad3ff">S</span>
+        <span class="letter" style="color:#86efac">P</span>
+        <span class="letter" style="color:#ffd166">E</span>
+        <span class="letter" style="color:#7ad3ff">L</span>
+        <span class="letter" style="color:#c084fc">L</span>
+        <span class="letter" style="color:#ff6b7d">I</span>
+        <span class="letter" style="color:#86efac">N</span>
+        <span class="letter" style="color:#7ad3ff">G</span>
+        <span class="letter" style="color:#ffd166"> </span>
+        <span class="letter" style="color:#ff6b7d">B</span>
+        <span class="letter" style="color:#86efac">E</span>
+        <span class="letter" style="color:#ffd166">E</span>
+      </h1>
+      <span id="daily-badge" class="daily-badge hidden">CHALLENGE</span>
+      <div class="header-controls">
+        <div class="word-counter"><span id="found-count">0</span>/<span id="total-count">0</span></div>
+        <span id="rare-count" class="rare-counter hidden">+0 rare</span>
+        <span id="hidden-count" class="hidden-counter hidden">+0 ultra rare</span>
+        <span id="three-letter-count" class="three-letter-counter hidden">+0 3-letter</span>
+        <button id="stats-toggle" class="icon-btn" title="Stats">&#128202;</button>
+      </div>
+    </header>
+
+    <!-- Puzzle info badge -->
+    <div id="puzzle-info" class="puzzle-info hidden">
+      <span id="puzzle-num" class="puzzle-num"></span>
+      <span id="puzzle-name" class="puzzle-name"></span>
+      <span id="puzzle-theme-badge" class="puzzle-theme-badge"></span>
+    </div>
+
+    <!-- Stats dropdown -->
+    <div id="stats-dropdown" class="stats-dropdown hidden">
+      <div class="stats-grid">
+        <div class="stat-item"><div class="stat-val" id="stat-played">0</div><div class="stat-label">Played</div></div>
+        <div class="stat-item"><div class="stat-val" id="stat-completed">0</div><div class="stat-label">Completed</div></div>
+        <div class="stat-item"><div class="stat-val" id="stat-words">0</div><div class="stat-label">Words Found</div></div>
+        <div class="stat-item"><div class="stat-val" id="stat-best">0%</div><div class="stat-label">Best</div></div>
+      </div>
+    </div>
+
+    <div id="cheat-sheet" class="cheat-sheet hidden" role="dialog" aria-modal="true" aria-labelledby="cheat-title">
+      <div class="cheat-sheet-panel">
+        <div class="cheat-sheet-head">
+          <h2 id="cheat-title">Cheat Sheet</h2>
+          <button id="cheat-close" class="cheat-close" title="Close" aria-label="Close">&times;</button>
+        </div>
+        <div id="cheat-sheet-body" class="cheat-sheet-body">
+          <div class="cheat-empty">Cheat sheet loads when the puzzle is ready.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Progress bar -->
+    <div class="progress-container">
+      <div id="progress-bar" class="progress-bar"></div>
+    </div>
+
+    <!-- Score -->
+    <div class="score-area">
+      Score: <span id="score-val" class="score-val">0</span>
+    </div>
+
+    <!-- Current word display -->
+    <div class="current-word-area">
+      <div id="current-word" class="current-word"></div>
+    </div>
+
+    <!-- Honeycomb -->
+    <div id="honeycomb-area" class="honeycomb-area">
+      <div class="hex-row" id="hex-row-top"></div>
+      <div class="hex-row" id="hex-row-mid"></div>
+      <div class="hex-row" id="hex-row-bot"></div>
+    </div>
+
+    <!-- Action buttons -->
+    <div class="action-buttons">
+      <button id="btn-delete" class="action-btn">Delete</button>
+      <button id="cheat-toggle" class="action-btn cheat-toggle" title="Hints" aria-label="Hints">Hints</button>
+      <button id="btn-shuffle" class="action-btn">&#128260;</button>
+      <button id="btn-submit" class="action-btn submit">Enter</button>
+    </div>
+
+    <!-- Incorrect guesses area -->
+    <div id="incorrect-area" class="incorrect-area"></div>
+
+    <!-- Found words -->
+    <div class="found-wrapper">
+      <div class="found-section">
+        <h3 class="found-header">Found Words <span id="found-label">0</span></h3>
+        <div id="found-words" class="found-words-list"></div>
+      </div>
+      <div class="found-section rare-section" id="rare-section">
+        <h3 class="rare-header">&#11088; <span>Rare Words</span> <span id="rare-label">0</span></h3>
+        <div id="rare-words" class="found-words-list"></div>
+      </div>
+      <div class="found-section hidden-section" id="hidden-section" style="display:none">
+        <h3 class="hidden-header">&#128064; <span>Ultra Rare Words</span> <span id="hidden-label">0</span></h3>
+        <div id="hidden-words" class="found-words-list"></div>
+      </div>
+      <div class="found-section three-letter-section" id="three-letter-section" style="display:none">
+        <h3 class="three-letter-header">&#128290; <span>3-Letter Words</span> <span id="three-letter-label">0</span></h3>
+        <div id="three-letter-words" class="found-words-list"></div>
+      </div>
+      <div style="margin:16px 0 24px;padding:14px;border-radius:14px;background:rgba(255,255,255,0.03);border:1px solid rgba(107,114,128,0.28);">
+        <h3 style="margin:0 0 8px;font-size:0.9rem;font-weight:800;color:#f8fafc;">How Scoring Works</h3>
+        <p style="margin:0 0 8px;color:#94a3b8;font-size:0.78rem;">Three layers stack: word rarity + letter rarity + word length. Pangrams add +1,000.</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:0.75rem;color:#e2e8f0;">
+          <div><strong style="color:#7dd3fc">Common:</strong> 500</div>
+          <div><strong style="color:#7dd3fc">Rare:</strong> 1,000</div>
+          <div><strong style="color:#7dd3fc">Ultra Rare:</strong> 1,500</div>
+          <div><strong style="color:#7dd3fc">3-Letter:</strong> 100</div>
+        </div>
+        <p style="margin:8px 0 0;font-size:0.72rem;color:#64748b;">Letters like <span style="color:#eab308">Q, Z (+300)</span> and <span style="color:#ef4444">J, X (+180)</span> boost your score. Longer words earn up to +3,500. <a href="https://wordtycoon.live/portal" style="color:#0ea5e9;">Full breakdown</a></p>
+      </div>
+    </div>
+
+    <!-- Error toast -->
+    <div id="error-toast" class="error-toast hidden"></div>
+  </div>
+
+  <!-- Game Instructions -->
+  <div id="game-help" data-game="spellingbee" data-accent="#ffab00" data-name="Spelling Bee">
+
+    <div class="game-help-step" data-step="1">
+      <h3>Make Words from 7 Letters</h3>
+      <p>You're given <strong>7 letters</strong> in a honeycomb. Build words using those letters — the <strong>center letter</strong> must be in every word!</p>
+      <div class="gh-example">
+        <div class="gh-example-label">The Honeycomb</div>
+        <div class="gh-hex-grid">
+          <div class="gh-hex-row">
+            <div class="gh-hex">T</div>
+            <div class="gh-hex">A</div>
+          </div>
+          <div class="gh-hex-row">
+            <div class="gh-hex">R</div>
+            <div class="gh-hex center">L</div>
+            <div class="gh-hex">E</div>
+          </div>
+          <div class="gh-hex-row">
+            <div class="gh-hex">I</div>
+            <div class="gh-hex">N</div>
+          </div>
+        </div>
+        <div class="gh-arrow"><span class="gh-arrow-icon">↑</span> The golden center letter <strong>L</strong> must appear in every word you make</div>
+      </div>
+      <div class="gh-tip">
+        <span class="gh-tip-icon">💡</span>
+        Words must be at least <strong>4 letters</strong> long. You can reuse letters as many times as you want!
+      </div>
+    </div>
+
+    <div class="game-help-step" data-step="2">
+      <h3>Score Points</h3>
+      <p>Your score comes from <strong>three layers</strong> that stack. Points and coins earned are equal.</p>
+      <div class="gh-example">
+        <div class="gh-legend">
+          <div class="gh-legend-item">
+            <div class="gh-legend-swatch" style="background:#538d4e;">W</div>
+            <span><strong style="color:#6aaa64;">Word Rarity</strong> — Common: 500 · Rare: 1,000 · Ultra Rare: 1,500</span>
+          </div>
+          <div class="gh-legend-item">
+            <div class="gh-legend-swatch" style="background:#b59f3b;">L</div>
+            <span><strong style="color:#b59f3b;">Letter Rarity</strong> — each letter adds a bonus (Q, Z = +300 each!)</span>
+          </div>
+          <div class="gh-legend-item">
+            <div class="gh-legend-swatch" style="background:#9b59b6;">#</div>
+            <span><strong style="color:#c98aff;">Word Length</strong> — longer words earn exponential bonus</span>
+          </div>
+        </div>
+      </div>
+      <div class="gh-tip">
+        <span class="gh-tip-icon">🔤</span>
+        Click the hex tiles or type on your keyboard. Hit <strong>Enter</strong> to submit!
+      </div>
+    </div>
+
+    <div class="game-help-step" data-step="3">
+      <h3>Find Pangrams!</h3>
+      <p>A <strong>pangram</strong> uses all 7 letters at least once — it's the ultimate find and earns a <strong>+1,000 bonus</strong>!</p>
+      <div class="gh-example">
+        <div class="gh-example-label">Pangram example</div>
+        <div class="gh-tile-row">
+          <div class="gh-tile correct">L</div>
+          <div class="gh-tile correct">A</div>
+          <div class="gh-tile correct">T</div>
+          <div class="gh-tile correct">E</div>
+          <div class="gh-tile correct">R</div>
+          <div class="gh-tile correct">N</div>
+          <div class="gh-tile correct">I</div>
+        </div>
+        <div class="gh-arrow"><span class="gh-arrow-icon">↑</span> LATERNI uses all 7 letters — that's a pangram! +1,000 bonus</div>
+      </div>
+      <div class="gh-tip">
+        <span class="gh-tip-icon">🎯</span>
+        Use the <strong>shuffle</strong> button (🔄) to rearrange the outer letters — it can help you spot new words!
+      </div>
+    </div>
+
+  </div>
+
+  <footer class="wt-legal-footer">
+    <a href="https://wordtycoon.live/privacy" target="_blank" rel="noopener">Privacy</a> &middot;
+    <a href="https://wordtycoon.live/terms" target="_blank" rel="noopener">Terms</a> &middot;
+    <a href="https://discord.gg/C8Nm2jEZFC" target="_blank" rel="noopener">Discord</a> &middot;
+    <a href="https://www.jorry.live" target="_blank" rel="noopener">jorry.live</a> &middot;
+    <a href="https://wordtycoon.live/portal">&copy; 2026 Word Tycoon</a>
+  </footer>
+  <style>
+    .wt-legal-footer{padding:14px 16px 18px;text-align:center;font:12px/1.4 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#94a3b8;opacity:.78}
+    .wt-legal-footer a{color:inherit;text-decoration:none;margin:0 2px}
+    .wt-legal-footer a:hover{text-decoration:underline;opacity:1}
+  </style>
+
+  <script>
+    (function () {
+      var storageKey = 'spellingbee_theme';
+      var globalStorageKey = 'wordtycoon_theme';
+      var root = document.documentElement;
+      var meta = document.querySelector('meta[name="theme-color"]');
+      function getTheme() {
+        try {
+          var saved = localStorage.getItem(globalStorageKey);
+          if (saved !== 'light' && saved !== 'dark') saved = localStorage.getItem(storageKey);
+          if (saved === 'light' || saved === 'dark') return saved;
+        } catch (e) {}
+        return window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+      }
+      var theme = getTheme();
+      root.setAttribute('data-theme', theme);
+      if (meta) meta.setAttribute('content', theme === 'light' ? '#f5f8fc' : '#151a22');
+    })();
+  </script>
+  <script src="pwa-register.js?v=1"></script>
+  <script src="js/cheat-sheet.js?v=2"></script>
+  <script src="https://wordtycoon.live/js/win-card.js"></script>
+  <script src="durable-completion.js?v=20261003-owner2"></script>
+  <script src="solo-account.js?v=20261003-owner2"></script>
+<script src="js/sp-engine.js?v=20261003-owner2"></script>
+</body>
+</html>

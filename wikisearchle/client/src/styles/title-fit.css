@@ -1,0 +1,26 @@
+
+/* Less-aggressive auto-shrink — title prefers using available space and
+   only compresses when long titles risk pushing the podium down. */
+.title-block.title-tight #titleText {
+  font-size: clamp(15px, 1.85vw, 19px) !important;
+  gap: 5px !important;
+  line-height: 1.1 !important;
+}
+.title-block.title-tight #titleText .t-word.hidden .w-text {
+  padding: 2px 8px !important;
+  letter-spacing: 1.5px !important;
+  font-size: 0.82em !important;
+}
+.title-block.title-clipped #titleText {
+  font-size: clamp(13px, 1.6vw, 16px) !important;
+  gap: 4px !important;
+  line-height: 1.05 !important;
+  -webkit-mask-image: none !important;
+  mask-image: none !important;
+}
+.title-block.title-clipped #titleText .t-word.hidden .w-text {
+  padding: 1px 6px !important;
+  letter-spacing: 1px !important;
+  font-size: 0.75em !important;
+}
+.mp-login-screen,.sp-login-screen{display:none!important;}

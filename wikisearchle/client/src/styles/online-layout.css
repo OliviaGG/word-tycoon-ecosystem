@@ -1,0 +1,1817 @@
+
+/* ── Reset & vars ──────────────────────────────────────────── */
+:root {
+  --bg: #0f1117;
+  --bg-card: #1a1d27;
+  --bg-panel: #14161f;
+  --border: rgba(255,255,255,0.07);
+  --text: #e2e8f0;
+  --muted: #64748b;
+  --accent: #ff6600;
+  --accent-glow: rgba(255,102,0,0.25);
+  --green: #4ade80;
+  --green-mid: #16a34a;
+  --green-dark: #166534;
+  --yellow: #fde047;
+  --red: #f87171;
+  --rank-bg: #0f1923;
+  --redact: #252836;
+  --body-font: 'Roboto Mono', ui-monospace, monospace;
+  --head-font: 'Orbitron', system-ui, sans-serif;
+  --ui-font: 'Inter', system-ui, sans-serif;
+  --radius: 12px;
+  --title-slot-height: 130px;
+}
+*, *::before, *::after { box-sizing: border-box; }
+/* OBS overlay mode (/overlay/<handle> path) — strip site chrome so the
+   page renders as a clean Browser Source over a stream. Header, login
+   modal, and bottom guess bar all hidden; page background transparent
+   so OBS sees the article + cards layered over the scene behind. */
+html.obs-overlay-mode, html.obs-overlay-mode body { background: transparent !important; }
+html.obs-overlay-mode .site-header { display: none !important; }
+html.obs-overlay-mode #wsLoginScreen { display: none !important; }
+html.obs-overlay-mode #wwgb-root { display: none !important; }
+html.session-disabled #wwgb-root { display: none !important; }
+body.stream-disabled .stream-disabled-pill {
+  position: fixed; left: 50%; bottom: max(16px, env(safe-area-inset-bottom));
+  transform: translateX(-50%); z-index: 9999; padding: 10px 18px;
+  background: rgba(20,24,36,0.92); color: #facc15;
+  border: 1px solid rgba(250,204,21,0.4); border-radius: 999px;
+  font-weight: 600; font-size: 14px; letter-spacing: 0.5px;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.45); backdrop-filter: blur(8px);
+  pointer-events: none; white-space: nowrap;
+}
+/* Card / panel backgrounds need to stay fully opaque in OBS mode so the
+   article body behind them can't bleed through, matching the original
+   overlay.html (which used --bg-panel rather than transparent on these
+   containers). */
+html.obs-overlay-mode .card { background: var(--bg-panel) !important; }
+/* In OBS mode, keep the game-page's article-panel transparent (no
+   internal card edge) — matches the seamless game-page look. The outer
+   "card" is the #gameArea::before pseudo-element, just made opaque so
+   it shows over whatever's behind the OBS Browser Source.
+   Don't set overflow:hidden on .article-panel: the rank cards rely on
+   overflow:visible to render top-card outlines and equipped-cosmetic
+   glow effects past the pill boundary; clipping them cropped the #1
+   card's top + right edges. */
+html.obs-overlay-mode .article-panel {
+  background: transparent !important;
+  border: none !important;
+}
+/* Make the background-card pseudo-element opaque (over-painting the
+   transparent OBS canvas) but keep its game-page border + radius so
+   the card-and-border integrate exactly like the game page. */
+html.obs-overlay-mode #gameArea::before {
+  /* Iframe-side card kept TRANSPARENT — the actual blur lives at the
+     parent overlay (.game-embed.style-glass backdrop-filter samples the
+     animated bg in the parent's stacking context, which cross-iframe
+     blur cannot do). This pseudo just adds a thin tint + border for
+     definition so the card edge reads against the blurred surface. */
+  background: rgba(8, 14, 26, 0.18) !important;
+  border: 1.5px solid rgba(255,255,255,0.18) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.18),
+    inset 0 -1px 0 rgba(0,0,0,0.25),
+    0 14px 48px rgba(0,0,0,0.40) !important;
+}
+/* OBS scaling — match the original overlay.html behavior. The page is
+   designed for 720px width; transform: scale(viewportWidth / 720) makes
+   it fill whatever Browser Source size the streamer set, with origin at
+   top-center so it stays centered horizontally. The scale factor itself
+   is applied by JS (see <head> script) — this rule sets the origin. */
+html.obs-overlay-mode .page-wrap { transform-origin: top center; }
+
+/* ── OBS brand bubble ──────────────────────────────────────────
+   obs-overlay-mode hides .site-header, which is where the wordmark lived,
+   so re-introduce the logo on its own. This is a port of overlay-logo.html's
+   .brand-bubble rather than a reuse of .brand-img, for one reason:
+   .brand-img relies on `mix-blend-mode: screen` to drop the logo's black
+   pixels against the dark page background. obs mode makes the page
+   TRANSPARENT, so screen-blending has nothing to blend against and the
+   wordmark renders wrong over an OBS scene. The bubble carries its own
+   opaque backing, which is exactly why the standalone overlay source was
+   built that way. Do not "simplify" this back onto .brand-img.
+
+   The flat bottom edge (no border-bottom, radius only on top) is designed
+   to seat on the game card's top edge; --ob-seat is the single number to
+   nudge if the card's ::before inset is ever retuned. Hidden by default so
+   the public game page is untouched. */
+#obsBrand { display: none; }
+html.obs-overlay-mode #obsBrand {
+  display: flex;
+  justify-content: center;
+  margin-bottom: -4px;
+  pointer-events: none;
+  position: relative;
+  z-index: 10;                      /* above #gameArea::before (z-index:-1) */
+}
+html.obs-overlay-mode #obsBrand .ob-bubble {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 4px 16px 0;
+  background: var(--bg-panel);
+  border: 4px solid var(--border);
+  border-bottom: none;
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+html.obs-overlay-mode #obsBrand .ob-img {
+  display: block;
+  width: auto;
+  max-height: 48px;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+/* Text fallback if the logo 404s — mirrors the header's onerror markup. */
+html.obs-overlay-mode #obsBrand .ob-fallback {
+  font-family: var(--head-font);
+  font-weight: 700;
+  font-size: 32px;
+  letter-spacing: 1px;
+  color: var(--accent);
+  padding: 6px 4px 4px;
+  line-height: 1;
+}
+html.obs-overlay-mode #obsBrand .ob-fallback span { color: var(--text); opacity: 0.55; }
+
+html, body {
+  margin: 0; padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--ui-font);
+  -webkit-font-smoothing: antialiased;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+/* Desktop default zoom. The neon theme scales the 720px game canvas on phones. */
+@media (pointer: fine) {
+  html { zoom: 0.75; }
+}
+/* Wide desktop: full-size layout in a wider column rather than a shrunken one.
+   OBS Browser Sources are excluded: .obs-overlay-mode already
+   scales .page-wrap by innerWidth/720 and would compound the two. */
+@media (min-width: 1000px) {
+  html:not(.obs-overlay-mode) { zoom: 1; }
+  html:not(.obs-overlay-mode) .page-wrap { max-width: var(--wide-wrap, 1120px); }
+  /* The left column is a stacked list of short rows -- growing it just adds
+     dead space. Pin it and let the rank cards take the surplus. */
+  html:not(.obs-overlay-mode) .top-row {
+    grid-template-columns: minmax(260px, 360px) minmax(340px, 1.6fr);
+  }
+  /* Long measure is hard to read: hold the article to a comfortable line
+     length and centre it under the full-width panels above. */
+  html:not(.obs-overlay-mode) #body { max-width: 68ch; margin-left: auto; margin-right: auto; }
+}
+
+/* Searchle-style scroll wrapper: body is locked, all page scrolling happens
+   inside this fixed container. Prevents mobile keyboards from pushing the
+   page off-screen when the guess input gets focus. */
+.scroll-wrap {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+/* When the on-screen keyboard is open, hard-lock scrolling so iOS/Android
+   can't scroll the page to bring the focused input into view. Paired with
+   a visualViewport scroll listener in guessbar.js that resets scrollTop to
+   0 if the mobile keyboard shifts the visual viewport. */
+.scroll-wrap.kb-open { overflow: hidden; }
+
+.page-wrap {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0 20px 80px;
+}
+
+/* ── Header ────────────────────────────────────────────────── */
+.site-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 18px;
+  gap: 16px;
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(60, 65, 75, 0.35);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  border-bottom: 1px solid rgba(255, 102, 0, 0.35);
+  border-radius: 0 0 14px 14px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 18px rgba(255, 102, 0, 0.12);
+}
+html.theme-light .site-header {
+  background: rgba(120, 72, 30, 0.28);
+  border-bottom-color: rgba(255, 102, 0, 0.42);
+  box-shadow: 0 4px 20px rgba(120, 95, 55, 0.18), 0 0 18px rgba(255, 102, 0, 0.1);
+}
+.brand {
+  font-family: var(--head-font);
+  font-weight: 700;
+  font-size: clamp(28px, 5.2vw, 52px);
+  letter-spacing: 2px;
+  color: var(--accent);
+  line-height: 1;
+}
+.brand span { color: var(--text); opacity: 0.55; }
+/* Logo image variant — black pixels drop out against the dark page bg. */
+.brand-link {
+  display: inline-flex; align-items: center; text-decoration: none;
+  flex-shrink: 0; line-height: 0;
+}
+.brand-img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-height: 67px;
+  mix-blend-mode: screen;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+@media (max-width: 540px) { .brand-img { max-height: 45px; } }
+
+/* ── Stats bar (inline, no card chrome) — Guesses stacked over Revealed ── */
+.stats-bar {
+  display: flex; flex-direction: column; gap: 4px;
+  padding: 2px 2px;
+}
+.stat {
+  display: flex; align-items: center; gap: 10px;
+}
+.stat-label {
+  font-size: 10px; font-weight: 700; letter-spacing: 2.5px;
+  color: var(--muted); text-transform: uppercase;
+}
+.stat-val {
+  font-family: var(--head-font);
+  font-size: 16px; font-weight: 700; color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Login prompt ─────────────────────────────────────────── */
+.mp-login-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: transparent;
+  pointer-events: none;
+}
+.mp-login-screen.hidden { display: none; }
+.mp-login-card {
+  position: relative;
+  width: min(100%, 360px);
+  padding: 32px 28px;
+  border-radius: 20px;
+  background: rgba(18, 18, 19, 0.72);
+  border: 1px solid rgba(58, 58, 60, 0.72);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  text-align: center;
+  color: #fff;
+  pointer-events: auto;
+}
+.mp-login-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #b9bcc4;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.16s ease, color 0.16s ease, transform 0.16s ease;
+}
+.mp-login-close:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  transform: scale(1.02);
+}
+.mp-login-logo {
+  display: block;
+  max-width: 100%;
+  max-height: 140px;
+  margin: 0 auto 16px;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.mp-login-card h1 {
+  margin: 0 0 10px;
+  font-family: var(--head-font);
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  color: var(--accent);
+  text-transform: uppercase;
+}
+.mp-login-card p {
+  color: #9ca3af;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin: 0 0 18px;
+}
+.mp-guest-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 8px;
+  margin-bottom: 18px;
+}
+.mp-guest-copy {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: #e5e7eb;
+}
+.mp-guest-copy strong { color: var(--accent); }
+.mp-guest-btn,
+.mp-discord-btn,
+.mp-github-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  border-radius: 14px;
+  padding: 14px 18px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.16s ease, box-shadow 0.16s ease, opacity 0.16s ease;
+}
+.mp-guest-btn:hover,
+.mp-discord-btn:hover,
+.mp-github-btn:hover {
+  transform: translateY(-1px);
+}
+.mp-guest-btn {
+  width: auto;
+  flex-shrink: 0;
+  padding: 12px 18px;
+  background: rgba(255, 102, 0, 0.14);
+  color: var(--accent);
+  border: 1px solid rgba(255, 102, 0, 0.35);
+}
+.mp-discord-btn {
+  background: linear-gradient(135deg, #5865f2, #4854d7);
+  color: #fff;
+  box-shadow: 0 12px 24px rgba(88, 101, 242, 0.25);
+}
+.mp-github-btn {
+  margin-top: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+}
+.mp-discord-btn svg,
+.mp-github-btn svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+.mp-login-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 18px 0;
+  color: #818384;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.mp-login-divider::before,
+.mp-login-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.12);
+}
+.mp-login-divider span {
+  display: inline-block;
+  max-width: 100%;
+}
+.mp-back-link {
+  display: inline-block;
+  margin-top: 18px;
+  color: #9ca3af;
+  font-size: 0.92rem;
+  text-decoration: none;
+}
+.mp-back-link:hover { color: #fff; }
+
+@media (pointer: coarse) {
+  .mp-login-screen { padding: 40px; }
+  .mp-login-card {
+    width: min(100%, 760px);
+    padding: 52px 44px;
+    border-radius: 36px;
+  }
+  .mp-login-close {
+    top: 20px;
+    right: 20px;
+    width: 52px;
+    height: 52px;
+    font-size: 32px;
+  }
+  .mp-login-card h1 {
+    font-size: 56px;
+    margin-bottom: 16px;
+  }
+  .mp-login-card p {
+    font-size: 26px;
+    margin-bottom: 24px;
+  }
+  .mp-guest-row {
+    gap: 18px;
+    border-radius: 22px;
+    padding: 12px;
+    margin-bottom: 24px;
+  }
+  .mp-guest-copy {
+    font-size: 24px;
+  }
+  .mp-guest-btn,
+  .mp-discord-btn,
+  .mp-github-btn {
+    border-radius: 24px;
+    font-size: 28px;
+    gap: 16px;
+  }
+  .mp-guest-btn {
+    padding: 22px 28px;
+  }
+  .mp-discord-btn,
+  .mp-github-btn {
+    padding: 24px 28px;
+  }
+  .mp-login-divider {
+    margin: 24px 0;
+    font-size: 20px;
+  }
+  .mp-back-link {
+    margin-top: 24px;
+    font-size: 24px;
+  }
+}
+
+/* ── Idle / How to Play ────────────────────────────────────── */
+#idleScreen {
+  padding: 48px 20px 40px;
+  display: flex; flex-direction: column; align-items: center;
+  text-align: center; gap: 40px;
+}
+body.game-active #idleScreen { display: none; }
+.idle-hero h1 {
+  font-family: var(--head-font);
+  font-size: clamp(28px, 6vw, 56px);
+  letter-spacing: 3px;
+  color: var(--accent);
+  margin: 0 0 16px;
+}
+.idle-hero .tagline { font-size: clamp(14px, 2vw, 18px); color: var(--muted); margin: 0; line-height: 1.6; }
+.htp-card {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 26px;
+  max-width: 520px; text-align: left;
+}
+.htp-card h2 {
+  font-family: var(--head-font);
+  font-size: 11px; letter-spacing: 3px; color: var(--accent);
+  text-transform: uppercase; margin: 0 0 16px;
+}
+.steps { display: flex; flex-direction: column; gap: 14px; }
+.step { display: flex; gap: 14px; align-items: flex-start; }
+.step-num {
+  flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%;
+  background: var(--accent); color: #111;
+  font-weight: 800; font-size: 13px;
+  display: flex; align-items: center; justify-content: center;
+}
+.step-text { font-size: 14px; line-height: 1.55; color: var(--text); }
+.step-text strong { color: var(--accent); font-weight: 700; }
+
+/* ── Game area layout ──────────────────────────────────────── */
+#gameArea { display: none; flex-direction: column; gap: 14px; margin-top: 80px; position: relative; isolation: isolate; overflow: visible; }
+body.game-active #gameArea { display: flex; }
+/* Background card — same hue as the sticky header, sits behind all game
+   content via z-index:-1 within the isolated stacking context. The
+   negative top offset lets the card hug right up under the header
+   (matches the snug overlay layout — no big empty gap). */
+#gameArea::before {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: -8px;
+  right: -8px;
+  bottom: -48px;
+  min-height: 100%;
+  background: rgba(60, 65, 75, 0.35);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(120, 130, 145, 0.2);
+  border-radius: 16px;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.article-panel {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  overflow: visible;
+}
+.panel-header {
+  padding: 10px 18px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-card);
+  font-size: 10px; font-weight: 700; letter-spacing: 3px;
+  color: var(--muted); text-transform: uppercase;
+}
+
+/* Both columns stretch to the same height (grid default) and distribute
+   their contents. The title/podium and six rank cards share the first row;
+   the found-word banner spans both columns in the second row. */
+.top-row {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) minmax(360px, 1.6fr);
+  gap: 14px;
+  padding: 0;
+}
+/* Stacking breakpoint removed — the 720px viewport keeps the 2-col layout
+   on every device. */
+
+.left-col, .right-col { height: 100%; min-width: 0; }
+/* Left col fills the first grid row so the podium can use any height created
+   by the six-card rank column. */
+.left-col {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 4px;
+}
+.right-col {
+  --rank-card-gap: 8px;
+  --rank-card-min-height: 46px;
+  display: grid;
+  grid-template-rows: repeat(6, minmax(var(--rank-card-min-height), 1fr));
+  gap: var(--rank-card-gap);
+  min-height: calc((var(--rank-card-min-height) * 6) + (var(--rank-card-gap) * 5));
+  align-content: stretch;
+}
+.right-col .card {
+  min-height: var(--rank-card-min-height);
+  height: 100%;
+}
+.title-block { min-width: 0; }
+.title-sub {
+  font-size: 10px; letter-spacing: 3px; color: var(--muted);
+  text-transform: uppercase; margin-bottom: 2px;
+}
+#titleText {
+  font-family: var(--head-font);
+  font-weight: 700;
+  font-size: clamp(16px, 2.1vw, 24px);
+  letter-spacing: 1px;
+  line-height: 1.25;
+  min-height: var(--title-slot-height);
+  max-height: var(--title-slot-height);
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+  align-content: flex-start;
+  min-width: 0;
+  overflow: hidden;
+}
+/* Per-word container — holds the word text (or HIDDEN box) plus the
+   optional finder PFP that slides in once the word is revealed. */
+#titleText .t-word {
+  display: inline-flex; align-items: center; gap: 6px;
+  max-width: 100%;
+}
+#titleText .t-word .w-text { display: inline-block; }
+#titleText .t-word.revealed .w-text { color: var(--accent); }
+#titleText .t-word.hidden .w-text {
+  background: var(--redact);
+  color: var(--accent);
+  border-radius: 5px;
+  padding: 2px 10px;
+  letter-spacing: 3px;
+  font-weight: 700;
+  font-size: 0.82em;
+}
+#titleText .t-word.hidden.current-hint .w-text {
+  min-width: 42px;
+  color: #111721;
+  background: linear-gradient(135deg, #ffd166, var(--accent));
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow: 0 0 16px rgba(255, 129, 38, 0.28);
+  text-align: center;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  font-size: 0.95em;
+}
+/* Slow reveal: the word fades in and expands from the center where a
+   blackout box used to be. Applied by adding .just-revealed when a title
+   word flips from hidden → revealed. */
+#titleText .t-word.just-revealed .w-text {
+  animation: titleWordReveal 900ms ease-out forwards;
+}
+@keyframes titleWordReveal {
+  0%   { opacity: 0; transform: scale(0.75); filter: blur(4px); color: var(--redact); letter-spacing: 6px; }
+  40%  { opacity: 0.7; filter: blur(1px); letter-spacing: 3px; }
+  100% { opacity: 1; transform: scale(1); filter: blur(0); color: var(--accent); letter-spacing: 1px; }
+}
+/* Finder PFP — small round avatar of the viewer who guessed this title
+   word. Slides in from the right alongside the revealed word. */
+#titleText .t-word .finder-pfp {
+  width: 22px; height: 22px; border-radius: 50%;
+  object-fit: cover; flex: 0 0 auto;
+  border: 2px solid var(--accent);
+  box-shadow: 0 0 0 2px rgba(255,102,0,0.12);
+  opacity: 0; transform: translateX(-6px);
+  animation: finderPfpIn 600ms 400ms ease-out forwards;
+}
+#titleText .t-word .finder-pfp.fallback {
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--redact); color: var(--text);
+  font-size: 10px; font-weight: 700; letter-spacing: 0;
+}
+.title-block.title-compact #titleText {
+  font-size: clamp(15px, 1.95vw, 20px);
+  gap: 6px;
+  line-height: 1.15;
+}
+.title-block.title-compact #titleText .t-word { gap: 4px; }
+.title-block.title-compact #titleText .t-word.hidden .w-text {
+  padding: 2px 8px;
+  letter-spacing: 2px;
+}
+.title-block.title-compact #titleText .t-word .finder-pfp {
+  width: 19px;
+  height: 19px;
+}
+.title-block.title-tight #titleText {
+  font-size: clamp(13px, 1.75vw, 17px);
+  gap: 4px;
+  line-height: 1.05;
+}
+.title-block.title-tight #titleText .t-word { gap: 3px; }
+.title-block.title-tight #titleText .t-word.hidden .w-text {
+  padding: 1px 6px;
+  letter-spacing: 1.5px;
+  font-size: 0.78em;
+}
+.title-block.title-compact #titleText .t-word.hidden.current-hint .w-text,
+.title-block.title-tight #titleText .t-word.hidden.current-hint .w-text {
+  min-width: 38px;
+  padding: 2px 10px;
+  letter-spacing: 0;
+}
+.title-block.title-tight #titleText .t-word .finder-pfp {
+  width: 17px;
+  height: 17px;
+  border-width: 1px;
+  box-shadow: none;
+}
+.title-block.title-clipped #titleText {
+  -webkit-mask-image: linear-gradient(180deg, #000 78%, transparent);
+  mask-image: linear-gradient(180deg, #000 78%, transparent);
+}
+@keyframes finderPfpIn {
+  from { opacity: 0; transform: translateX(-6px) scale(0.8); }
+  to   { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+/* ── Scoreboard (RecTangled-style podium, adapted) ──────────── */
+/* Scoreboard flexes to fill the space beneath the title block in the
+   left side of the first grid row. The podium cards stay centered in
+   that space and are sized larger than before to take up the slack. */
+.scoreboard {
+  display: flex; align-items: flex-end; justify-content: center; gap: 10px;
+  padding: 8px 4px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  flex: 1 1 0;
+  /* Must accommodate the tallest card (gold, 104px) + vertical padding
+     (16px) so gold doesn't overflow upward into the stats row. */
+  min-height: 120px;
+  overflow: visible;
+}
+.tp-card {
+  position: relative;
+  display: flex; flex-direction: column; align-items: center;
+  padding: 4px 4px 4px;
+  overflow: visible;
+  flex-shrink: 0;
+  isolation: isolate;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+/* Top specular highlight (soft sheen along the upper edge) */
+.tp-card::after {
+  content: "";
+  position: absolute;
+  top: 0; left: 6%; right: 6%; height: 42%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0) 100%);
+  border-radius: 50% 50% 40% 40% / 80% 80% 20% 20%;
+  pointer-events: none;
+  z-index: 0;
+  filter: blur(1px);
+}
+.tp-card > * { position: relative; z-index: 1; }
+
+.tp-card.gold {
+  width: 92px; height: 104px; border-radius: 14px;
+  background:
+    radial-gradient(ellipse 70% 50% at 30% 18%, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0) 60%),
+    linear-gradient(160deg, #fce78a 0%, #f4c730 32%, #c98e08 68%, #855c04 100%);
+  border: 1px solid rgba(255, 232, 140, 0.9);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 230, 0.75),
+    inset 0 -10px 16px rgba(90, 55, 0, 0.38),
+    0 8px 16px rgba(180, 130, 0, 0.38),
+    0 0 0 1px rgba(110, 75, 0, 0.35);
+}
+.tp-card.gold:hover { transform: translateY(-2px) rotate(-1deg); box-shadow: inset 0 1px 0 rgba(255,255,230,0.8), inset 0 -10px 16px rgba(90,55,0,0.38), 0 12px 22px rgba(180,130,0,0.5), 0 0 0 1px rgba(110,75,0,0.35); }
+
+.tp-card.silver {
+  width: 78px; height: 88px; border-radius: 12px;
+  background:
+    radial-gradient(ellipse 70% 50% at 30% 20%, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 60%),
+    linear-gradient(160deg, #f4f6fa 0%, #c8cdd6 32%, #8c93a1 72%, #565c68 100%);
+  border: 1px solid rgba(245, 248, 252, 0.85);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.75),
+    inset 0 -8px 14px rgba(40, 45, 55, 0.35),
+    0 6px 13px rgba(60, 65, 75, 0.38),
+    0 0 0 1px rgba(60, 65, 75, 0.32);
+}
+.tp-card.bronze {
+  width: 66px; height: 76px; border-radius: 11px;
+  background:
+    radial-gradient(ellipse 70% 50% at 30% 20%, rgba(255,235,210,0.55) 0%, rgba(255,235,210,0) 60%),
+    linear-gradient(160deg, #f3c79a 0%, #d0874a 32%, #9b561d 72%, #5f310e 100%);
+  border: 1px solid rgba(250, 215, 180, 0.85);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 230, 205, 0.7),
+    inset 0 -7px 12px rgba(60, 28, 5, 0.38),
+    0 5px 11px rgba(120, 70, 25, 0.4),
+    0 0 0 1px rgba(70, 35, 8, 0.35);
+}
+.tp-card.empty { opacity: 0.25; filter: grayscale(0.8); }
+.tp-card.empty::before, .tp-card.empty::after { display: none; }
+.tp-card:not(.empty) { cursor: pointer; }
+
+/* ── Player-stats modal ────────────────────────────────────── */
+.ps-modal {
+  position: fixed; inset: 0; z-index: 950;
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.62);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+}
+.ps-modal.hidden { display: none; }
+.ps-card {
+  width: min(100%, 420px);
+  max-height: 82vh;
+  background: var(--bg-panel);
+  border: 1px solid rgba(255, 102, 0, 0.35);
+  border-radius: 18px;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.55), 0 0 24px rgba(255, 102, 0, 0.12);
+  padding: 22px 22px 18px;
+  position: relative;
+  color: var(--text);
+  overflow: hidden;
+  display: flex; flex-direction: column;
+}
+.ps-close {
+  position: absolute; top: 10px; right: 10px;
+  width: 30px; height: 30px; border: none; border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08); color: var(--text);
+  font-size: 20px; line-height: 1; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+.ps-close:hover { background: rgba(255, 255, 255, 0.16); transform: scale(1.05); }
+.ps-head {
+  display: flex; align-items: center; gap: 14px;
+  padding-bottom: 14px; margin-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+.ps-avatar {
+  width: 56px; height: 56px; border-radius: 50%;
+  border: 2px solid rgba(255, 102, 0, 0.5);
+  background: #2a2d38; overflow: hidden; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; color: #fff; font-size: 22px;
+  position: relative;
+}
+.ps-avatar.perk-badges,
+.ps-avatar.has-fan-club-badge { overflow: visible; }
+.avatar-fb.perk-badges,
+.avatar-fb.has-fan-club-badge { position: relative; overflow: visible !important; }
+.finder-pfp-wrap.perk-badges,
+.finder-pfp-wrap.has-fan-club-badge { position: relative; display: inline-block; }
+.finder-pfp-wrap { position: relative; display: inline-block; }
+/* Podium + announce avatars host the perk heart, which hangs ABOVE and to the
+   RIGHT of the disc (perk-badges.css: right:-26%; bottom:66%). Both discs are
+   overflow:hidden — that is what rounds the <img> — so the heart was sliced
+   off entirely and read as "the badge is behind the hero badge". Release the
+   clip here (perk-badges.css deliberately leaves overflow to the host) and
+   move the circular mask onto the <img> itself so the avatar stays round.
+   `display` is NOT touched: .tp-pfp is a flex box that centres the fallback
+   initial, and inline-block would break that. */
+.tp-pfp.perk-badges,
+.tp-pfp.has-fan-club-badge,
+.wa-avatar.perk-badges,
+.wa-avatar.has-fan-club-badge { position: relative; overflow: visible; }
+.tp-pfp img,
+.wa-avatar img { border-radius: 50%; }
+/* Re-anchor the heart for these two hosts only. The shared geometry floats it
+   well ABOVE the avatar (bottom:66% + up to 90% height), which is right for a
+   roomy hero avatar but on the 51px podium disc lands the heart ~22px above
+   the card, on top of the stats row — and on the 29px announce avatar it
+   covers most of the face. Pulling it onto the avatar's upper-right corner
+   keeps `bottom + height <= ~104%`, so it never escapes its own card. The
+   size ladder (fc < dc < sf < sd) is preserved, just compressed. */
+.tp-pfp .perk-badge,
+.wa-avatar .perk-badge { right: -14%; bottom: 40%; width: 46%; height: 46%; }
+.tp-pfp .perk-badge-dc,
+.wa-avatar .perk-badge-dc { width: 52%; height: 52%; }
+.tp-pfp .perk-badge-sf,
+.wa-avatar .perk-badge-sf { width: 58%; height: 58%; }
+.tp-pfp .perk-badge-sd,
+.wa-avatar .perk-badge-sd { width: 64%; height: 64%; }
+.ps-avatar.has-fan-club-badge::after,
+.tp-pfp.has-fan-club-badge::after,
+.avatar-fb.has-fan-club-badge::after,
+.finder-pfp-wrap.has-fan-club-badge::after {
+  content: '';
+  position: absolute;
+  top: -10%;
+  right: -10%;
+  width: 42%;
+  height: 42%;
+  min-width: 14px;
+  min-height: 14px;
+  background-image: url('https://wordtycoon.live/portal/assets/badges/tiktok-fanclub.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  pointer-events: none;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.55));
+  z-index: 5;
+}
+.ps-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.ps-name { font-family: var(--head-font); font-size: 20px; font-weight: 800; letter-spacing: 1px; color: var(--accent); word-break: break-word; }
+.ps-sub { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-top: 2px; }
+
+.ps-body { overflow-y: auto; flex: 1; }
+.ps-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+  margin-bottom: 14px;
+}
+.ps-stat {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 10px;
+}
+.ps-stat-label { font-size: 9.5px; letter-spacing: 1.8px; text-transform: uppercase; color: var(--muted); margin-bottom: 3px; }
+.ps-stat-val { font-family: var(--head-font); font-size: 17px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; line-height: 1.1; }
+.ps-stat-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+.ps-section-h { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin: 12px 0 6px; }
+.ps-round-row {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px; padding: 7px 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 5px;
+  font-size: 12px;
+}
+.ps-round-row.crown { border-color: rgba(255, 215, 0, 0.5); background: rgba(255, 215, 0, 0.06); }
+.ps-round-row .title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); font-weight: 600; }
+.ps-round-row .meta { font-size: 10px; color: var(--muted); }
+.ps-round-row .pts { font-family: var(--head-font); font-weight: 800; color: var(--accent); font-variant-numeric: tabular-nums; }
+.ps-empty { text-align: center; color: var(--muted); padding: 18px 8px; font-size: 13px; }
+.ps-loading { text-align: center; color: var(--muted); padding: 32px 8px; font-size: 13px; }
+
+.tp-pfp {
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-weight: 800; overflow: hidden;
+  flex-shrink: 0;
+  box-shadow: inset 0 0 0 2px rgba(0,0,0,0.18), 0 2px 4px rgba(0,0,0,0.25);
+}
+.tp-card.gold .tp-pfp   { width: 68px; height: 68px; font-size: 26px; background: linear-gradient(160deg, #fff1a8 0%, #d39906 100%); border: 2px solid #fff4c2; }
+.tp-card.silver .tp-pfp { width: 50px; height: 50px; font-size: 19px; background: linear-gradient(160deg, #f6f8fc 0%, #6d7381 100%); border: 2px solid #fbfcfe; }
+.tp-card.bronze .tp-pfp { width: 40px; height: 40px; font-size: 15px; background: linear-gradient(160deg, #f4cda0 0%, #7a451a 100%); border: 2px solid #fddfbc; }
+.tp-pfp img { width: 100%; height: 100%; object-fit: cover; }
+
+.tp-name {
+  font-weight: 800; max-width: 100%;
+  /* clip + overflow-clip-margin so name_glow textShadow extends past
+     the .tp-name box and fades naturally instead of being hard-cut. */
+  overflow: clip; overflow-clip-margin: 80px;
+  text-overflow: ellipsis; white-space: nowrap;
+  text-align: center;
+  letter-spacing: 0.2px;
+  /* Fixed line-height + margin-top: auto pushes name+score block to the
+     bottom of every card. Combined with the scoreboard's align-items:
+     flex-end (cards bottom-aligned), this means names sit at the same y
+     across gold/silver/bronze regardless of pfp size. */
+  line-height: 13px;
+  height: 13px;
+  margin-top: auto;
+}
+.tp-card.gold .tp-name   { font-size: 11px; color: #3a2500; text-shadow: 0 1px 0 rgba(255, 240, 180, 0.6); }
+.tp-card.silver .tp-name { font-size: 10px; color: #1f242d; text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6); }
+.tp-card.bronze .tp-name { font-size: 9px;  color: #2a1505; text-shadow: 0 1px 0 rgba(255, 225, 195, 0.55); }
+
+.tp-score {
+  font-weight: 800; font-variant-numeric: tabular-nums;
+  text-align: center; margin-top: 1px;
+  padding: 0 5px;
+  border-radius: 999px;
+  letter-spacing: 0.2px;
+  /* Same fixed line-height + height pinning so scores align across the
+     three cards too (and the score pill heights match). */
+  line-height: 13px;
+  height: 13px;
+}
+.tp-card.gold .tp-score   { font-size: 10px; color: #fff4c2; background: rgba(60, 36, 0, 0.55); box-shadow: inset 0 1px 0 rgba(0,0,0,0.3); }
+.tp-card.silver .tp-score { font-size: 9px;  color: #f4f6fa; background: rgba(30, 34, 42, 0.5);  box-shadow: inset 0 1px 0 rgba(0,0,0,0.3); }
+.tp-card.bronze .tp-score { font-size: 8px;  color: #ffe0c2; background: rgba(40, 18, 4, 0.55);  box-shadow: inset 0 1px 0 rgba(0,0,0,0.3); }
+
+/* ── Word-announce banner (RecTangled-style) ───────────────── */
+/* Banner is fixed-height so long names, long words, or big point totals
+   can't push the scoreboard up. Every text field inside truncates with
+   ellipsis instead of wrapping. */
+.word-announce {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(30,40,80,0.9), rgba(20,30,60,0.88));
+  border: 1px solid rgba(255,255,255,0.12);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.35);
+  height: 56px;
+  flex-shrink: 0;
+  /* overflow stays VISIBLE: the finder's perk heart overhangs the avatar's top
+     edge and a clip here decapitates it. The fixed height is enforced by
+     `height` above, not by this, and every text field truncates inside
+     .wa-info / .wa-top / .wa-bottom, which keep their own overflow:hidden. */
+  overflow: visible;
+  min-width: 0;
+}
+/* Keep the banner in the layout flow even before any word is found so the
+   left-col's flex sizing doesn't reshuffle when it first appears. */
+.word-announce.hidden { visibility: hidden; }
+.wa-avatar {
+  width: 38px; height: 38px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-weight: 800; font-size: 13px;
+  border: 2px solid rgba(255,255,255,0.25);
+  flex-shrink: 0; overflow: hidden;
+  background: #555;
+}
+.wa-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.wa-info { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 2px; overflow: hidden; }
+.wa-top {
+  display: flex; align-items: baseline; gap: 8px;
+  font-size: 11px; color: rgba(255,255,255,0.75);
+  min-width: 0; overflow: hidden;
+}
+.wa-name {
+  font-weight: 700;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  min-width: 0; flex: 1 1 auto;
+}
+.wa-total { font-weight: 700; color: rgba(255,255,255,0.9); font-variant-numeric: tabular-nums; flex-shrink: 0; white-space: nowrap; }
+.wa-earned { margin-left: auto; font-weight: 800; color: var(--green); font-size: 12px; font-variant-numeric: tabular-nums; flex-shrink: 0; white-space: nowrap; }
+.wa-bottom { display: flex; align-items: center; gap: 6px; min-width: 0; overflow: hidden; }
+.wa-word {
+  font-family: var(--head-font);
+  font-size: 16px; font-weight: 700;
+  color: #ff6bd6;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  min-width: 0; flex: 1 1 auto;
+}
+.wa-rarity {
+  display: none !important;
+  font-size: 9px; font-weight: 800; letter-spacing: 0.08em;
+  padding: 2px 6px; border-radius: 3px; text-transform: uppercase;
+  flex-shrink: 0; white-space: nowrap;
+}
+.wa-rarity.rare    { color: #fde047; background: rgba(253,224,71,0.14); border: 1px solid rgba(253,224,71,0.4); }
+.wa-rarity.uncommon{ color: #22d3ee; background: rgba(34,211,238,0.12); border: 1px solid rgba(34,211,238,0.35); }
+.wa-rarity.common  { color: #94a3b8; background: rgba(148,163,184,0.12); border: 1px solid rgba(148,163,184,0.3); }
+
+/* ── Right column styles (sizing handled by .top-row height rules) ─── */
+.cards-empty {
+  grid-row: 1 / -1;
+  align-self: center;
+  padding: 22px 0 6px; font-size: 13px; color: var(--muted);
+  font-style: italic; text-align: center;
+}
+.card {
+  padding: 0;
+  border-radius: 999px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  animation: cardIn 240ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  min-height: 46px;
+  position: relative;
+  /* overflow:visible so equipped cosmetics (profile_glow boxShadow,
+     name_glow textShadow) can extend past the pill boundary instead of
+     being clipped at the card edge. The proximity fill bar that DID
+     need overflow:hidden lives in its own .card-clip wrapper below. */
+  overflow: visible;
+}
+.card .card-clip {
+  position: absolute; inset: 0; overflow: hidden;
+  border-radius: 999px; pointer-events: none; z-index: 0;
+}
+/* Podium (top-3 player) cards skip the cosmetic title — the gold/silver/
+   bronze tiles are too compact and the title visually crowds the score. */
+.tp-card .cosmetic-title { display: none; }
+/* Default pulse for any surface decorated with a hero_badge cosmetic that
+   doesn't ship its own animation string. Class-based (not inline) so
+   higher-specificity rules — especially the round-end pulse on
+   .scoreboard.round-ended .tp-card — can take over at round end. */
+.cos-hero-badge { animation: gen-pulse 2s ease-in-out infinite; }
+/* Proximity fill bar: width & color reflect the guess's semantic closeness
+   to the target. Rank 1 → 100% wide pure green (only the target word gets
+   there). Far ranks → short red sliver. Floored at 5% so every card shows
+   at least a nub. */
+.card .fill {
+  position: absolute;
+  top: 0; bottom: 0; left: 0;
+  width: var(--fill-pct, 0%);
+  background: var(--fill-color, transparent);
+  transition: width 400ms ease, background 400ms ease;
+  z-index: 0;
+  border-radius: 999px 0 0 999px;
+}
+/* Two identical content layers: the base holds white text everywhere; the
+   overlay holds black text but is clip-path'd to the fill bar's region, so
+   letters get pixel-sliced at the exact fill edge — half a letter can be
+   black (over the fill) and half white (over the dark panel bg). */
+.card-inner {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 14px;
+  min-height: 46px;
+  width: 100%;
+  box-sizing: border-box;
+}
+/* Both layers absolute so they share the card's exact box — prevents a
+   height mismatch (base sizing to content vs overlay sizing to card)
+   that would offset the overlay's black text slightly from the base's
+   white text. */
+.card-inner.base { position: absolute; inset: 0; z-index: 1; }
+.card-inner.overlay {
+  position: absolute; inset: 0; z-index: 2;
+  pointer-events: none;
+  clip-path: inset(0 calc(100% - var(--fill-pct, 0%)) 0 0);
+  transition: clip-path 400ms ease;
+}
+.card-inner.overlay > *:not(.rank-word) { visibility: hidden; }
+.card-inner.base .word-lbl { color: #fff; }
+.card-inner.overlay .word-lbl { color: #fff; }
+.card-inner.overlay .rank-word { background: transparent; border-color: transparent; }
+.card.top { outline: 2px solid #86efac; outline-offset: -1px; }
+.card.placeholder {
+  background: transparent;
+  border: 1px dashed rgba(255,255,255,0.12);
+  animation: none;
+  opacity: 0.55;
+}
+.card.lg-word .word-lbl { font-size: 14px; letter-spacing: 0.5px; }
+.card.xl-word .word-lbl { font-size: 12px; letter-spacing: 0.3px; }
+.card.placeholder .card-inner { padding: 9px 14px; justify-content: flex-start; }
+.card.placeholder .word-lbl:empty { display: none; }
+.card.placeholder .rank-word {
+  background: transparent;
+  border: 1px dashed rgba(255,255,255,0.2);
+  color: rgba(255,255,255,0.45);
+  font-weight: 700;
+}
+.card.placeholder .rank { color: rgba(255,255,255,0.45); }
+@keyframes cardIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+.rank-word {
+  display: flex; align-items: center;
+  width: fit-content;
+  max-width: calc(100% - 48px);
+  flex: 0 0 auto; min-width: 0;
+  background: var(--rank-bg);
+  border: 1.5px solid hsl(var(--rank-hue, 142), 72%, 55%);
+  border-radius: 999px;
+  height: 32px;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  /* flex-shrink: 0 — the word area never gets compressed by flex layout.
+     When the card is tight, .who shrinks first (down to just the avatar)
+     before fitWordLabel kicks in to shrink the word's font as a last
+     resort. Word readability beats username readability. */
+}
+.card .rank {
+  flex-shrink: 0; min-width: 64px;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 13px; color: #fff;
+  font-variant-numeric: tabular-nums; padding: 0 10px;
+}
+.card .word-lbl {
+  font-weight: 800; font-size: 18px;
+  letter-spacing: 1px; text-transform: uppercase;
+  flex: 1 1 auto;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  min-width: 0;
+  padding: 0 12px;
+  display: flex; align-items: center;
+}
+.card .who {
+  display: flex; align-items: center; gap: 8px;
+  flex: 0 1 auto; min-width: 38px;
+  margin-left: auto;
+  /* overflow:visible so avatar profile_glow boxShadow + name_glow text-
+     shadow extend naturally past .who. fitWordLabel uses a smarter
+     detection (rank-word.scrollWidth vs allotted space) that ignores
+     .who's decorative overflow, so the word still doesn't shrink
+     unnecessarily. */
+  overflow: visible;
+}
+.card .avatar {
+  width: 38px; height: 38px; border-radius: 50%; object-fit: cover;
+  border: 1.5px solid rgba(255,255,255,0.45);
+}
+.card .avatar-fb {
+  width: 38px; height: 38px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 700; color: #fff; background: #555;
+  flex-shrink: 0;
+}
+/* Raw <img> produced by avatarHtml has no class/size — without this rule
+   the natural-resolution image (often 128px from Discord CDN) would
+   render full-size and be clipped to the avatar-fb container, looking
+   zoomed-in. */
+.card .avatar-fb img {
+  width: 100%; height: 100%; object-fit: cover; border-radius: 50%;
+  display: block;
+}
+.card .who-text {
+  display: flex; flex-direction: column; align-items: flex-start;
+  min-width: 0;
+  max-width: 120px;
+  /* overflow:hidden contains the username + title within the column so
+     long names truncate inside the card instead of pushing past the edge.
+     name_glow / title_glow text-shadow used to fan out past this column,
+     but the visual cost is small compared to the readability bug it caused
+     on long usernames. Profile glow on the avatar (sibling .avatar-fb in
+     .who) is unaffected — it still extends past the card. */
+  overflow: hidden;
+  flex: 1 1 auto;
+}
+.card .gname {
+  color: #fff; font-weight: 600; font-size: 14px;
+  width: 100%; max-width: 100%; min-width: 0; flex: 0 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis; white-space: nowrap;
+}
+.card .cosmetic-title {
+  font-size: 10px; font-weight: 700; opacity: 0.85;
+  letter-spacing: 0.4px; text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%; max-width: 100%; min-width: 0;
+  margin-top: 1px;
+}
+.tp-card .cosmetic-title {
+  font-size: 8px; font-weight: 700; opacity: 0.85;
+  letter-spacing: 0.3px; text-transform: uppercase;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  max-width: 100%;
+  margin-top: 1px;
+}
+
+/* ── Ticker (right-to-left sliding chips) ──────────────────── */
+.ticker-wrap {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 2px 0 0;
+  margin: 0 -8px;
+  overflow: hidden;
+  position: relative;
+}
+.ticker {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 3px;
+  height: 36px;
+  overflow: hidden;
+  position: relative;
+}
+
+.chip {
+  flex-shrink: 0;
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-family: var(--ui-font);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.4px;
+  text-transform: lowercase;
+  white-space: nowrap;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  /* Chips spawn with their right edge just inside the ticker's right fade
+     gradient (fully visible, never offscreen) and slide left to their
+     natural flex slot. --slide-dist is set per-chip by JS after layout. */
+  --slide-dist: 0px;
+  animation: chipSlideIn 500ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.chip.hit      { background: linear-gradient(90deg, #4ade80 0%, #16a34a 100%); color: #ffffff; border: 1px solid #86efac; box-shadow: 0 0 10px rgba(74,222,128,0.35); }
+.chip.dup-hit,
+.chip.dup-miss { background: rgba(253,224,71,0.14);  color: #fde047; border: 1px solid rgba(253,224,71,0.5); }
+.chip.miss     { background: rgba(248,113,113,0.14); color: #fca5a5; border: 1px solid rgba(248,113,113,0.5); }
+/* Yellow duplicate chips: green check when the original guess was a hit
+   (word in the article), red x when the original guess was a miss. */
+.chip.dup-hit  .tick { color: #4ade80; }
+.chip.dup-miss .tick { color: #f87171; }
+.chip .chip-avatar {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1.5px solid rgba(255,255,255,0.35);
+  flex-shrink: 0;
+}
+.chip .tick { font-size: 11px; }
+.chip.exit  { animation: chipSlideOut 420ms ease-in forwards; pointer-events: none; }
+@keyframes chipSlideIn {
+  from { transform: translateX(var(--slide-dist)); opacity: 0.4; }
+  to   { transform: translateX(0); opacity: 1; }
+}
+@keyframes chipSlideOut {
+  from { transform: translateX(0); opacity: 1; max-width: 200px; padding-left: 10px; padding-right: 10px; }
+  to   { transform: translateX(-60px); opacity: 0; max-width: 0; padding-left: 0; padding-right: 0; }
+}
+
+/* ── Article body ──────────────────────────────────────────── */
+.article-body-panel {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  overflow: visible;
+}
+#body {
+  padding: 2px 0 0;
+  font-family: var(--body-font);
+  font-size: clamp(14px, 2vw, 17px);
+  line-height: 1.75;
+  max-height: 62vh; overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.1) transparent;
+}
+@media (pointer: coarse) {
+  #body { font-size: 30px; line-height: 1.55; }
+  #titleText { font-size: clamp(40px, 5.6vw, 56px); }
+  #titleText .t-word.hidden .w-text { font-size: 0.95em; padding: 4px 16px; letter-spacing: 4px; }
+  .title-block.title-compact #titleText .t-word.hidden .w-text,
+  .title-block.title-tight #titleText .t-word.hidden .w-text { font-size: 0.88em; padding: 3px 12px; letter-spacing: 3px; }
+  .title-block.title-compact #titleText .t-word.hidden.current-hint .w-text,
+  .title-block.title-tight #titleText .t-word.hidden.current-hint .w-text {
+    min-width: 38px;
+    padding: 3px 10px;
+    letter-spacing: 0;
+  }
+  .title-sub { font-size: 22px; letter-spacing: 4px; }
+  .stat-label { font-size: 22px; letter-spacing: 3px; }
+  .stat-val { font-size: 30px; white-space: nowrap; }
+  .stat { gap: 16px; }
+  .stats-bar { gap: 10px; }
+  .card { min-height: 72px; }
+  .card .rank { min-width: 80px; font-size: 20px; padding: 0 14px; }
+  .card .rank-word { height: 44px; transform: translateZ(0); backface-visibility: hidden; }
+  .card .word-lbl { font-size: 28px; letter-spacing: 1.2px; padding: 0 14px; }
+  .card.lg-word .word-lbl { font-size: 22px; letter-spacing: 0.8px; }
+  .card.xl-word .word-lbl { font-size: 18px; letter-spacing: 0.4px; }
+  .card .who { min-width: 44px; }
+  .card .gname { font-size: 18px; max-width: none; }
+  .card .avatar, .card .avatar-fb { width: 44px; height: 44px; font-size: 18px; }
+  .card.placeholder .rank { font-size: 20px; }
+  .word-announce { height: auto; min-height: 78px; padding: 12px 14px; gap: 12px; }
+  .wa-avatar { width: 48px; height: 48px; font-size: 18px; }
+  .wa-top { font-size: 14px; gap: 8px; }
+  .wa-earned { font-size: 16px; }
+  .wa-word { font-size: 26px; letter-spacing: 1.2px; }
+  .wa-rarity { font-size: 14px; padding: 3px 8px; }
+  .chip { font-size: 22px; padding: 8px 14px; }
+  .ticker { height: 54px; }
+  .chip .tick { font-size: 18px; }
+}
+#body::-webkit-scrollbar { width: 6px; }
+#body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+#body p { margin: 0 0 14px; }
+#body p:last-child { margin-bottom: 0; }
+.word {
+  display: inline-block;
+  vertical-align: baseline;
+  transition: color 400ms ease;
+}
+.word.redacted {
+  background: var(--redact); color: transparent;
+  border-radius: 3px; padding: 0 4px; line-height: 1.3;
+  vertical-align: text-bottom;
+  user-select: none;
+}
+/* Numeric tokens get an orange redaction box so numbers are visually
+   distinct from regular hidden words. The box shows "N DIGIT(S)" in black
+   on top of the orange — tells players the length of the hidden number
+   without revealing its value. Revealed numbers use the default text
+   color — this only styles the redacted state. */
+.word.redacted.is-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent);
+  color: #000;
+  font-weight: 800;
+  font-size: 0.62em;
+  line-height: 1;
+  height: 1.38em;
+  min-width: max-content;
+  padding: 0 0.58em;
+  letter-spacing: 0.04em;
+  vertical-align: text-bottom;
+  white-space: nowrap;
+  text-transform: uppercase;
+  user-select: none;
+}
+/* Title-word body slot: stays redacted until round end. After two title
+   words have been found, every found-slot in the body flips to a green
+   redaction so players see confirmation without learning the answer. */
+.word.redacted.target-slot.confirmed {
+  background: #2ea043;
+  box-shadow: 0 0 0 1px rgba(46,160,67,0.55) inset;
+}
+.word.revealed { color: var(--text); }
+/* Anti-cheat: kill text selection / copy on the article + title + cards
+   so players can't paste revealed context into a search engine. The
+   keyboard shortcut + browser menu can still open devtools, but raising
+   the friction stops the lazy 90%. */
+#titleText, #body, #cards,
+#titleText *, #body *, #cards * {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -ms-user-select: none !important;
+}
+/* ── Header nav (Solo button + theme toggle) ───────────────── */
+.header-nav { display: flex; align-items: center; gap: 14px; }
+.nav-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 14px; border-radius: 999px;
+  background: rgba(255, 102, 0, 0.12);
+  border: 1px solid rgba(255, 102, 0, 0.35);
+  color: var(--accent); font-weight: 600; font-size: 13px;
+  cursor: pointer; text-decoration: none;
+  font-family: 'Press Start 2P', 'Roboto Mono', monospace;
+  letter-spacing: 0.5px; transition: background 0.15s, transform 0.05s;
+}
+.nav-btn:hover { background: rgba(255, 102, 0, 0.22); }
+.nav-btn:active { transform: scale(0.96); }
+.nav-btn svg { width: 14px; height: 14px; }
+.nav-btn[aria-expanded="true"] {
+  background: var(--accent); color: #111;
+}
+@media (max-width: 760px), (pointer: coarse) {
+  .site-header { padding: 8px 12px; gap: 10px; }
+  .header-nav { gap: 8px; flex-shrink: 0; }
+  .nav-btn { padding: 8px 10px; }
+}
+
+.wt-legal-footer {
+  padding: 14px 16px 18px;
+  text-align: center;
+  font: 12px/1.4 Inter, system-ui, sans-serif;
+  color: var(--muted);
+  opacity: 0.78;
+}
+
+.wt-legal-footer a {
+  color: inherit;
+  text-decoration: none;
+  margin: 0 2px;
+}
+
+.wt-legal-footer a:hover {
+  color: var(--text);
+  text-decoration: underline;
+}
+
+html.obs-overlay-mode .wt-legal-footer {
+  display: none !important;
+}
+
+/* ── Stats drawer ────────────────────────────────────────────
+   Slides DOWN from under the header bubble. Hidden by default
+   via translateY(-110%); .open removes that. The backdrop is a
+   click-target for dismissal. */
+.stats-backdrop {
+  position: fixed; inset: 0; z-index: 580;
+  background: rgba(0, 0, 0, 0.45);
+  opacity: 0; pointer-events: none;
+  transition: opacity 200ms ease;
+}
+.stats-backdrop.open { opacity: 1; pointer-events: auto; }
+.stats-backdrop.hidden { display: none; }
+.stats-drawer {
+  position: fixed; left: 50%; transform: translateX(-50%) translateY(-110%);
+  top: 0;
+  width: min(560px, 96vw);
+  max-height: min(78vh, 720px);
+  z-index: 590;
+  background: linear-gradient(180deg, rgba(20, 22, 31, 0.98), rgba(15, 17, 23, 0.98));
+  border: 1px solid rgba(255, 102, 0, 0.45);
+  border-top: none;
+  border-radius: 0 0 18px 18px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+  transition: transform 280ms cubic-bezier(0.34, 1.4, 0.6, 1);
+  font-family: var(--ui-font);
+}
+.stats-drawer.open { transform: translateX(-50%) translateY(0); }
+.stats-drawer.hidden { display: none; }
+.stats-drawer-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 18px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, rgba(255, 102, 0, 0.10), rgba(255, 102, 0, 0));
+}
+.stats-drawer-title {
+  font-family: var(--head-font);
+  font-size: 14px; font-weight: 700; letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.stats-drawer-close {
+  background: transparent; border: none; cursor: pointer;
+  width: 30px; height: 30px; border-radius: 8px;
+  font-size: 22px; line-height: 1;
+  color: var(--muted);
+  display: flex; align-items: center; justify-content: center;
+  transition: background 150ms ease, color 150ms ease;
+}
+.stats-drawer-close:hover { background: rgba(255, 255, 255, 0.06); color: var(--text); }
+.stats-drawer-tabs {
+  display: flex; gap: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0 12px;
+}
+.stats-drawer-tab {
+  background: transparent; border: none; cursor: pointer;
+  padding: 10px 14px;
+  font-family: var(--ui-font); font-size: 12px; font-weight: 700;
+  letter-spacing: 1px; text-transform: uppercase;
+  color: var(--muted);
+  border-bottom: 2px solid transparent;
+  transition: color 150ms ease, border-color 150ms ease;
+}
+.stats-drawer-tab:hover { color: var(--text); }
+.stats-drawer-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+.stats-drawer-body {
+  flex: 1 1 auto; min-height: 0; overflow-y: auto;
+  padding: 16px 18px 22px;
+  font-size: 13px;
+}
+/* Reuse the existing .ps-* styles inside the drawer for consistent look. */
+@media (max-width: 540px) {
+  .stats-drawer {
+    width: 100vw; max-width: 100vw;
+    border-radius: 0 0 14px 14px;
+  }
+  .stats-drawer-body { padding: 14px; }
+}
+@media (pointer: coarse) {
+  .stats-drawer-title { font-size: 22px; letter-spacing: 3px; }
+  .stats-drawer-close { width: 44px; height: 44px; font-size: 32px; }
+  .stats-drawer-tab { padding: 14px 18px; font-size: 16px; letter-spacing: 1.4px; }
+  .stats-drawer-body { font-size: 18px; padding: 18px 20px 26px; }
+}
+
+/* ── Theme toggle button (header) ──────────────────────────── */
+.theme-toggle {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 40px; height: 40px;
+  border-radius: 999px;
+  background: rgba(255, 102, 0, 0.12);
+  border: 1px solid rgba(255, 102, 0, 0.35);
+  color: var(--accent);
+  cursor: pointer;
+  flex-shrink: 0;
+  padding: 0;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+}
+.theme-toggle:hover { background: rgba(255, 102, 0, 0.22); }
+.theme-toggle:active { transform: scale(0.94); }
+.theme-toggle svg { width: 20px; height: 20px; display: block; }
+.theme-toggle .icon-sun { display: none; }
+html.theme-light .theme-toggle .icon-moon { display: none; }
+html.theme-light .theme-toggle .icon-sun { display: block; }
+
+/* ── Light / cream pastel theme ────────────────────────────── */
+html.theme-light {
+  --bg: #FAF4E6;
+  --bg-panel: #FFF8EC;
+  --bg-card: #F3E9CF;
+  --border: rgba(120, 95, 55, 0.18);
+  --text: #3A2E1F;
+  --muted: #8A7555;
+  --accent: #D9561F;
+  --accent-glow: rgba(217, 86, 31, 0.22);
+  --green: #2E7D32;
+  --green-mid: #1B5E20;
+  --green-dark: #124016;
+  --yellow: #B8860B;
+  --red: #C84747;
+  --rank-bg: #FFF3D6;
+  --redact: #E8DCBE;
+}
+/* Logo: black pixels drop out via screen-blend on dark; on cream
+   we need multiply so dark logo pixels show correctly. */
+html.theme-light .brand-img { mix-blend-mode: multiply; }
+html.theme-light .brand span { color: var(--text); opacity: 0.55; }
+
+html.theme-light .stat-val { color: var(--text); }
+
+/* Login prompt (semi-transparent card) — warm overlay */
+html.theme-light .mp-login-card {
+  background: rgba(255, 248, 236, 0.88);
+  border-color: rgba(120, 95, 55, 0.3);
+  color: var(--text);
+  box-shadow: 0 8px 32px rgba(120, 95, 55, 0.25);
+}
+html.theme-light .mp-login-close {
+  background: rgba(120, 95, 55, 0.12);
+  color: var(--muted);
+}
+html.theme-light .mp-login-close:hover {
+  background: rgba(120, 95, 55, 0.22);
+  color: var(--text);
+}
+html.theme-light .mp-login-card p { color: var(--muted); }
+html.theme-light .mp-guest-row { background: rgba(120, 95, 55, 0.08); }
+html.theme-light .mp-guest-copy { color: var(--text); }
+html.theme-light .mp-guest-btn {
+  background: rgba(217, 86, 31, 0.14);
+  color: var(--accent);
+  border-color: rgba(217, 86, 31, 0.4);
+}
+html.theme-light .mp-github-btn {
+  background: rgba(58, 46, 31, 0.85);
+  color: #fff;
+  border-color: rgba(58, 46, 31, 0.95);
+}
+html.theme-light .mp-login-divider { color: var(--muted); }
+html.theme-light .mp-login-divider::before,
+html.theme-light .mp-login-divider::after {
+  background: rgba(120, 95, 55, 0.22);
+}
+html.theme-light .mp-back-link { color: var(--muted); }
+html.theme-light .mp-back-link:hover { color: var(--text); }
+
+/* Idle / How-to-Play card */
+html.theme-light .htp-card {
+  background: var(--bg-panel);
+  border-color: var(--border);
+  box-shadow: 0 4px 14px rgba(120, 95, 55, 0.1);
+}
+html.theme-light .step-num { color: #fff; }
+html.theme-light .step-text { color: var(--text); }
+
+/* Title block */
+html.theme-light #titleText .t-word.revealed .w-text { color: var(--accent); }
+html.theme-light #titleText .t-word.hidden .w-text {
+  background: var(--redact);
+  color: var(--accent);
+}
+html.theme-light #titleText .t-word .finder-pfp {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(217, 86, 31, 0.15);
+}
+html.theme-light #titleText .t-word .finder-pfp.fallback {
+  background: var(--redact); color: var(--text);
+}
+
+/* Scoreboard podium — dusty metallic tones readable on cream */
+html.theme-light .tp-card.gold {
+  background:
+    radial-gradient(ellipse 70% 50% at 30% 18%, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0) 60%),
+    linear-gradient(160deg, #fde49a 0%, #e8b520 35%, #a8750a 75%, #6e4d05 100%);
+  border-color: rgba(255, 228, 140, 0.95);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 250, 220, 0.8),
+    inset 0 -9px 14px rgba(80, 50, 0, 0.32),
+    0 7px 14px rgba(140, 100, 0, 0.3),
+    0 0 0 1px rgba(90, 62, 0, 0.3);
+}
+html.theme-light .tp-card.silver {
+  background:
+    radial-gradient(ellipse 70% 50% at 30% 20%, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0) 60%),
+    linear-gradient(160deg, #f8fafd 0%, #d0d4dc 32%, #9097a4 72%, #5a6170 100%);
+  border-color: rgba(250, 252, 255, 0.9);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.85),
+    inset 0 -8px 12px rgba(40, 46, 60, 0.3),
+    0 6px 12px rgba(60, 70, 90, 0.28),
+    0 0 0 1px rgba(60, 65, 78, 0.28);
+}
+html.theme-light .tp-card.bronze {
+  background:
+    radial-gradient(ellipse 70% 50% at 30% 20%, rgba(255,238,215,0.6) 0%, rgba(255,238,215,0) 60%),
+    linear-gradient(160deg, #f5cd9e 0%, #c07a3e 35%, #854319 75%, #50280a 100%);
+  border-color: rgba(252, 218, 184, 0.9);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 232, 208, 0.75),
+    inset 0 -7px 11px rgba(50, 22, 3, 0.32),
+    0 5px 10px rgba(100, 55, 20, 0.3),
+    0 0 0 1px rgba(60, 28, 6, 0.3);
+}
+html.theme-light .tp-card.empty { filter: grayscale(0.6); opacity: 0.5; }
+html.theme-light .tp-pfp { color: var(--text); }
+html.theme-light .tp-card.gold .tp-name   { color: #3a2500; text-shadow: 0 1px 0 rgba(255, 240, 180, 0.7); }
+html.theme-light .tp-card.silver .tp-name { color: #1b1f28; text-shadow: 0 1px 0 rgba(255, 255, 255, 0.7); }
+html.theme-light .tp-card.bronze .tp-name { color: #2a1505; text-shadow: 0 1px 0 rgba(255, 225, 195, 0.6); }
+html.theme-light .ps-card {
+  background: var(--bg-panel);
+  border-color: rgba(255, 102, 0, 0.45);
+  box-shadow: 0 14px 32px rgba(120, 95, 55, 0.28), 0 0 18px rgba(255, 102, 0, 0.1);
+}
+html.theme-light .ps-close { background: rgba(120, 95, 55, 0.14); color: var(--text); }
+html.theme-light .ps-close:hover { background: rgba(120, 95, 55, 0.26); }
+html.theme-light .ps-avatar { background: #C9A97E; border-color: rgba(255, 102, 0, 0.5); color: var(--text); }
+html.theme-light .ps-stat { background: rgba(120, 95, 55, 0.08); }
+html.theme-light .ps-round-row { background: rgba(120, 95, 55, 0.06); }
+html.theme-light .ps-round-row.crown { background: rgba(234, 179, 8, 0.12); border-color: rgba(180, 130, 0, 0.5); }
+
+html.theme-light .tp-card.gold .tp-score   { color: #fff4c2; background: rgba(80, 50, 0, 0.6); }
+html.theme-light .tp-card.silver .tp-score { color: #f8fafd; background: rgba(45, 52, 66, 0.55); }
+html.theme-light .tp-card.bronze .tp-score { color: #ffe0c2; background: rgba(50, 22, 4, 0.6); }
+
+/* Announce banner — pastel peach */
+html.theme-light .word-announce {
+  background: linear-gradient(135deg, #F7E6D4 0%, #F0DAB8 100%);
+  border-color: rgba(120, 95, 55, 0.22);
+  box-shadow: 0 3px 10px rgba(120, 95, 55, 0.14);
+}
+html.theme-light .wa-avatar {
+  background: #C9A97E;
+  border-color: rgba(120, 95, 55, 0.32);
+  color: var(--text);
+}
+html.theme-light .wa-top     { color: rgba(58, 46, 31, 0.78); }
+html.theme-light .wa-name    { color: var(--text); }
+html.theme-light .wa-total   { color: var(--text); }
+html.theme-light .wa-earned  { color: var(--green); }
+html.theme-light .wa-word    { color: #9C3B7A; }
+html.theme-light .wa-rarity.rare {
+  color: #8A5F00;
+  background: rgba(184, 134, 11, 0.16);
+  border-color: rgba(184, 134, 11, 0.4);
+}
+html.theme-light .wa-rarity.uncommon {
+  color: #0B6B7A;
+  background: rgba(11, 107, 122, 0.14);
+  border-color: rgba(11, 107, 122, 0.35);
+}
+html.theme-light .wa-rarity.common {
+  color: #665A45;
+  background: rgba(102, 90, 69, 0.14);
+  border-color: rgba(102, 90, 69, 0.3);
+}
+
+/* Guess cards — flip white text to dark brown so it reads on cream */
+html.theme-light .card { background: var(--bg-panel); }
+html.theme-light .card-inner.base .word-lbl { color: var(--text); }
+html.theme-light .card-inner.overlay .word-lbl { color: var(--text); }
+html.theme-light .card .rank { color: var(--text); }
+html.theme-light .card .gname { color: var(--text); }
+html.theme-light .card .avatar,
+html.theme-light .card .avatar-fb {
+  border-color: rgba(120, 95, 55, 0.35);
+}
+/* When an avatar image fails, the fallback initial sits in .avatar-fb's own
+   background — the default #555 clashes with cream. Swap for warm tan. */
+html.theme-light .card .avatar-fb { background: #C9A97E; color: var(--text); }
+html.theme-light .card.top { outline-color: #4A9D4A; }
+html.theme-light .cards-empty { color: var(--muted); }
+
+/* Ticker chips — muted pastel tiers */
+html.theme-light .chip { box-shadow: 0 1px 3px rgba(120, 95, 55, 0.18); }
+html.theme-light .chip.hit {
+  background: linear-gradient(90deg, #A6D8A6 0%, #6DB86D 100%);
+  color: #1B5E20;
+  border-color: #7CC47C;
+  box-shadow: 0 0 8px rgba(120, 180, 120, 0.3);
+}
+html.theme-light .chip.dup-hit,
+html.theme-light .chip.dup-miss {
+  background: rgba(184, 134, 11, 0.18);
+  color: #8A5F00;
+  border-color: rgba(184, 134, 11, 0.5);
+}
+html.theme-light .chip.dup-hit  .tick { color: #2E7D32; }
+html.theme-light .chip.dup-miss .tick { color: #B71C1C; }
+html.theme-light .chip.miss {
+  background: rgba(200, 71, 71, 0.16);
+  color: #9A3434;
+  border-color: rgba(200, 71, 71, 0.48);
+}
+html.theme-light .chip .chip-avatar { border-color: rgba(120, 95, 55, 0.3); }
+
+/* Article body */
+html.theme-light #body {
+  scrollbar-color: rgba(120, 95, 55, 0.3) transparent;
+}
+html.theme-light #body::-webkit-scrollbar-thumb {
+  background: rgba(120, 95, 55, 0.3);
+}
+html.theme-light .word.redacted { background: var(--redact); }
+html.theme-light .word.redacted.is-number {
+  background: var(--accent);
+  color: #fff;
+}
+html.theme-light #gameArea::before {
+  background: rgba(120, 72, 30, 0.28);
+  border-color: rgba(160, 100, 50, 0.3);
+}
+
+/* Touch-device guess-bar tweaks (logged-in players only — the avatar element
+   is hidden by default when no user is signed in). On phones we drop the
+   profile pic from the bar entirely (it's already prominent on the cards
+   and podium) and grow the keyboard toggle to fill that space. */
+body.wwgb-touch #wwgb-avatar { display: none !important; }
+body.wwgb-touch #wwgb-kb-toggle {
+  width: 64px;
+  height: 64px;
+  font-size: 28px;
+  border-radius: 16px;
+}
+
+/* Reserve scroll-internal space at the bottom of the article so the last
+   paragraph doesn't sit underneath the fixed guess bar (or the on-screen
+   keyboard when it's open). The padding lives INSIDE #body's overflow:auto
+   region, so users can scroll past their last text to reveal the gap. */
+body.wwgb-mounted #body { padding-bottom: 100px; }
+body.wwgb-touch.wwgb-mounted #body { padding-bottom: 140px; }
+body.wwgb-touch.wwgb-mounted.wwgb-kb-open #body { padding-bottom: 360px; }
+
+/* === Compact stats inline with title — fixes long-target-word visibility === */
+.title-block { position: relative; }
+.title-header { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: nowrap; }
+.title-header .stats-bar { gap: 10px; padding: 0; flex-wrap: nowrap; flex-direction: row; align-items: center; }
+.title-header .stat { display: inline-flex; align-items: center; gap: 4px; padding: 0; }
+.title-header .stat-label { display: none; }
+.title-header .stat-val { font-size: 13px; font-weight: 700; line-height: 1; }
+.title-header .stat .stat-val::before {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: var(--accent, #ff7a1a);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  margin-right: 4px;
+  letter-spacing: 0;
+}
+.title-header .stat:first-child .stat-val::before { content: "G"; }
+.title-header .stat:last-child .stat-val::before { content: "F"; }

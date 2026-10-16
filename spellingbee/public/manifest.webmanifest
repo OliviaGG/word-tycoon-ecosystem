@@ -1,0 +1,56 @@
+{
+  "name": "Spelling Bee",
+  "short_name": "SpellBee",
+  "description": "Play Spelling Bee on Word Tycoon — a free daily hive word puzzle game. Find as many words as you can from seven letters. Solo daily puzzles and live multiplayer rounds.",
+  "id": "./?source=pwa",
+  "start_url": "./?source=pwa",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#111318",
+  "theme_color": "#151a22",
+  "categories": ["games", "entertainment", "word"],
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Solo Puzzle",
+      "short_name": "Solo",
+      "description": "Open the current solo Spelling Bee puzzle.",
+      "url": "./?source=shortcut-solo",
+      "icons": [
+        {
+          "src": "app-icon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "Live Game",
+      "short_name": "Live",
+      "description": "Jump into the live Spelling Bee round.",
+      "url": "./mp.html?source=shortcut-live",
+      "icons": [
+        {
+          "src": "app-icon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
+    }
+  ]
+}

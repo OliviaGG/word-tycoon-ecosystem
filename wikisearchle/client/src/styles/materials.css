@@ -1,0 +1,99 @@
+/* Shared material palette. Texture is static; motion is reserved for play. */
+html[data-brand='wikicontexto'] body[data-vite-ui] {
+  --wk-grain: url('../assets/grain.svg');
+  --wk-surface: linear-gradient(145deg, #10355d 0%, #071b3a 38%, #04112b 100%);
+  --wk-rim: #359bc880;
+  --wk-shadow: 0 12px 28px #000c242e, inset 0 1px 0 #c8eeff25, inset 0 -1px 0 #00091f90;
+}
+html[data-brand='wikicontexto'] body[data-vite-ui] {
+  background-image: var(--wk-grain), radial-gradient(ellipse at 90% 0%, #0d4567 0, transparent 48%),
+    radial-gradient(ellipse at 0% 60%, #121744 0, transparent 58%);
+  background-color: var(--bg);
+}
+html[data-brand='wikicontexto'] body[data-vite-ui] #gameArea::before {
+  background: linear-gradient(150deg, #061b3560, #020b2070);
+  border-color: #2973a552;
+  box-shadow: 0 22px 60px #000a1d38, inset 0 1px 0 #b2e5ff10;
+}
+html[data-brand='wikicontexto'] body[data-vite-ui] :is(.title-block, .solo-stats, .scoreboard, .article-body-panel) {
+  background-image: var(--wk-grain), var(--wk-surface);
+  border-color: var(--wk-rim);
+  box-shadow: var(--wk-shadow);
+}
+html[data-brand='wikicontexto'] body[data-vite-ui] .article-body-panel {
+  background-image: var(--wk-grain), linear-gradient(145deg, #0b2346, #05132d 70%);
+  border-top-color: #4bb2d6a6;
+}
+html[data-brand='wikicontexto'] body[data-vite-ui] .neon-brand {
+  background-image: var(--wk-grain), linear-gradient(180deg, #103753, #06172f);
+  border-color: #50e6f9b0;
+  border-bottom-color: #3279bc;
+  box-shadow: inset 0 1px 0 #d5ffff55, inset 0 -3px 10px #00112666, 0 6px 22px #19c8e321;
+}
+html[data-brand='wikicontexto'] body[data-vite-ui] :is(.nav-btn, .theme-toggle, .mute-toggle, .mode-bar) {
+  background-image: var(--wk-grain), linear-gradient(180deg, #143454, #09203b);
+  box-shadow: inset 0 1px 0 #d3efff22, 0 3px 6px #00091f22;
+}
+html[data-brand='wikicontexto'] body[data-vite-ui] :is(button, .nav-btn) {
+  transition: border-color 160ms ease, color 160ms ease, background-color 160ms ease;
+}
+html[data-brand='wikicontexto'] body[data-vite-ui] #titleText .t-word.hidden .w-text {
+  background-image: linear-gradient(180deg, #fff394, #f3ca3e 58%, #e4b529) !important;
+  border-color: #fff1a0;
+  box-shadow: inset 0 2px 0 #fffad877, inset 0 -2px 0 #af741f55, 0 3px 9px #ffcd281c;
+}
+html[data-brand='wikicontexto'] body[data-vite-ui] #titleText .t-word.revealed .w-text {
+  background-image: linear-gradient(180deg, #acffa0, #4dec62 64%, #25c74c);
+  box-shadow: inset 0 2px 0 #e8ffe677, inset 0 -2px 0 #0e7a3555, 0 3px 9px #2fff461c;
+}
+html[data-brand='wikicontexto'] body[data-vite-ui] #body .word.redacted:not(.is-number):not(.confirmed) {
+  background-image: linear-gradient(180deg, #224d77, #173959);
+  box-shadow: inset 0 1px 0 #a0dafc12, inset 0 -1px 0 #020c2540;
+}
+html[data-brand='wikicontexto'] body[data-vite-ui] #body .word.revealed { color: #d8f6eb; }
+html[data-brand='wikicontexto'] body[data-vite-ui] #body .word.fresh-reveal { animation: none; }
+html[data-brand='wikicontexto'] body[data-vite-ui] .wk-loading-card {
+  background-image: var(--wk-grain), var(--wk-surface);
+  border-color: #61dcea80; box-shadow: var(--wk-shadow), 0 0 50px #13c6db0c;
+}
+html[data-brand='wikicontexto'] body[data-vite-ui] #wwgb-inner {
+  background-image: var(--wk-grain), linear-gradient(180deg, #13324f, #071a34);
+  border-color: #4a99b77a; box-shadow: var(--wk-shadow);
+}
+html.theme-light body[data-vite-ui] {
+  --wk-surface: linear-gradient(145deg, #fff, #edf6ff 60%, #dfedf9);
+  --wk-rim: #78aaca88;
+  --wk-shadow: 0 9px 24px #274d7612, inset 0 1px 0 #fff, inset 0 -1px 0 #7ea4c333;
+  background-image: var(--wk-grain), radial-gradient(ellipse at 90% 0%, #bceafa, transparent 55%);
+}
+html.theme-light body[data-vite-ui] :is(.article-body-panel, .nav-btn, .theme-toggle, .mute-toggle, .mode-bar, #wwgb-inner) {
+  background-image: var(--wk-grain), var(--wk-surface);
+}
+html.theme-light body[data-vite-ui] #body .word.redacted:not(.is-number):not(.confirmed) {
+  background-image: linear-gradient(180deg, #c5dfee, #b3cde0);
+  box-shadow: inset 0 1px 0 #ffffff77;
+}
+html.theme-light body[data-vite-ui] #body .word.revealed { color: #18583f; }
+html.theme-light body[data-vite-ui] .wa-beta-link { color: #173c5a; }
+/* The existing transparent OBS surfaces and cosmetic media keep their paint. */
+html.obs-overlay-mode body[data-vite-ui] { background: transparent !important; }
+@media (max-width: 719px) {
+  /* The scaled game canvas uses the full viewport; a gutter would crop it. */
+  body[data-vite-ui] .scroll-wrap { scrollbar-width: none; }
+  body[data-vite-ui] .scroll-wrap::-webkit-scrollbar { display: none; }
+  html:not(.obs-overlay-mode) body[data-vite-ui]:not(.neon-solo):not(.neon-obs) #wwgb-root {
+    width: 100%; right: 0; zoom: 1 !important;
+  }
+  body[data-vite-ui]:not(.neon-solo) #wwgb-bar { padding: 6px 8px max(6px, env(safe-area-inset-bottom)); }
+  body[data-vite-ui]:not(.neon-solo) #wwgb-inner { padding: 6px; gap: 6px; border-radius: 12px; }
+  body[data-vite-ui]:not(.neon-solo) #wwgb-nick { width: 48px; height: 44px; padding: 0 4px; font-size: 11px; }
+  body[data-vite-ui]:not(.neon-solo) #wwgb-input-wrap { height: 44px; padding-right: 6px; }
+  body[data-vite-ui]:not(.neon-solo) #wwgb-input { height: 42px; padding: 0 6px 0 9px; font-size: 16px; }
+  body[data-vite-ui]:not(.neon-solo) #wwgb-btn { height: 44px; padding: 0 10px; font-size: 11px; letter-spacing: .4px; }
+  body[data-vite-ui]:not(.neon-solo) #wwgb-kb-toggle { width: 44px; height: 44px; padding: 0; font-size: 20px; }
+  body[data-vite-ui]:not(.neon-solo) .wwgb-search-icon { width: 16px; height: 16px; }
+  html:not(.obs-overlay-mode) body[data-vite-ui]:not(.neon-solo):not(.neon-obs) .page-wrap { padding-bottom: 180px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  body[data-vite-ui] :is(button, .nav-btn) { transition: none; }
+}

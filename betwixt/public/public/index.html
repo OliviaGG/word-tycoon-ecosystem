@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Betwixt</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="game.css?v=4" />
+  <script>
+    (function () {
+      var isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+      var isMobileLike = window.matchMedia('(pointer: coarse)').matches || Math.min(window.innerWidth || 0, screen.width || 0) <= 900;
+      var params = new URLSearchParams(window.location.search);
+      var source = params.get('source');
+      if (isStandalone && isMobileLike && (source === 'pwa' || source === null)) {
+        window.location.replace('./play?source=pwa-mobile');
+      }
+    })();
+  </script>
+</head>
+<body>
+  <div id="game-container">
+    <!-- Jackpot display -->
+    <div class="jackpot-display" id="jackpot-display">
+      <span class="jackpot-icon">&#x1FA99;</span>
+      <span class="jackpot-amount" id="jackpot-amount">100</span>
+      <span id="daily-badge" class="daily-badge" style="display:none">&#x2B50; DAILY</span>
+      <span id="frenzy-badge" class="frenzy-badge" style="display:none">
+        <span class="frenzy-label">FRENZY</span>
+        <span id="frenzy-mult">1.0x</span>
+      </span>
+    </div>
+
+    <!-- Lower boundary (AFTER) -->
+    <div class="boundary after" id="lower-boundary">
+      <span class="bnd-label">AFTER</span>
+      <span class="bnd-arrow">&darr;</span>
+      <div class="bnd-tiles" id="lower-tiles"></div>
+      <div class="pfp-circle" id="lower-pfp"></div>
+    </div>
+
+    <!-- Confirmed letters row -->
+    <div class="confirmed-row" id="confirmed-row"></div>
+
+    <!-- Upper boundary (BEFORE) -->
+    <div class="boundary before" id="upper-boundary">
+      <span class="bnd-label">BEFORE</span>
+      <span class="bnd-arrow">&uarr;</span>
+      <div class="bnd-tiles" id="upper-tiles"></div>
+      <div class="pfp-circle" id="upper-pfp"></div>
+    </div>
+
+    <!-- Alphabet grid (2 rows: A-M, N-Z) -->
+    <div class="alphabet-grid" id="alphabet-grid">
+      <div class="alpha-row" id="alpha-row-1"></div>
+      <div class="alpha-row" id="alpha-row-2"></div>
+    </div>
+
+    <!-- Winner history banner -->
+    <div class="winner-banner" id="winner-banner"></div>
+
+    <!-- Win overlay -->
+    <div class="win-overlay hidden" id="win-overlay">
+      <div class="win-modal">
+        <div class="win-pic" id="win-pic"></div>
+        <div class="win-name" id="win-name"></div>
+        <div class="win-word" id="win-word"></div>
+        <div class="win-info">
+          <span>Found in <strong id="win-count"></strong> guesses</span>
+          <span class="win-jackpot" id="win-jackpot"></span>
+        </div>
+        <div class="win-countdown" id="win-countdown"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="game.js?v=4"></script>
+  <script src="win-effects.js?v=3"></script>
+  <script src="coin-reward.js?v=3"></script>
+</body>
+</html>

@@ -1,0 +1,203 @@
+/* WikiWord 4×4 mode overrides.
+   Loaded only by /wikiword-4x4 so the classic WikiWord game is untouched. */
+
+/* Stack everything vertically above the grid:
+   title → single target card → found words → grid. */
+body.wikiword-4x4-mode .layout.mini-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: min(480px, 100%);
+  margin: 0 auto;
+}
+
+body.wikiword-4x4-mode .topbar {
+  padding: 10px 12px;
+}
+
+body.wikiword-4x4-mode .topbar .logo {
+  height: 32px;
+}
+
+body.wikiword-4x4-mode .counts {
+  gap: 8px;
+}
+
+body.wikiword-4x4-mode .count {
+  font-size: 12px;
+  padding: 4px 8px;
+}
+
+body.wikiword-4x4-mode .title-block {
+  padding: 0;
+}
+
+body.wikiword-4x4-mode .title-eyebrow {
+  font-size: 11px;
+  letter-spacing: 2px;
+}
+
+/* The 4×4 page removes the podium and common/rare/ultra tiers. The card now
+   shows the top 3 most recent finds, so keep each entry compact. */
+body.wikiword-4x4-mode .found-words-card {
+  height: auto;
+  min-height: 50px;
+  padding: 8px 12px;
+  gap: 6px;
+}
+body.wikiword-4x4-mode .found-word-item {
+  gap: 2px 8px;
+}
+body.wikiword-4x4-mode .found-word-item .fw-avatar,
+body.wikiword-4x4-mode .found-word-item .fw-fallback {
+  width: 36px;
+  height: 36px;
+  font-size: 1rem;
+}
+body.wikiword-4x4-mode .found-word-item .fw-word {
+  font-size: 1.3rem;
+}
+body.wikiword-4x4-mode .found-word-item .fw-pts {
+  font-size: 0.85rem;
+}
+body.wikiword-4x4-mode .found-word-item .fw-finder {
+  font-size: 0.8rem;
+}
+
+/* Top 3 target cards: one large + two small. */
+body.wikiword-4x4-mode .right-col {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+body.wikiword-4x4-mode .target-row {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  justify-content: center;
+}
+
+body.wikiword-4x4-mode .target-cards .tcard,
+body.wikiword-4x4-mode #target-cards .tcard {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 62px;
+}
+
+body.wikiword-4x4-mode .target-row-1 .tcard {
+  height: 86px;
+}
+
+body.wikiword-4x4-mode .target-row-1 .tcard .tlabel {
+  height: 66px;
+  padding: 0 24px;
+}
+
+body.wikiword-4x4-mode .target-row-1 .tcard .tword {
+  font-size: 2.4rem;
+}
+
+body.wikiword-4x4-mode .target-row-2 .tcard .tlabel {
+  height: 42px;
+  padding: 0 10px;
+}
+
+body.wikiword-4x4-mode .target-row-2 .tcard .tword {
+  font-size: 1.3rem;
+}
+
+body.wikiword-4x4-mode .target-row-2 .tname { display: none; }
+
+/* Tighter ticker. */
+body.wikiword-4x4-mode .ticker {
+  margin-top: 6px;
+  min-height: 28px;
+}
+
+/* 4×4 grid: match the game-card width above it, not the full viewport. */
+body.wikiword-4x4-mode .grid-wrap {
+  width: min(480px, 100%);
+  margin: 0 auto;
+  padding: 10px 0;
+}
+
+body.wikiword-4x4-mode .grid {
+  width: 100%;
+  gap: 8px;
+}
+
+body.wikiword-4x4-mode .cell {
+  font-size: clamp(1.8rem, 11cqw, 2.8rem);
+  border-radius: 12px;
+}
+
+/* 4×4: every tile is playable; never dim non-target cells. */
+body.wikiword-4x4-mode .cell.dimmed {
+  opacity: 1 !important;
+}
+
+/* 4×4: make the single target-word start outline stand out. */
+body.wikiword-4x4-mode .cell.common-start {
+  outline: 3px solid #5aa3ff;
+  outline-offset: -2px;
+}
+
+/* 4×4: 75%-common-found target reveal — solid fill instead of outline. */
+body.wikiword-4x4-mode .cell.common-start.start-filled {
+  outline: none;
+  background: #5aa3ff;
+  border-color: #5aa3ff;
+  color: #0d1420;
+}
+
+/* Compact composer, matching grid width. */
+body.wikiword-4x4-mode .composer {
+  width: min(480px, 100%);
+  margin: 0 auto;
+  padding: 8px 0 12px;
+  gap: 8px;
+}
+
+body.wikiword-4x4-mode .composer input {
+  font-size: 16px;
+  padding: 10px 12px;
+}
+
+body.wikiword-4x4-mode .composer button {
+  padding: 10px 16px;
+  font-size: 14px;
+}
+
+body.wikiword-4x4-mode .player-strip {
+  font-size: 12px;
+  padding: 8px 12px 16px;
+}
+
+/* Win strip only shows title count for 4×4. */
+body.wikiword-4x4-mode .win-strip {
+  justify-content: center;
+  padding: 8px;
+  gap: 12px;
+}
+
+/* Prevent the global cosmetic-glow overflow:visible changes from making the
+   compact layout wider than the viewport or letting target-card contents overlap. */
+body.wikiword-4x4-mode { overflow-x: hidden; }
+body.wikiword-4x4-mode .tcard-body { overflow: hidden; }
+body.wikiword-4x4-mode .found-word-item { overflow: hidden; }
+
+@media (max-width: 480px) {
+  body.wikiword-4x4-mode .grid-wrap {
+    padding: 6px;
+  }
+  body.wikiword-4x4-mode .grid {
+    gap: 6px;
+  }
+  body.wikiword-4x4-mode .cell {
+    border-radius: 10px;
+  }
+  body.wikiword-4x4-mode .tcard-large .tword {
+    font-size: 2rem;
+  }
+}

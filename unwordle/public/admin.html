@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UnWordle Admin</title>
+<script src="/socket.io/socket.io.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0d1117; --surface: #151d28; --surface2: #1c2736; --border: #2a3a4e;
+    --text: #e8e8f0; --text-dim: #6a7a8e; --red: #e74c3c; --green: #4ade80;
+    --yellow: #f1c40f; --accent: #b44aff;
+  }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; font-size: 14px; min-height: 100vh; }
+  header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 12px 20px; display: flex; align-items: center; gap: 12px; }
+  header h1 { font-size: 18px; font-weight: 700; color: var(--accent); letter-spacing: 0.5px; }
+  #conn-status { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-dim); margin-left: auto; }
+  #conn-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--red); transition: background 0.3s; }
+  #conn-dot.connected { background: var(--green); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; padding: 20px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px; }
+  .card h2 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--accent); margin-bottom: 14px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+  .stat-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border); }
+  .stat-row:last-child { border-bottom: none; }
+  .stat-label { color: var(--text-dim); font-size: 13px; }
+  .stat-value { font-weight: 600; color: var(--text); }
+  .info-note { background: rgba(180,74,255,0.07); border: 1px solid rgba(180,74,255,0.25); border-radius: 8px; padding: 14px 16px; color: var(--text-dim); font-size: 13px; line-height: 1.6; margin-bottom: 14px; }
+  .info-note strong { color: var(--accent); }
+  .info-icon { font-size: 28px; text-align: center; display: block; margin-bottom: 8px; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 16px; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: opacity 0.2s; }
+  .btn:hover { opacity: 0.85; }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-accent { background: var(--accent); color: #fff; }
+  .btn-danger { background: var(--red); color: #fff; }
+  .toggle-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .toggle-row:last-of-type { border-bottom: none; }
+  .toggle-label { color: var(--text-dim); font-size: 13px; }
+  .toggle { position: relative; display: inline-block; width: 40px; height: 22px; }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .toggle-slider { position: absolute; inset: 0; background: var(--border); border-radius: 22px; cursor: pointer; transition: background 0.2s; }
+  .toggle-slider::before { content: ''; position: absolute; width: 16px; height: 16px; left: 3px; top: 3px; background: var(--text-dim); border-radius: 50%; transition: transform 0.2s, background 0.2s; }
+  .toggle input:checked + .toggle-slider { background: var(--accent); }
+  .toggle input:checked + .toggle-slider::before { transform: translateX(18px); background: #fff; }
+  .form-group { margin-bottom: 12px; }
+  .form-group label { display: block; font-size: 12px; color: var(--text-dim); margin-bottom: 4px; }
+  .form-group input { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 7px 10px; color: var(--text); font-size: 13px; outline: none; }
+  .form-group input:focus { border-color: var(--accent); }
+  .btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+  .xp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .section-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-dim); margin: 14px 0 8px; }
+  .toast { position: fixed; bottom: 20px; right: 20px; background: var(--surface2); border: 1px solid var(--accent); border-radius: 8px; padding: 10px 16px; font-size: 13px; color: var(--text); z-index: 999; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+  .toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+<header>
+  <h1>UnWordle Admin</h1>
+  <div id="conn-status"><div id="conn-dot"></div><span id="conn-label">Disconnected</span></div>
+</header>
+<div class="grid">
+  <!-- Card 1: SP Game Info -->
+  <div class="card">
+    <h2>Game Info</h2>
+    <div class="info-note">
+      <span class="info-icon">🧩</span>
+      <strong>UnWordle is single-player only.</strong><br>
+      Each player has their own independent game session. There is no shared live game state to display — players come and go individually with no cross-player interactions.<br><br>
+      XP jackpot rewards are still tracked and awarded per session below.
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Mode</span>
+      <span class="stat-value">Single Player</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Live State</span>
+      <span class="stat-value" style="color:var(--text-dim);">N/A</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Socket</span>
+      <span class="stat-value" id="socket-status">Connecting…</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Current Jackpot</span>
+      <span class="stat-value" id="jackpot-current">—</span>
+    </div>
+  </div>
+
+  <!-- Card 2: XP Settings -->
+  <div class="card">
+    <h2>XP Settings</h2>
+    <div class="toggle-row" style="margin-bottom:14px;">
+      <span class="toggle-label">Jackpot Enabled</span>
+      <label class="toggle"><input type="checkbox" id="toggle-jackpot" onchange="setJackpotEnabled(this.checked)"><span class="toggle-slider"></span></label>
+    </div>
+    <div class="section-label">Jackpot Parameters</div>
+    <div class="xp-grid">
+      <div class="form-group"><label>Base XP</label><input type="number" id="xp-base" min="0"></div>
+      <div class="form-group"><label>Per Guess</label><input type="number" id="xp-per-guess" min="0"></div>
+      <div class="form-group"><label>Per Second</label><input type="number" id="xp-per-second" min="0" step="0.1"></div>
+      <div class="form-group"><label>Max XP</label><input type="number" id="xp-max" min="0"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-accent" onclick="saveXpSettings()">Save XP Settings</button>
+      <button class="btn btn-danger" onclick="resetXp()">Reset XP</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const socket = io();
+
+function getAdminKey() {
+  let key = sessionStorage.getItem('adminKey');
+  if (!key) { key = prompt('Enter admin password:'); if (key) sessionStorage.setItem('adminKey', key); }
+  return key || '';
+}
+function adminFetch(url, opts = {}) {
+  const headers = { ...(opts.headers || {}), 'x-admin-key': getAdminKey(), 'Content-Type': 'application/json' };
+  return fetch(url, { ...opts, headers });
+}
+
+function showToast(msg, isErr) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.borderColor = isErr ? 'var(--red)' : 'var(--accent)';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+async function loadJackpotSettings() {
+  try {
+    const res = await fetch('/api/jackpot/settings');
+    if (!res.ok) return;
+    const d = await res.json();
+    document.getElementById('toggle-jackpot').checked = !!d.enabled;
+    document.getElementById('xp-base').value = d.base ?? '';
+    document.getElementById('xp-per-guess').value = d.perGuess ?? '';
+    document.getElementById('xp-per-second').value = d.perSecond ?? '';
+    document.getElementById('xp-max').value = d.max ?? '';
+    document.getElementById('jackpot-current').textContent = d.current != null ? d.current + ' XP' : '—';
+  } catch(e) {}
+}
+
+async function setJackpotEnabled(val) {
+  try {
+    const res = await adminFetch('/api/jackpot/settings', { method: 'POST', body: JSON.stringify({ enabled: val }) });
+    showToast(res.ok ? 'Jackpot ' + (val ? 'enabled' : 'disabled') : 'Failed', !res.ok);
+    if (res.ok) loadJackpotSettings();
+  } catch(e) { showToast('Error', true); }
+}
+
+async function saveXpSettings() {
+  const body = {
+    base: parseFloat(document.getElementById('xp-base').value),
+    perGuess: parseFloat(document.getElementById('xp-per-guess').value),
+    perSecond: parseFloat(document.getElementById('xp-per-second').value),
+    max: parseFloat(document.getElementById('xp-max').value)
+  };
+  try {
+    const res = await adminFetch('/api/jackpot/settings', { method: 'POST', body: JSON.stringify(body) });
+    showToast(res.ok ? 'XP settings saved!' : 'Failed to save', !res.ok);
+    if (res.ok) loadJackpotSettings();
+  } catch(e) { showToast('Error', true); }
+}
+
+async function resetXp() {
+  if (!confirm('Reset jackpot XP to base value?')) return;
+  try {
+    const res = await adminFetch('/api/jackpot/reset', { method: 'POST', body: '{}' });
+    showToast(res.ok ? 'XP reset!' : 'Failed to reset', !res.ok);
+    if (res.ok) loadJackpotSettings();
+  } catch(e) { showToast('Error', true); }
+}
+
+// Socket (included for future use)
+socket.on('connect', () => {
+  socket.emit('admin-auth', getAdminKey());
+  document.getElementById('conn-dot').classList.add('connected');
+  document.getElementById('conn-label').textContent = 'Connected';
+  document.getElementById('socket-status').textContent = 'Connected';
+  document.getElementById('socket-status').style.color = 'var(--green)';
+});
+socket.on('disconnect', () => {
+  document.getElementById('conn-dot').classList.remove('connected');
+  document.getElementById('conn-label').textContent = 'Disconnected';
+  document.getElementById('socket-status').textContent = 'Disconnected';
+  document.getElementById('socket-status').style.color = 'var(--red)';
+});
+
+// Init
+loadJackpotSettings();
+setInterval(loadJackpotSettings, 10000);
+</script>
+</body>
+</html>

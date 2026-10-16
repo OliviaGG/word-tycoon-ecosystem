@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-18066640610"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag("js", new Date());
+  gtag("config", "AW-18066640610");
+</script>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <meta name="theme-color" content="#111827"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="Wordle"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="description" content="Install Wordle for one-tap solo and multiplayer word puzzles."/>
+  <title>Wordle Multiplayer</title>
+  <link rel="manifest" href="/wordle/manifest.webmanifest?v=1"/>
+  <link rel="icon" type="image/svg+xml" href="/wordle/app-icon.svg"/>
+  <link rel="apple-touch-icon" href="/wordle/app-icon.svg"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <script>
+    (function () {
+      var storageKey = 'wordle_theme';
+      var globalStorageKey = 'wordtycoon_theme';
+      var root = document.documentElement;
+      var meta = document.querySelector('meta[name="theme-color"]');
+      var darkColor = '#111827';
+      var lightColor = '#eef4fb';
+      function getTheme() {
+        // OBS embeds always render dark: headless CEF reports
+        // prefers-color-scheme light, which flipped stream tiles to the
+        // light palette (much brighter "absent" grey than viewers expect).
+        try { if (new URLSearchParams(location.search).has('obs')) return 'dark'; } catch (e) {}
+        try {
+          var saved = localStorage.getItem(globalStorageKey);
+          if (saved !== 'light' && saved !== 'dark') saved = localStorage.getItem(storageKey);
+          if (saved === 'light' || saved === 'dark') return saved;
+        } catch (e) {}
+        return window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+      }
+      var theme = getTheme();
+      root.setAttribute('data-theme', theme);
+      if (meta) meta.setAttribute('content', theme === 'light' ? lightColor : darkColor);
+    })();
+  </script>
+  <link rel="stylesheet" href="wordle-play.css?v=8"/>
+  <link rel="stylesheet" href="public-shared.css?v=1"/>
+<style>.mp-login-screen,.sp-login-screen,#login-bar,.guess-login-prompt{display:none!important;}
+/* OBS overlay: when this page is embedded in stream-view (?obs=1),
+   drop the light-theme body bg + any container bg so the parent
+   overlay's animated background shows through. Game UI cards keep
+   their own backgrounds and stay readable. */
+body.obs-mode, html.obs-mode { background: transparent !important; }
+html[data-theme="light"] body.obs-mode { background: transparent !important; }
+body.obs-mode .container, body.obs-mode #game-ui, body.obs-mode #app { background: transparent !important; }
+/* THE dark-mode transparency killer. :root declares `color-scheme: dark` (and
+   the theme is picked from the STREAM MACHINE's prefers-color-scheme), and when
+   color-scheme resolves to dark, Chromium/CEF paints its own dark UA canvas
+   behind the document even though html/body are background:transparent — so the
+   OBS source renders solid dark instead of see-through. Light mode has no such
+   canvas paint, which is why this looked "fixed" whenever the Linux box was in
+   light mode and broken in dark mode.
+   Note getComputedStyle STILL reports rgba(0,0,0,0) for html/body in this
+   state, so DOM inspection cannot see this — only the rendered output shows it.
+   `normal` (the CSS initial value) stops the UA dark-canvas paint; the game's
+   own colours are CSS vars and are unaffected. */
+html.obs-mode { color-scheme: normal !important; }
+/* ===== OBS frosted-glass board card =====
+   Painted as a pseudo-element BEHIND the grid so the board reads as sitting on
+   a pane of frosted glass floating over the stream overlay's animated
+   background. Absolutely positioned, so it has ZERO effect on tile sizing or
+   grid layout. Off unless body.wt-glass-on is set, which only the streamer
+   overlay does (via the postMessage listener below) — the normal player page
+   and every non-streamer embed are untouched.
+
+   DELIBERATELY NO backdrop-filter, for two independent reasons:
+   1. render1 (the server-stream box) runs OBS browser sources with
+      BrowserHWAccel=false + llvmpipe. In that software path backdrop-filter
+      cannot sample its backdrop and composites over BLACK — the element
+      ERASES whatever is painted behind it and the "glass" renders as a dark
+      slab on stream.
+   2. This page is in an iframe, and an iframe is its own backdrop root, so it
+      could never sample the parent overlay's animated background anyway.
+   Every glass cue below is therefore baked: layered gradients, a gradient
+   border-box rim, a specular sweep and inset hairlines. Renders identically on
+   desktop, GPU OBS and render1. */
+/* #app is a `max-width:500px; padding:0 12px; overflow:hidden` shell whose
+   content box (500 - 2*12 = 476px) is what the grid sizes against, so the
+   card's horizontal overhang was being clipped to those 12px of padding.
+   Re-express the shell in terms of the overhang instead:
+
+     content box = min(viewport, 476 + 2*pad) - 2*pad
+
+   which lands correctly in BOTH regimes with no media query:
+   - Wide viewport (max-width binds): 476 + 2*pad - 2*pad = 476px, i.e. the
+     ORIGINAL content box, so the board is untouched and the card simply gets
+     the widened shell to live in.
+   - Narrow viewport (the streamer sized this widget down — e.g. a 38% wide
+     gameEmbed is only ~408 CSS px): the shell is the viewport, so the content
+     box gives up exactly 2*pad and the board narrows by precisely enough to
+     fit the card. A 6-8 letter grid wants 439/513/587px, far more than a
+     408px viewport holds, so it was pinned at the content box with only 12px
+     to spare — the card cannot have a 28px margin there unless the board
+     yields it. This is geometry, not a bug: board + 2*pad must fit.
+   476px is the original content box and must stay in step with #app's
+   `max-width: 500px` / `padding: 0 12px` in wordle-play.css. */
+body.obs-mode.wt-glass-on #app {
+  max-width: calc(476px + 2 * var(--wt-glass-pad, 26px));
+  padding-left: var(--wt-glass-pad, 26px);
+  padding-right: var(--wt-glass-pad, 26px);
+}
+body.obs-mode.wt-glass-on #wordle-grid { position: relative; }
+.kb-key.hint-reveal { animation: wtHintPulse 0.6s ease-in-out 3; }
+@keyframes wtHintPulse { 0%,100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(245,158,11,0.7); } 50% { transform: scale(1.08); box-shadow: 0 0 12px 4px rgba(245,158,11,0.4); } }
+body.obs-mode.wt-glass-on #wordle-grid::before {
+  content: '';
+  position: absolute;
+  inset: calc(-1 * var(--wt-glass-pad, 26px));
+  border-radius: var(--wt-glass-radius, 28px);
+  border: 1px solid transparent;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    /* specular sweep — the diagonal highlight that reads as a lit pane */
+    linear-gradient(115deg,
+      var(--wt-glass-sheen, rgba(255,255,255,0.10)) 0%,
+      rgba(255,255,255,0) 42%) padding-box,
+    /* frost diffusion — fakes the soft smear a real backdrop blur would
+       leave. Feathered to 68% so it has no hard stop to give itself away. */
+    radial-gradient(130% 85% at 50% 0%,
+      var(--wt-glass-frost, rgba(255,255,255,0.07)) 0%,
+      rgba(255,255,255,0) 68%) padding-box,
+    /* body tint — GRADED, not a flat wash. A flat fill is what reads as a
+       dimmer rather than as glass. */
+    linear-gradient(180deg,
+      var(--wt-glass-fill-top, rgba(255,255,255,0.10)),
+      var(--wt-glass-fill-bottom, rgba(255,255,255,0.04))) padding-box,
+    /* rim / edge shine — the single strongest "this is glass" cue. Shows
+       through the 1px transparent border via border-box. */
+    linear-gradient(135deg,
+      var(--wt-glass-edge-strong, rgba(255,255,255,0.45)),
+      var(--wt-glass-edge-soft, rgba(255,255,255,0.05)) 38%,
+      var(--wt-glass-edge-mid, rgba(255,255,255,0.18))) border-box;
+  box-shadow:
+    0 18px 50px var(--wt-glass-shadow, rgba(0,0,0,0.45)),
+    0 2px 10px rgba(0,0,0,0.22),
+    inset 0 1px 0 var(--wt-glass-inset-top, rgba(255,255,255,0.22)),
+    inset 0 -1px 0 rgba(0,0,0,0.28);
+}
+</style>
+<script>
+  (function () {
+    try {
+      if (new URLSearchParams(location.search).has('obs')) {
+        document.documentElement.classList.add('obs-mode');
+        document.addEventListener('DOMContentLoaded', () => document.body.classList.add('obs-mode'));
+      }
+    } catch (_) { /* harmless */ }
+  })();
+</script>
+<script>
+  /* Frosted-glass board card, driven by the streamer overlay's Game widget.
+     The parent posts {type:'wt-glass', ...} rather than putting the values in
+     this page's URL ON PURPOSE: changing the iframe src reloads the page, so a
+     URL-driven control would reset the board every time the streamer nudged a
+     slider mid-stream.
+     Saturation/brightness act on the TINT COLOUR (not on sampled backdrop
+     pixels) because there is no backdrop to sample — see the CSS note above. */
+  (function () {
+    var TRUSTED = /^https:\/\/(www\.)?(wordtycoon\.live|wordgame\.live)$/;
+    var LOCAL = /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/;
+    var pending = null;
+
+    function clamp(v, lo, hi, dflt) {
+      var n = Number(v);
+      if (!isFinite(n)) return dflt;
+      return n < lo ? lo : (n > hi ? hi : n);
+    }
+    function hexToRgb(h) {
+      var m = /^#?([0-9a-f]{6})$/i.exec(String(h || ''));
+      if (!m) return null;
+      var n = parseInt(m[1], 16);
+      return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+    }
+    function rgbToHsl(r, g, b) {
+      r /= 255; g /= 255; b /= 255;
+      var max = Math.max(r, g, b), min = Math.min(r, g, b);
+      var h = 0, s = 0, l = (max + min) / 2, d = max - min;
+      if (d) {
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        if (max === r) h = ((g - b) / d + (g < b ? 6 : 0));
+        else if (max === g) h = (b - r) / d + 2;
+        else h = (r - g) / d + 4;
+        h /= 6;
+      }
+      return [h, s, l];
+    }
+    function hslToRgb(h, s, l) {
+      if (!s) { var v = Math.round(l * 255); return [v, v, v]; }
+      function hue(p, q, t) {
+        if (t < 0) t += 1;
+        if (t > 1) t -= 1;
+        if (t < 1 / 6) return p + (q - p) * 6 * t;
+        if (t < 1 / 2) return q;
+        if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+        return p;
+      }
+      var q = l < 0.5 ? l * (1 + s) : l + s - l * s, p = 2 * l - q;
+      return [
+        Math.round(hue(p, q, h + 1 / 3) * 255),
+        Math.round(hue(p, q, h) * 255),
+        Math.round(hue(p, q, h - 1 / 3) * 255)
+      ];
+    }
+    function rgba(rgb, a) {
+      a = a < 0 ? 0 : (a > 1 ? 1 : a);
+      return 'rgba(' + rgb[0] + ',' + rgb[1] + ',' + rgb[2] + ',' + (Math.round(a * 1000) / 1000) + ')';
+    }
+
+    function apply(cfg) {
+      var root = document.documentElement;
+      var body = document.body;
+      if (!body) { pending = cfg; return; }
+      pending = null;
+      if (!cfg || !cfg.on) { body.classList.remove('wt-glass-on'); return; }
+
+      var sat = clamp(cfg.saturation, 0, 300, 100) / 100;
+      var bright = clamp(cfg.brightness, 0, 200, 100) / 100;
+      var base = hexToRgb(cfg.tint) || [255, 255, 255];
+      var hsl = rgbToHsl(base[0], base[1], base[2]);
+      var tint = hslToRgb(hsl[0], Math.min(1, hsl[1] * sat), Math.min(1, hsl[2] * bright));
+
+      var op = clamp(cfg.opacity, 0, 100, 10) / 100;
+      var frost = clamp(cfg.frost, 0, 100, 45) / 100;
+      var edge = clamp(cfg.edge, 0, 100, 45) / 100;
+
+      /* Graded fill: top carries the full tint, bottom ~45% of it. */
+      root.style.setProperty('--wt-glass-fill-top', rgba(tint, op));
+      root.style.setProperty('--wt-glass-fill-bottom', rgba(tint, op * 0.45));
+      /* Frost + sheen are always white — a frosted pane scatters light, it
+         does not scatter the tint. Frost also widens the padding a little so
+         a heavily-frosted card sits further off the board. */
+      root.style.setProperty('--wt-glass-frost', rgba([255, 255, 255], frost * 0.14));
+      root.style.setProperty('--wt-glass-sheen', rgba([255, 255, 255], 0.04 + frost * 0.10));
+      root.style.setProperty('--wt-glass-pad', (20 + Math.round(frost * 14)) + 'px');
+      root.style.setProperty('--wt-glass-radius', clamp(cfg.radius, 0, 80, 28) + 'px');
+      /* Rim takes the tint so a coloured glass gets a coloured edge. */
+      root.style.setProperty('--wt-glass-edge-strong', rgba(tint, edge));
+      root.style.setProperty('--wt-glass-edge-soft', rgba(tint, edge * 0.12));
+      root.style.setProperty('--wt-glass-edge-mid', rgba(tint, edge * 0.40));
+      root.style.setProperty('--wt-glass-inset-top', rgba([255, 255, 255], edge * 0.48));
+      root.style.setProperty('--wt-glass-shadow', rgba([0, 0, 0], 0.20 + op * 0.45));
+      body.classList.add('wt-glass-on');
+    }
+
+    window.addEventListener('message', function (ev) {
+      if (!TRUSTED.test(ev.origin) && !LOCAL.test(ev.origin)) return;
+      var d = ev.data;
+      if (!d || d.type !== 'wt-glass') return;
+      apply(d);
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
+      if (pending) apply(pending);
+      /* Tell the parent we are ready. The parent posts on iframe load too, but
+         that can fire before this listener is registered on a slow load. */
+      try {
+        if (window.parent && window.parent !== window) {
+          window.parent.postMessage({ type: 'wt-glass-ready' }, '*');
+        }
+      } catch (_) { /* cross-origin parent — parent's load handler covers it */ }
+    });
+  })();
+</script>
+<script src="https://wordtycoon.live/login-prompt.js?v=3" defer></script>
+</head>
+<body data-mode="mp">
+  <div id="app">
+    <!-- Login Screen (shown until authenticated) -->
+    <div id="login-screen" class="mp-login-screen">
+      <div class="mp-login-card">
+        <div class="mp-login-logo">🟩</div>
+        <h1>Wordle</h1>
+        <p>Multiplayer mode — compete with other players in real-time!</p>
+        <div class="mp-guest-section">
+          <div class="mp-guest-row">
+            <input id="guest-name-input" type="text" class="mp-guest-input" placeholder="Choose a username" maxlength="20" autocomplete="off" autocapitalize="off" autofocus>
+            <button id="guest-play-btn" class="mp-guest-btn">Play</button>
+          </div>
+        </div>
+        <div class="mp-login-divider"><span>or sign in for stats &amp; rewards</span></div>
+        <a href="/auth/discord?returnTo=/wordle/online/" class="mp-discord-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
+          Login with Discord
+        </a>
+        <div class="mp-login-divider"><span>or</span></div>
+        <a href="/auth/github?returnTo=/wordle/online/" class="mp-github-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+          Login with GitHub
+        </a>
+        <a href="https://wordtycoon.live" class="mp-back-link">← Back to Word Tycoon</a>
+      </div>
+    </div>
+
+    <!-- Game UI (hidden until authenticated) -->
+    <div id="game-ui" style="display:none;flex-direction:column;height:100%">
+      <!-- Header -->
+      <header id="header">
+        <a href="https://wordtycoon.live" class="hub-btn" title="Word Tycoon Hub">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </a>
+        <span class="title">WORDLE</span>
+        <span class="mp-badge">MP</span>
+        <span class="guess-counter" id="guess-counter">0</span>
+        <span id="daily-badge" class="daily-badge" style="display:none">&#11088; DAILY</span>
+        <span id="frenzy-badge" class="frenzy-badge" style="display:none">
+          <span class="frenzy-label">FRENZY</span>
+          <span id="frenzy-mult">1.0x</span>
+        </span>
+        <div class="header-actions">
+          <span id="hint-btn-wrap" style="display:inline-flex;align-items:center;"></span>
+          <button class="stats-toggle-btn" id="stats-toggle" title="Stats">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="12" width="4" height="9"/><rect x="10" y="7" width="4" height="14"/><rect x="17" y="3" width="4" height="18"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- Stats Dropdown -->
+      <div class="stats-dropdown hidden" id="stats-dropdown">
+        <div class="stats-dropdown-header">
+          <span>Your Stats</span>
+          <button class="stats-close" id="stats-close">&times;</button>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-item">
+            <div class="stat-val" id="stat-wins">0</div>
+            <div class="stat-lbl">Wins</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-val" id="stat-games">0</div>
+            <div class="stat-lbl">Played</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-val" id="stat-avg">-</div>
+            <div class="stat-lbl">Avg Guesses</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-val" id="stat-streak">0</div>
+            <div class="stat-lbl">Win Streak</div>
+          </div>
+        </div>
+        <div class="stats-history" id="stats-history"></div>
+        <a href="https://wordtycoon.live/me" class="stats-portal-link" target="_blank">View full stats on Word Tycoon →</a>
+      </div>
+
+      <!-- Game Area -->
+      <main id="game-area">
+        <div class="wordle-grid" id="wordle-grid"></div>
+      </main>
+
+      <footer class="legal-footer keyboard-legal-footer">
+        <a href="https://wordtycoon.live/privacy" target="_blank" rel="noopener">Privacy</a> &middot;
+        <a href="https://wordtycoon.live/terms" target="_blank" rel="noopener">Terms</a> &middot;
+        <a href="https://discord.gg/C8Nm2jEZFC" target="_blank" rel="noopener">Discord</a> &middot;
+        <a href="https://wordtycoon.live/portal">&copy; 2026 Word Tycoon</a>
+      </footer>
+
+      <!-- QWERTY Keyboard -->
+      <div class="keyboard" id="keyboard"></div>
+
+      <!-- Error toast -->
+      <div class="error-toast hidden" id="error-toast" role="alert" aria-atomic="true"></div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="win-effects.js?v=3"></script>
+  <script src="https://wordtycoon.live/js/win-card.js"></script>
+  <script src="https://wordtycoon.live/js/hints.js?v=3-transactions"></script>
+  <link rel="stylesheet" href="https://wordtycoon.live/portal/assets/badges/perk-badges.css?b3">
+  <script src="https://wordtycoon.live/portal/assets/badges/perk-badges.js?b3"></script>
+  <script src="mp-init.js?v=11-round-recovery"></script>
+  <script src="/portal/js/library-toast.js" data-mode="player"></script>
+  <script src="/portal/js/cosmetic-reward.js"></script>
+  <script src="/portal/js/progress-card.js"></script>
+  <script src="/wordle/pwa-install.js?v=2"></script>
+  <script src="https://wordtycoon.live/portal/js/session-disable-gate.js?v=3"></script>
+<script>(function(){var H="https://wordtycoon.live";function show(){if(!window.LoginPrompt||!window.LoginPrompt.showModal)return setTimeout(show,60);window.LoginPrompt.showModal({authBase:H,returnTo:location.href,onDismiss:function(){var b=document.getElementById("guest-play-btn");if(b)b.click();}});}fetch(H+"/api/me/session",{credentials:"include"}).then(function(r){return r.json();}).then(function(d){if(!d||!d.ok||!d.user)show();}).catch(show);})();</script>
+</body>
+</html>

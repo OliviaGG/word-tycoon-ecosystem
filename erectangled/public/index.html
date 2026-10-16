@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0d1320">
+<meta name="description" content="erecTangled is a free expanding word search puzzle game like Squaredle. Find hidden words in growing ring grids — common, rare, and ultra-rare words. Live multiplayer and daily solo puzzles. A unique Squaredle alternative.">
+<meta name="keywords" content="squaredle, squaredle game, squaredle alternative, word search puzzle, word search game, erectangled, find words in grid, daily word puzzle, multiplayer word game, free word game, letter grid game, squaredle online, word puzzle game, expanding word search">
+<title>erecTangled — Free Expanding Word Search Puzzle | Squaredle Alternative</title>
+<link rel="canonical" href="https://erectangled.com/">
+<link rel="icon" type="image/png" href="/favicon-32-v3.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon-v3.png">
+<!-- Open Graph -->
+<meta property="og:title" content="erecTangled — Word Search Game Like Squaredle">
+<meta property="og:description" content="A free Squaredle-style word search puzzle with expanding ring grids. Find hidden words as the grid grows — live multiplayer and daily puzzles.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://erectangled.com/">
+<meta property="og:image" content="https://erectangled.com/icon-512.png">
+<meta property="og:site_name" content="erecTangled">
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="erecTangled — Word Search Game Like Squaredle">
+<meta name="twitter:description" content="Free Squaredle alternative with expanding ring grids. Find hidden words as the puzzle grows — live multiplayer.">
+<meta name="twitter:image" content="https://erectangled.com/icon-512.png">
+<!-- JSON-LD Structured Data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "VideoGame",
+  "name": "erecTangled",
+  "alternateName": ["erecTangled Game", "Squaredle Alternative", "Expanding Word Search"],
+  "description": "erecTangled is a free word search puzzle game similar to Squaredle with a unique expanding ring mechanic. The grid starts small and grows outward — find hidden words by connecting adjacent letters as new rings unlock.",
+  "url": "https://erectangled.com/",
+  "genre": ["Word Game", "Puzzle", "Multiplayer", "Word Search"],
+  "gamePlatform": "Web Browser",
+  "applicationCategory": "Game",
+  "operatingSystem": "Any",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "author": { "@type": "Organization", "name": "Word Tycoon", "url": "https://wordtycoon.live" }
+}
+</script>
+<link rel="stylesheet" href="game.css">
+    <link rel="stylesheet" href="top-player-cards.css?v=3">
+<style>
+    body {
+        background: transparent;
+        overflow: hidden;
+        width: 1920px;
+        height: 360px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding: 12px 20px;
+    }
+
+    /* Grid section */
+    .grid-wrap {
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+    }
+
+
+    /* Right panel */
+    .right-panel {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        overflow: hidden;
+    }
+
+    .overlay-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .game-title {
+        font-size: 1.4rem;
+        font-weight: 900;
+        color: #88ccff;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+    }
+
+    .progress-line {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.8rem;
+        color: var(--text2);
+    }
+
+    .jackpot-small {
+        color: var(--gold);
+        font-weight: 700;
+        font-size: 1rem;
+    }
+
+    /* Recent words ticker */
+    .recent-words {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        max-height: 80px;
+        overflow: hidden;
+    }
+
+    .recent-tag {
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        animation: tagPop 0.3s ease;
+    }
+    .recent-tag.common { background: #1a3050; border: 1px solid #3a6090; color: #88ccff; }
+    .recent-tag.rare   { background: #2a1a4a; border: 1px solid #6040aa; color: #cc88ff; }
+    .recent-tag.hidden { background: #2a2a2a; border: 1px solid #555; color: #aaa; }
+
+    @keyframes tagPop {
+        from { transform: scale(0.7); opacity: 0; }
+        to   { transform: scale(1);   opacity: 1; }
+    }
+
+    /* Leaderboard strip */
+    .leader-strip {
+        display: flex;
+        gap: 8px;
+        overflow: hidden;
+    }
+
+    .leader-chip {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 3px 10px;
+        font-size: 0.78rem;
+        white-space: nowrap;
+    }
+
+    .leader-chip .lname { font-weight: 600; }
+    .leader-chip .lscore { color: var(--gold); font-weight: 700; }
+</style>
+</head>
+<body>
+<div class="grid-wrap">
+    <div id="grid" class="grid-container"></div>
+</div>
+
+<div class="right-panel">
+    <div class="overlay-header">
+        <span class="game-title" style="font-family:'Fredoka',sans-serif;font-weight:700;font-size:1.4rem;letter-spacing:1px"><span style="color:#44bb88">e</span><span style="color:#3EC8E8">r</span><span style="color:#F5920A">e</span><span style="color:#EFC000">c</span><span style="color:#1E52C8">T</span><span style="color:#E83020">a</span><span style="color:#42B238">n</span><span style="color:#88AAFF">g</span><span style="color:#C835B8">l</span><span style="color:#F5920A">e</span><span style="color:#1EB8A8">d</span></span>
+        <span id="dailyBadge" class="badge daily" style="display:none">Daily</span>
+        <span id="jackpotDisplay" class="jackpot-small">💰 0</span>
+        <span id="progressText" class="progress-line"></span>
+    </div>
+
+    <div class="progress-bar-wrap" style="height:6px">
+        <div id="progressBar" class="progress-bar" style="width:0%"></div>
+    </div>
+
+    <div id="recentWords" class="recent-words"></div>
+
+    <div id="top-players" class="top-players"></div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="/portal/js/progress-card.js"></script>
+    <script src="top-player-cards.js?v=9-cosmq"></script>
+<script>
+const socket = io();
+let state = null;
+const WORD_LIMIT = 18;
+const recentWordsEl = document.getElementById('recentWords');
+let viewerVisibility = { word_color: false, word_glow: false };
+const getCosmetics = (typeof TopPlayerCards !== 'undefined' && TopPlayerCards.getCosmetics)
+    ? TopPlayerCards.getCosmetics.bind(TopPlayerCards)
+    : function () { return Promise.resolve({}); };
+
+function applyViewerVisibility(cos) {
+    if (!cos) return cos;
+    const filtered = Object.assign({}, cos);
+    Object.keys(viewerVisibility).forEach(cat => {
+        if (viewerVisibility[cat] === false) delete filtered[cat];
+    });
+    return filtered;
+}
+
+function loadViewerVisibility() {
+    return fetch('https://wordtycoon.live/api/me/visibility', { credentials: 'include' })
+        .then(r => r.ok ? r.json() : { visibility: viewerVisibility })
+        .then(data => {
+            if (data && data.visibility && typeof data.visibility === 'object') {
+                viewerVisibility = Object.assign({ word_color: false, word_glow: false }, data.visibility);
+            }
+        })
+        .catch(() => {});
+}
+
+loadViewerVisibility();
+
+function getWordCosmeticStyles(cos) {
+    if (!cos) return null;
+    cos = applyViewerVisibility(cos);
+    const wordColor = cos.word_color;
+    const wordGlow = cos.word_glow;
+    if (!wordColor && !wordGlow) return null;
+    return {
+        color: (wordColor && wordColor.color) || '',
+        textShadow: (wordGlow && wordGlow.textShadow) || ''
+    };
+}
+
+function clearWordCosmetics(targetEl) {
+    if (!targetEl) return;
+    targetEl.style.color = '';
+    targetEl.style.textShadow = '';
+}
+
+function applyWordCosmetics(targetEl, wordStyles) {
+    if (!targetEl) return;
+    clearWordCosmetics(targetEl);
+    if (!wordStyles) return;
+    if (wordStyles.color) targetEl.style.color = wordStyles.color;
+    if (wordStyles.textShadow) targetEl.style.textShadow = wordStyles.textShadow;
+}
+
+function renderGrid(s) {
+    if (!s || !s.grid) return;
+    const rows = s.rows, cols = s.cols;
+    const gridEl = document.getElementById('grid');
+    document.documentElement.style.setProperty('--grid-cols', cols);
+
+    const revealed = new Set(s.revealedIndices);
+    const center = new Set(s.centerCells);
+
+    // Build or update cells
+    if (gridEl.children.length !== rows * cols) {
+        gridEl.innerHTML = '';
+        for (let i = 0; i < rows * cols; i++) {
+            const cell = document.createElement('div');
+            cell.className = 'grid-cell';
+            cell.dataset.idx = i;
+            gridEl.appendChild(cell);
+        }
+    }
+
+    for (let i = 0; i < rows * cols; i++) {
+        const cell = gridEl.children[i];
+        const r = Math.floor(i / cols), c = i % cols;
+        if (revealed.has(i)) {
+            const letter = s.grid[r][c].toUpperCase();
+            if (cell.textContent !== letter) cell.textContent = letter;
+            cell.className = 'grid-cell revealed' + (center.has(i) ? ' center' : '');
+        } else {
+            cell.textContent = '';
+            cell.className = 'grid-cell hidden';
+        }
+    }
+}
+
+function renderOverlay(s) {
+    if (!s) return;
+    renderGrid(s);
+
+    document.getElementById('dailyBadge').style.display = s.isDaily ? '' : 'none';
+    document.getElementById('jackpotDisplay').textContent = `💰 ${s.jackpot?.toLocaleString() || 0}`;
+
+    const pct = s.commonWordCount ? Math.round(s.foundCommonCount / s.commonWordCount * 100) : 0;
+    document.getElementById('progressBar').style.width = pct + '%';
+    document.getElementById('progressText').textContent =
+        `${s.foundCommonCount}/${s.commonWordCount} words · ${s.revealedIndices?.length || 0}/${s.totalCells || 0} cells`;
+
+    // Leaderboard
+    TopPlayerCards.renderTopPlayerCards('top-players', s.topPlayers || []);
+}
+
+function addRecentWord(word, type, cosmeticsPromise) {
+    const tag = document.createElement('div');
+    tag.className = `recent-tag ${type}`;
+    tag.textContent = word.toUpperCase();
+    recentWordsEl.prepend(tag);
+    if (cosmeticsPromise) {
+        cosmeticsPromise.then((cos) => {
+            applyWordCosmetics(tag, getWordCosmeticStyles(cos));
+        }).catch(() => {});
+    }
+    // Keep max
+    while (recentWordsEl.children.length > WORD_LIMIT) {
+        recentWordsEl.removeChild(recentWordsEl.lastChild);
+    }
+}
+
+function flashCells(cells, cosmeticsPromise) {
+    if (!cells || !state) return;
+    const gridEl = document.getElementById('grid');
+    let wordStyles = null;
+    if (cosmeticsPromise) {
+        cosmeticsPromise.then((cos) => {
+            wordStyles = getWordCosmeticStyles(cos);
+            if (!wordStyles) return;
+            for (const idx of cells) {
+                const cell = gridEl.querySelector(`[data-idx="${idx}"]`);
+                if (!cell || !cell.classList.contains('word-flash')) continue;
+                applyWordCosmetics(cell, wordStyles);
+            }
+        }).catch(() => {});
+    }
+    for (const idx of cells) {
+        const cell = gridEl.querySelector(`[data-idx="${idx}"]`);
+        if (!cell) continue;
+        cell.classList.add('word-flash');
+        if (wordStyles) applyWordCosmetics(cell, wordStyles);
+        setTimeout(() => {
+            cell.classList.remove('word-flash');
+            clearWordCosmetics(cell);
+        }, 900);
+    }
+}
+
+function revealCell(data) {
+    const gridEl = document.getElementById('grid');
+    const cell = gridEl.querySelector(`[data-idx="${data.index}"]`);
+    if (!cell) return;
+    cell.textContent = data.letter.toUpperCase();
+    cell.className = 'grid-cell revealed revealing';
+    setTimeout(() => cell.classList.remove('revealing'), 700);
+}
+
+function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ─── End-of-round celebration hold ──────────────────────────────────
+// The server builds the next board in the same tick it announces the win,
+// so 'game-over' and 'new-game' arrive together. Applied straight away,
+// new-game cleared the recent-words strip and re-rendered the grid while the
+// winning word was still flashing — on stream the round just blinked over.
+// Hold the new board until the celebration has played.
+//
+// Only a completion opens the window, so an admin new-game or the first
+// state after connect still lands immediately.
+const ROUND_CELEBRATION_MS = 5000;
+let celebrationUntil = 0;
+let heldState = null, heldIsNewGame = false, heldTimer = null;
+
+function startFreshBoard(s) {
+    state = s;
+    recentWordsEl.innerHTML = '';
+    renderOverlay(s);
+}
+
+function flushHeldState() {
+    heldTimer = null;
+    if (!heldState) return;
+    const s = heldState, isNew = heldIsNewGame;
+    heldState = null; heldIsNewGame = false;
+    if (isNew) { startFreshBoard(s); } else { state = s; renderOverlay(s); }
+}
+
+// Board-changing updates route through here. During the celebration the
+// freshest state is kept back and applied once, so a guess landing on the
+// new board mid-window can't sneak the new grid in early either.
+function applyOrHold(s, isNewGame) {
+    const wait = celebrationUntil - Date.now();
+    if (wait <= 0) {
+        if (isNewGame) { startFreshBoard(s); } else { state = s; renderOverlay(s); }
+        return;
+    }
+    heldState = s;
+    heldIsNewGame = heldIsNewGame || isNewGame;
+    if (!heldTimer) heldTimer = setTimeout(flushHeldState, wait);
+}
+
+socket.on('game-state', (s) => applyOrHold(s, false));
+socket.on('new-game',   (s) => applyOrHold(s, true));
+// The server emits 'game-over' (the 'game-complete' handler below has never
+// fired). Used here only to protect the celebration — the overlay's own
+// game-over visuals are left exactly as they are.
+socket.on('game-over',  () => { celebrationUntil = Date.now() + ROUND_CELEBRATION_MS; });
+socket.on('word-found', (data) => {
+    const cosmeticsPromise = (data.platform && data.platformUserId)
+        ? getCosmetics(data.platform, data.platformUserId)
+        : Promise.resolve({});
+    const type = data.isHidden ? 'hidden' : data.isCommon ? 'common' : 'rare';
+    addRecentWord(data.word, type, cosmeticsPromise);
+    flashCells(data.cells, cosmeticsPromise);
+    if (data.finder) {
+        // briefly highlight the finder name - not shown on overlay (space limited)
+    }
+});
+socket.on('cell-revealed', revealCell);
+socket.on('game-complete', (data) => {
+    if (state) { state.gameOver = true; renderOverlay(state); }
+});
+socket.on('frenzy-update', (data) => {
+    // frenzy indicator not shown in compact overlay
+});
+</script>
+</body>
+</html>

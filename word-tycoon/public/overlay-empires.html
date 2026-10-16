@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mobile Tycoon - Player Empires</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { height: 100vh; }
+
+    body {
+      background: transparent;
+      overflow: hidden;
+      font-family: 'Inter', sans-serif;
+      color: #fff;
+      width: 1080px;
+      height: 1920px;
+      position: relative;
+    }
+
+    /* ==================== HEADER BAR ==================== */
+
+    #empires-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 38px;
+      padding: 0 18px;
+      margin: 12px auto 0;
+      width: 378px;
+      background: rgba(0, 0, 0, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 14px;
+      z-index: 10;
+    }
+
+    #empires-title {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      color: rgba(255, 170, 0, 0.9);
+    }
+
+    .header-stats {
+      display: flex;
+      gap: 18px;
+      align-items: center;
+    }
+
+    .header-stat {
+      font-size: 12px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.5);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .header-stat .stat-value {
+      color: rgba(255, 255, 255, 0.85);
+      font-weight: 700;
+    }
+
+    /* ==================== SCROLLING LIST ==================== */
+
+    #empires-viewport {
+      position: relative;
+      margin: 10px auto 0;
+      width: 378px;
+      height: calc(1920px - 38px - 12px - 10px);
+      overflow: hidden;
+    }
+
+    .emp-scroll-inner {
+      will-change: transform;
+      backface-visibility: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    /* ==================== EMPIRE ROW (thin glassmorphism bar) ==================== */
+
+    .emp-row {
+      display: flex;
+      align-items: center;
+      height: 30px;
+      padding: 0 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 10px;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    /* Top-3 glowing borders */
+    .emp-row.rank-1 {
+      border-color: rgba(255, 215, 0, 0.45);
+      box-shadow: 0 0 14px rgba(255, 215, 0, 0.12), inset 0 0 14px rgba(255, 215, 0, 0.04);
+      background: rgba(255, 215, 0, 0.06);
+    }
+    .emp-row.rank-2 {
+      border-color: rgba(192, 192, 192, 0.35);
+      box-shadow: 0 0 12px rgba(192, 192, 192, 0.1), inset 0 0 12px rgba(192, 192, 192, 0.03);
+      background: rgba(192, 192, 192, 0.04);
+    }
+    .emp-row.rank-3 {
+      border-color: rgba(205, 127, 50, 0.35);
+      box-shadow: 0 0 12px rgba(205, 127, 50, 0.1), inset 0 0 12px rgba(205, 127, 50, 0.03);
+      background: rgba(205, 127, 50, 0.04);
+    }
+
+    .emp-rank {
+      font-size: 11px;
+      font-weight: 900;
+      color: rgba(255, 255, 255, 0.22);
+      width: 24px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+    .emp-rank.gold   { color: #FFD700; text-shadow: 0 0 6px rgba(255, 215, 0, 0.4); }
+    .emp-rank.silver { color: #C0C0C0; text-shadow: 0 0 5px rgba(192, 192, 192, 0.35); }
+    .emp-rank.bronze { color: #CD7F32; text-shadow: 0 0 5px rgba(205, 127, 50, 0.35); }
+
+    .emp-name {
+      font-size: 12px;
+      font-weight: 700;
+      color: #fff;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      min-width: 60px;
+      max-width: 130px;
+      flex-shrink: 1;
+    }
+
+    .emp-coins {
+      font-size: 13px;
+      font-weight: 900;
+      color: rgba(255, 170, 0, 0.9);
+      white-space: nowrap;
+      flex-shrink: 0;
+      min-width: 55px;
+    }
+
+    .emp-bizlist {
+      display: flex;
+      align-items: center;
+      gap: 1px;
+      flex: 1;
+      overflow: hidden;
+      min-width: 0;
+      justify-content: center;
+    }
+
+    .emp-biz {
+      font-size: 12px;
+      flex-shrink: 0;
+    }
+
+    .emp-progress-mini {
+      width: 40px;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 2px;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .emp-progress-mini-fill {
+      height: 100%;
+      background: linear-gradient(90deg, rgba(255, 170, 0, 0.6), rgba(255, 200, 50, 0.85));
+      border-radius: 2px;
+    }
+
+    .emp-income {
+      font-size: 10px;
+      font-weight: 700;
+      color: #4CAF50;
+      white-space: nowrap;
+      flex-shrink: 0;
+      text-align: right;
+      min-width: 50px;
+    }
+
+    /* ==================== EMPTY STATE ==================== */
+
+    .empty-state {
+      text-align: center;
+      color: rgba(255, 255, 255, 0.4);
+      font-size: 14px;
+      padding: 40px 20px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header Bar -->
+  <div id="empires-header">
+    <div id="empires-title">PLAYER EMPIRES</div>
+    <div class="header-stats">
+      <div class="header-stat">👥 <span id="stat-players" class="stat-value">0</span></div>
+      <div class="header-stat">💰 <span id="stat-economy" class="stat-value">0</span></div>
+    </div>
+  </div>
+
+  <!-- Scrolling List Viewport -->
+  <div id="empires-viewport"></div>
+
+  <script>
+  // ===== Viewport Scaling (portrait: 1080 base width) =====
+  (function () {
+    var BASE = 1080;
+    var actualW = window.innerWidth;
+    var actualH = window.innerHeight;
+    var scale = actualW / BASE;
+    var baseH = Math.round(actualH / scale);
+    if (Math.abs(scale - 1) > 0.01) {
+      var html = document.documentElement;
+      html.style.width = BASE + 'px';
+      html.style.height = baseH + 'px';
+      html.style.overflow = 'hidden';
+      html.style.transformOrigin = '0 0';
+      html.style.transform = 'scale(' + scale + ')';
+    }
+  })();
+  </script>
+  <script>
+  // ==================== DATA LAYER ====================
+  // Primary: HTTP fetch polling every 3s (bulletproof in OBS CEF)
+  // No Socket.IO dependency — pure HTTP for maximum reliability
+
+  var viewportEl = document.getElementById('empires-viewport');
+  var statPlayersEl = document.getElementById('stat-players');
+  var statEconomyEl = document.getElementById('stat-economy');
+
+  // Server data + local interpolated coins
+  var playerEmpires = [];
+  var localCoins = {};       // name -> current interpolated coin value
+  var lastStructureKey = '';
+  var scrollOffset = 0;      // JS-driven scroll position (pixels)
+  var scrollSpeed = 0.4;     // pixels per frame (~24px/sec at 60fps)
+  var lastFrameTime = 0;
+  var scrollInnerEl = null;
+  var MAX_BUSINESSES = 10;
+
+  // ==================== FETCH POLLING (primary data source) ====================
+
+  function applyState(state) {
+    if (!state) return;
+    playerEmpires = state.playerEmpires || [];
+    syncCoins();
+    renderEmpires();
+    updateHeaderStats();
+  }
+
+  function pollState() {
+    fetch('/api/state')
+      .then(function(r) { return r.json(); })
+      .then(applyState)
+      .catch(function(err) { console.warn('[Empires] Fetch failed:', err.message); });
+  }
+
+  // Fetch immediately on page load
+  pollState();
+
+  // Poll every 3 seconds
+  setInterval(pollState, 3000);
+
+  // ==================== COIN SYNC ====================
+
+  function syncCoins() {
+    for (var i = 0; i < playerEmpires.length; i++) {
+      var emp = playerEmpires[i];
+      var key = emp.name || 'anon' + i;
+      localCoins[key] = emp.coins || 0;
+    }
+  }
+
+  // ==================== HEADER STATS ====================
+
+  function updateHeaderStats() {
+    statPlayersEl.textContent = playerEmpires.length;
+    var totalEconomy = 0;
+    for (var i = 0; i < playerEmpires.length; i++) {
+      var key = playerEmpires[i].name || 'anon' + i;
+      totalEconomy += localCoins[key] || playerEmpires[i].coins || 0;
+    }
+    statEconomyEl.textContent = formatNumber(totalEconomy);
+  }
+
+  // ==================== ROW RENDERING ====================
+
+  function getStructureKey(empires) {
+    return empires.map(function(e) {
+      return (e.name || '') + ':' + (e.businesses || []).length;
+    }).join('|');
+  }
+
+  function buildEmpireRow(empire, i) {
+    var bizEmojis = (empire.businesses || []).map(function(b) {
+      return '<span class="emp-biz">' + b.emoji + '</span>';
+    }).join('');
+
+    var rankClass = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
+    var rowRankClass = i === 0 ? ' rank-1' : i === 1 ? ' rank-2' : i === 2 ? ' rank-3' : '';
+    var key = empire.name || 'anon' + i;
+    var coinsDisplay = formatNumber(localCoins[key] || empire.coins);
+    var incomeDisplay = '+' + formatNumber(empire.incomePerSec, 1) + '/s';
+
+    var name = empire.name || 'Anonymous';
+    var displayName = name.length > 16 ? name.substring(0, 15) + '\u2026' : name;
+
+    var bizCount = (empire.businesses || []).length;
+    var progressPct = Math.min((bizCount / MAX_BUSINESSES) * 100, 100);
+
+    return '<div class="emp-row' + rowRankClass + '" data-name="' + escapeHtml(key) + '">' +
+      '<div class="emp-rank ' + rankClass + '">#' + (i + 1) + '</div>' +
+      '<div class="emp-name">' + escapeHtml(displayName) + '</div>' +
+      '<div class="emp-coins">' + coinsDisplay + '</div>' +
+      '<div class="emp-bizlist">' + bizEmojis + '</div>' +
+      '<div class="emp-progress-mini"><div class="emp-progress-mini-fill" style="width:' + progressPct + '%"></div></div>' +
+      '<div class="emp-income">' + incomeDisplay + '</div>' +
+    '</div>';
+  }
+
+  function renderEmpires() {
+    if (!playerEmpires || playerEmpires.length === 0) {
+      if (viewportEl.innerHTML.indexOf('empty-state') === -1) {
+        viewportEl.innerHTML = '<div class="empty-state">No empires yet \u2014 type !play to start</div>';
+      }
+      lastStructureKey = '';
+      scrollInnerEl = null;
+      return;
+    }
+
+    var structKey = getStructureKey(playerEmpires);
+
+    if (structKey !== lastStructureKey) {
+      lastStructureKey = structKey;
+      var rows = playerEmpires.map(function(emp, i) { return buildEmpireRow(emp, i); }).join('');
+      // Always duplicate for seamless scroll loop
+      viewportEl.innerHTML = '<div class="emp-scroll-inner">' + rows + rows + '</div>';
+      scrollInnerEl = viewportEl.querySelector('.emp-scroll-inner');
+    }
+  }
+
+  // ==================== ANIMATION LOOP (scroll + coin counting) ====================
+
+  function animationLoop(now) {
+    requestAnimationFrame(animationLoop);
+    if (!lastFrameTime) { lastFrameTime = now; return; }
+    var dt = (now - lastFrameTime) / 1000; // seconds
+    lastFrameTime = now;
+    if (dt > 0.1) dt = 0.1; // cap big gaps
+
+    // --- Real-time coin counting ---
+    var coinsChanged = false;
+    for (var i = 0; i < playerEmpires.length; i++) {
+      var emp = playerEmpires[i];
+      var key = emp.name || 'anon' + i;
+      var income = emp.incomePerSec || 0;
+      if (income > 0) {
+        localCoins[key] = (localCoins[key] || 0) + income * dt;
+        coinsChanged = true;
+      }
+    }
+
+    // Update coin displays in-place
+    if (coinsChanged && scrollInnerEl) {
+      var allRows = scrollInnerEl.querySelectorAll('.emp-row');
+      for (var j = 0; j < allRows.length; j++) {
+        var row = allRows[j];
+        var name = row.getAttribute('data-name');
+        if (name && localCoins[name] !== undefined) {
+          var coinsEl = row.querySelector('.emp-coins');
+          if (coinsEl) coinsEl.textContent = formatNumber(localCoins[name]);
+        }
+      }
+    }
+
+    // Update header economy stat periodically
+    if (coinsChanged && now % 1000 < 20) {
+      updateHeaderStats();
+    }
+
+    // --- Always scroll ---
+    if (scrollInnerEl && playerEmpires.length > 0) {
+      var halfHeight = scrollInnerEl.scrollHeight / 2;
+      if (halfHeight > 0) {
+        scrollOffset += scrollSpeed;
+        if (scrollOffset >= halfHeight) scrollOffset -= halfHeight;
+        scrollInnerEl.style.transform = 'translate3d(0,' + (-scrollOffset) + 'px,0)';
+      }
+    }
+  }
+
+  requestAnimationFrame(animationLoop);
+
+  // ==================== UTILITIES ====================
+
+  function formatNumber(num, decimals) {
+    if (num === undefined || num === null) return '0';
+    num = Number(num);
+    if (num >= 1e12) return (num / 1e12).toFixed(1) + 'T';
+    if (num >= 1e9) return (num / 1e9).toFixed(1) + 'B';
+    if (num >= 1e6) return (num / 1e6).toFixed(1) + 'M';
+    if (num >= 1e4) return (num / 1e3).toFixed(1) + 'K';
+    if (decimals !== undefined) return num.toFixed(decimals);
+    return Math.floor(num).toLocaleString();
+  }
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    var div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+  </script>
+</body>
+</html>

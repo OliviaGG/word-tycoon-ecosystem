@@ -1,0 +1,17 @@
+# Do not translate line endings in the shipped pages.
+#
+# dist/ is what production serves and is NOT rebuilt from client/ on deploy, so
+# a checkout that "helpfully" rewrote CRLF->LF (or back) would leave the working
+# tree byte-different from what is actually running on render1. The tree is
+# already mixed on purpose: alt.html is CRLF while index.html and sp.html are LF.
+# Leave every one of them exactly as committed.
+*.html -text
+*.css  -text
+*.js   -text
+
+# Preserve exact curated release and installer bytes.
+.gitattributes -text
+*.cjs -text
+data/curated-public-targets.json -text
+curation/subtextle-online-20261009/** -text
+docs/curated-targets.md -text

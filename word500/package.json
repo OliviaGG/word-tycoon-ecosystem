@@ -1,0 +1,22 @@
+{
+  "name": "word500",
+  "version": "2.0.0",
+  "description": "Word 500 2.0 - A Wordle-style deduction game with Three.js visuals",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "express": "^4.22.2",
+    "socket.io": "^4.7.4",
+    "socket.io-client": "^4.7.4"
+  },
+  "overrides": {
+    "path-to-regexp": "^0.1.13",
+    "qs": "^6.15.2",
+    "socket.io-parser": "^4.2.6",
+    "ws": "^8.21.0"
+  }
+}

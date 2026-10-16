@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <meta name="theme-color" content="#121213"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="Betwixt"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="description" content="Play Betwixt on Word Tycoon — a free alphabetical word puzzle game. Guess the hidden word between two others in daily puzzles and practice mode."/>
+  <title>Play Betwixt on Word Tycoon — Free Alphabetical Word Puzzle</title>
+  <link rel="canonical" href="https://wordtycoon.live/betwixt/"/>
+  <meta property="og:title" content="Play Betwixt on Word Tycoon — Free Alphabetical Word Puzzle"/>
+  <meta property="og:description" content="Play Betwixt on Word Tycoon — a free alphabetical word puzzle game. Guess the hidden word between two others in daily puzzles and practice mode."/>
+  <meta property="og:type" content="website"/>
+  <meta property="og:url" content="https://wordtycoon.live/betwixt/"/>
+  <meta property="og:site_name" content="Word Tycoon"/>
+  <meta property="og:image" content="https://wordtycoon.live/portal/img/betwixt-og.png"/>
+  <meta name="twitter:card" content="summary_large_image"/>
+  <meta name="twitter:title" content="Play Betwixt on Word Tycoon — Free Alphabetical Word Puzzle"/>
+  <meta name="twitter:description" content="Play Betwixt on Word Tycoon — a free alphabetical word puzzle game. Guess the hidden word between two others."/>
+  <meta name="twitter:image" content="https://wordtycoon.live/portal/img/betwixt-og.png"/>
+<link rel="manifest" href="manifest.webmanifest?v=3"/>
+<link rel="icon" type="image/png" href="favicon-32-v3.png"/>
+<link rel="apple-touch-icon" href="apple-touch-icon-v3.png"/>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "VideoGame",
+    "name": "Betwixt",
+    "description": "Play Betwixt on Word Tycoon — a free alphabetical word puzzle game. Guess the hidden word between two others in daily puzzles and practice mode.",
+    "url": "https://wordtycoon.live/betwixt/",
+    "genre": ["Word Game", "Puzzle", "Multiplayer"],
+    "gamePlatform": "Web Browser",
+    "applicationCategory": "Game",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+    "publisher": { "@type": "Organization", "name": "Word Tycoon", "url": "https://wordtycoon.live" }
+  }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="play.css?v=8"/>
+  <link rel="stylesheet" href="public-shared.css?v=1"/>
+  <style>
+    .daily-badge {
+      background: linear-gradient(135deg, #ffd700, #ff8c00);
+      color: #1a1a2e;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 0.7rem;
+      font-weight: 800;
+      letter-spacing: 1px;
+      margin-left: 6px;
+      animation: daily-glow 2s ease-in-out infinite alternate;
+    }
+    .daily-badge.hidden { display: none; }
+    @keyframes daily-glow {
+      from { box-shadow: 0 0 4px #ffd700; }
+      to { box-shadow: 0 0 12px #ff8c00, 0 0 20px rgba(255, 215, 0, 0.25); }
+    }
+  </style>
+<script src="https://wordtycoon.live/login-prompt.js?v=3" defer></script>
+</head>
+<body>
+  <div id="app">
+    <!-- Header -->
+    <header id="header">
+      <a href="https://wordtycoon.live" class="hub-btn" title="Word Tycoon Hub">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      </a>
+      <span class="title">BETWIXT</span>
+      <span class="guess-counter" id="guess-counter">0</span>
+      <span id="daily-badge" class="daily-badge hidden">DAILY</span>
+      <div class="header-actions">
+        <button class="stats-toggle-btn" id="stats-toggle" title="Stats">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="12" width="4" height="9"/><rect x="10" y="7" width="4" height="14"/><rect x="17" y="3" width="4" height="18"/></svg>
+        </button>
+        <div class="word-size-toggle" id="word-size-toggle"></div>
+      </div>
+    </header>
+
+    <!-- Stats Dropdown -->
+    <div class="stats-dropdown hidden" id="stats-dropdown">
+      <div class="stats-dropdown-header">
+        <span>Your Stats</span>
+        <button class="stats-close" id="stats-close">&times;</button>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-item">
+          <div class="stat-val" id="stat-wins">0</div>
+          <div class="stat-lbl">Wins</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-val" id="stat-games">0</div>
+          <div class="stat-lbl">Played</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-val" id="stat-avg">-</div>
+          <div class="stat-lbl">Avg Guesses</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-val" id="stat-streak">0</div>
+          <div class="stat-lbl">Win Streak</div>
+        </div>
+      </div>
+      <div class="stats-history" id="stats-history"></div>
+      <a href="https://wordtycoon.live/me" class="stats-portal-link" target="_blank">View full stats on Word Tycoon →</a>
+    </div>
+
+    <!-- Game Area -->
+    <main id="game-area">
+      <div class="boundary after" id="lower-boundary">
+        <div class="bnd-lead">
+          <span class="bnd-label">AFTER</span>
+          <span class="bnd-arrow">&darr;</span>
+          <span class="bnd-distance" id="lower-distance"></span>
+        </div>
+        <div class="bnd-tiles" id="lower-tiles"></div>
+        <div class="bnd-tail"><div class="pfp-circle" id="lower-pfp"></div></div>
+      </div>
+
+      <div class="boundary ghost">
+        <div class="bnd-lead" aria-hidden="true">
+          <span class="bnd-label">BEFORE</span>
+          <span class="bnd-arrow">&uarr;</span>
+          <span class="bnd-distance"></span>
+        </div>
+        <div class="confirmed-row" id="confirmed-row"></div>
+        <div class="bnd-tail" aria-hidden="true"><div class="pfp-circle"></div></div>
+      </div>
+
+      <div class="boundary before" id="upper-boundary">
+        <div class="bnd-lead">
+          <span class="bnd-label">BEFORE</span>
+          <span class="bnd-arrow">&uarr;</span>
+          <span class="bnd-distance" id="upper-distance"></span>
+        </div>
+        <div class="bnd-tiles" id="upper-tiles"></div>
+        <div class="bnd-tail"><div class="pfp-circle" id="upper-pfp"></div></div>
+      </div>
+
+      <div class="alphabet" id="alphabet">
+        <div class="alpha-row" id="alpha-row-1"></div>
+        <div class="alpha-row" id="alpha-row-2"></div>
+      </div>
+    </main>
+
+    <!-- QWERTY Keyboard -->
+    <div class="keyboard" id="keyboard"></div>
+
+    <!-- Error toast -->
+    <div class="error-toast hidden" id="error-toast"></div>
+
+    <footer class="legal-footer">
+      <a href="https://wordtycoon.live/privacy" target="_blank" rel="noopener">Privacy</a> &middot;
+      <a href="https://wordtycoon.live/terms" target="_blank" rel="noopener">Terms</a> &middot;
+      <a href="https://discord.gg/C8Nm2jEZFC" target="_blank" rel="noopener">Discord</a> &middot;
+      <a href="https://www.jorry.live" target="_blank" rel="noopener">jorry.live</a> &middot;
+      <a href="https://wordtycoon.live/portal">&copy; 2026 Word Tycoon</a>
+    </footer>
+  </div>
+
+  <!-- Game Instructions -->
+  <div id="game-help" data-game="betwixt" data-accent="#7b68ee" data-name="Betwixt">
+
+    <div class="game-help-step" data-step="1">
+      <h3>Find the Secret Word</h3>
+      <p>A secret word is hidden <strong>alphabetically</strong> between two boundaries. Type a word and press <strong>Enter</strong> to guess.</p>
+      <div class="gh-example">
+        <div class="gh-example-label">The word is between…</div>
+        <div class="gh-boundary after">
+          <span>⬇ AFTER</span> — <strong>APPLE</strong>
+        </div>
+        <div class="gh-boundary secret">
+          <span>🎯 SECRET</span> — <strong>???</strong>
+        </div>
+        <div class="gh-boundary before">
+          <span>⬆ BEFORE</span> — <strong>LEMON</strong>
+        </div>
+      </div>
+      <div class="gh-tip">
+        <span class="gh-tip-icon">💡</span>
+        The secret word comes after APPLE and before LEMON in the dictionary. Guess any word in that range!
+      </div>
+    </div>
+
+    <div class="game-help-step" data-step="2">
+      <h3>Narrow the Range</h3>
+      <p>Each guess <strong>tightens the boundaries</strong>. If your guess is too early, AFTER moves forward. Too late, BEFORE moves back.</p>
+      <div class="gh-example">
+        <div class="gh-example-label">After guessing GRAPE</div>
+        <div class="gh-boundary after">
+          <span>⬇ AFTER</span> — <strong>GRAPE</strong>
+        </div>
+        <div class="gh-boundary secret">
+          <span>🎯 SECRET</span> — between here
+        </div>
+        <div class="gh-boundary before">
+          <span>⬆ BEFORE</span> — <strong>LEMON</strong>
+        </div>
+      </div>
+      <div class="gh-tip">
+        <span class="gh-tip-icon">🔤</span>
+        The <strong>alphabet bar</strong> highlights which starting letters are still possible, helping you eliminate options fast.
+      </div>
+    </div>
+
+    <div class="game-help-step" data-step="3">
+      <h3>Lock in Letters</h3>
+      <p>When both boundaries share the same letter at a position, that letter is <strong>confirmed</strong> and locked in — no more guessing for that spot!</p>
+      <div class="gh-example">
+        <div class="gh-example-label">Confirmed letters</div>
+        <div class="gh-tile-row">
+          <div class="gh-tile correct">H</div>
+          <div class="gh-tile highlight">?</div>
+          <div class="gh-tile highlight">?</div>
+          <div class="gh-tile correct">E</div>
+          <div class="gh-tile highlight">?</div>
+        </div>
+        <div class="gh-arrow"><span class="gh-arrow-icon">↑</span> H and E are confirmed — only 3 letters left to find!</div>
+      </div>
+      <div class="gh-tip">
+        <span class="gh-tip-icon">🎯</span>
+        Daily challenges use the same word for all players. Complete it to earn rewards!
+      </div>
+    </div>
+
+  </div>
+
+  <script src="https://wordtycoon.live/js/win-card.js"></script>
+  <script src="solo-account.js?v=20261003-owner"></script>
+<script src="sp-engine.js?v=20261003-owner"></script>
+  <script src="pwa-install.js?v=2"></script>
+</body>
+</html>

@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>WikiSearchle Solo · Admin</title>
+<meta name="viewport" content="width=720" />
+<link rel="stylesheet" href="/searchle/css/wikisearchle.css" />
+<style>
+body { padding: 30px 20px; }
+.admin-wrap { max-width: 720px; margin: 0 auto; }
+.admin-card {
+  background: rgba(255, 102, 0, 0.06);
+  border: 1px solid rgba(255, 102, 0, 0.25);
+  border-radius: 12px; padding: 18px 20px; margin-bottom: 20px;
+}
+.admin-card h2 { margin: 0 0 12px; color: var(--accent); font-family: 'Orbitron', sans-serif; font-size: 16px; }
+.admin-row { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
+.admin-row input[type=text], .admin-row input[type=password] {
+  flex: 1; padding: 10px 12px; border-radius: 8px;
+  background: rgba(0,0,0,0.25); color: var(--text); border: 1px solid rgba(255,102,0,0.3);
+  font-family: 'Roboto Mono', monospace; font-size: 14px;
+}
+button.admin-btn {
+  padding: 10px 18px; border-radius: 8px; border: none;
+  background: var(--accent); color: #1A1A1A; font-weight: 700; cursor: pointer;
+  font-family: 'Press Start 2P', monospace; font-size: 11px; letter-spacing: 0.5px;
+}
+button.admin-btn:hover { background: #FF7F1A; }
+button.admin-btn[disabled] { opacity: 0.4; cursor: not-allowed; }
+.result-list { list-style: none; padding: 0; margin: 0; }
+.result-list li {
+  padding: 10px 12px; border-radius: 6px; background: rgba(255,255,255,0.03);
+  margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; gap: 10px;
+}
+.result-list li .title { flex: 1; font-family: 'Roboto Mono', monospace; }
+.result-list li .count { color: var(--muted); font-size: 12px; }
+.result-list li button { padding: 6px 12px; font-size: 11px; }
+.current-target { padding: 12px; background: rgba(0,0,0,0.2); border-radius: 8px; font-family: 'Roboto Mono', monospace; }
+.current-target .label { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
+.current-target .title { color: var(--accent); font-size: 18px; font-weight: 700; margin-top: 4px; }
+.current-target .meta { color: var(--muted); font-size: 12px; margin-top: 6px; }
+.status-msg { padding: 10px 12px; border-radius: 6px; margin-top: 10px; font-size: 14px; }
+.status-msg.ok  { background: rgba(70, 180, 70, 0.12); color: #7ED97E; border: 1px solid rgba(70,180,70,0.3); }
+.status-msg.err { background: rgba(220, 70, 70, 0.12); color: #FF8080; border: 1px solid rgba(220,70,70,0.3); }
+a.back-link { color: var(--muted); text-decoration: none; font-size: 13px; }
+a.back-link:hover { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="admin-wrap">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+    <h1 style="margin:0;color:var(--accent);font-family:'Orbitron',sans-serif;font-size:22px;">Solo · Admin</h1>
+    <a class="back-link" href="/searchle/solo/">← Back to solo</a>
+  </div>
+
+  <!-- Auth card -->
+  <div class="admin-card" id="authCard">
+    <h2>Admin Key</h2>
+    <div class="admin-row">
+      <input type="password" id="adminKey" placeholder="x-admin-key (GAME_API_SECRET)" autocomplete="off" />
+      <button class="admin-btn" id="unlockBtn">Unlock</button>
+    </div>
+    <div class="status-msg err" id="authErr" style="display:none;"></div>
+  </div>
+
+  <!-- Current target card -->
+  <div class="admin-card" id="currentCard" hidden>
+    <h2>Current Weekly Target</h2>
+    <div class="current-target" id="currentTarget">
+      <div class="label">None set yet</div>
+    </div>
+  </div>
+
+  <!-- URL paste + set card -->
+  <div class="admin-card" id="searchCard" hidden>
+    <h2>Pick Next Target</h2>
+    <div class="admin-row">
+      <input type="text" id="urlInput" placeholder="Paste Wikipedia URL — e.g. https://en.wikipedia.org/wiki/Polymerase_chain_reaction" />
+      <button class="admin-btn" id="setUrlBtn">Set</button>
+    </div>
+    <div style="font-size:12px;color:var(--muted);margin-top:6px;">
+      Accepts any Wikipedia article URL. Bare titles also work (e.g. "Polymerase chain reaction").
+    </div>
+    <div class="status-msg" id="setMsg" style="display:none;"></div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const API = '/searchle/api/solo/admin';
+  const KEY_STORAGE = 'wikisearchle-solo-admin-key';
+
+  const adminKeyIn = document.getElementById('adminKey');
+  const unlockBtn  = document.getElementById('unlockBtn');
+  const authErr    = document.getElementById('authErr');
+  const authCard   = document.getElementById('authCard');
+  const currentCard= document.getElementById('currentCard');
+  const currentTgt = document.getElementById('currentTarget');
+  const searchCard = document.getElementById('searchCard');
+  const urlIn      = document.getElementById('urlInput');
+  const setUrlBtn  = document.getElementById('setUrlBtn');
+  const setMsg     = document.getElementById('setMsg');
+
+  let adminKey = null;
+
+  function saved() { try { return sessionStorage.getItem(KEY_STORAGE); } catch (e) { return null; } }
+  function save(v) { try { sessionStorage.setItem(KEY_STORAGE, v); } catch (e) {} }
+
+  async function hit(path, opts = {}) {
+    const init = { headers: { 'x-admin-key': adminKey, 'Content-Type': 'application/json' }, ...opts };
+    if (opts.body && typeof opts.body !== 'string') init.body = JSON.stringify(opts.body);
+    const r = await fetch(API + path, init);
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(data.error || `HTTP ${r.status}`);
+    return data;
+  }
+
+  async function loadCurrent() {
+    try {
+      const d = await hit('/current');
+      if (d.set) {
+        currentTgt.innerHTML = `
+          <div class="label">Currently Set</div>
+          <div class="title">${escapeHtml(d.cleanTitle)}</div>
+          <div class="meta">${d.titleWordCount} title word${d.titleWordCount===1?'':'s'} · set ${new Date(d.setAt).toLocaleString()}</div>`;
+      } else {
+        currentTgt.innerHTML = `<div class="label">None set yet — pick one below.</div>`;
+      }
+    } catch (e) {
+      currentTgt.innerHTML = `<div class="label">Failed to load: ${escapeHtml(e.message)}</div>`;
+    }
+  }
+
+  async function unlock(key) {
+    adminKey = key;
+    try {
+      await hit('/current');   // validates the key
+      save(key);
+      authCard.hidden = true;
+      currentCard.hidden = false;
+      searchCard.hidden = false;
+      loadCurrent();
+    } catch (e) {
+      authErr.textContent = e.message.includes('unauthorized') ? 'Invalid key' : e.message;
+      authErr.style.display = 'block';
+    }
+  }
+
+  unlockBtn.addEventListener('click', () => { unlock(adminKeyIn.value.trim()); });
+  adminKeyIn.addEventListener('keydown', (e) => { if (e.key === 'Enter') unlockBtn.click(); });
+
+  setUrlBtn.addEventListener('click', () => setWeeklyFromUrl());
+  urlIn.addEventListener('keydown', (e) => { if (e.key === 'Enter') setWeeklyFromUrl(); });
+
+  async function setWeeklyFromUrl() {
+    const url = urlIn.value.trim();
+    if (!url) { showMsg('Paste a Wikipedia URL first.', 'err'); return; }
+    setUrlBtn.disabled = true;
+    setUrlBtn.textContent = 'Setting…';
+    try {
+      const d = await hit('/set-weekly', { method: 'POST', body: { url } });
+      showMsg(`Set to "${d.cleanTitle}" (${d.titleWordCount} title words).`, 'ok');
+      urlIn.value = '';
+      loadCurrent();
+    } catch (e) {
+      showMsg(`Failed: ${e.message}`, 'err');
+    } finally {
+      setUrlBtn.disabled = false;
+      setUrlBtn.textContent = 'Set';
+    }
+  }
+
+  function showMsg(msg, kind) {
+    setMsg.textContent = msg;
+    setMsg.className = 'status-msg ' + kind;
+    setMsg.style.display = 'block';
+  }
+
+  function escapeHtml(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
+
+  // Auto-unlock from previous session if key was saved
+  const prior = saved();
+  if (prior) { adminKeyIn.value = prior; unlock(prior); }
+})();
+</script>
+</body>
+</html>

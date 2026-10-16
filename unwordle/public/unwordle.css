@@ -1,0 +1,1112 @@
+/* ===== UnWordle — Reverse Wordle Styles =====
+   Based on Wordle SP (wordle-play.css) with pattern tile additions.
+   Self-contained — includes all needed shared component styles. */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  color-scheme: dark;
+  --bg: #0d0d0f;
+  --surface: rgba(18, 18, 19, 0.95);
+  --surface-solid: #121213;
+  --border: rgba(58, 58, 60, 0.7);
+  --text: #ffffff;
+  --text-dim: #818384;
+  --green: #538d4e;
+  --green-bright: #6aaa64;
+  --yellow: #b59f3b;
+  --gray-tile: #3a3a3c;
+  --accent: #ff6b6b;
+  --accent-glow: rgba(255, 107, 107, 0.3);
+  --purple: #7b68ee;
+}
+
+html[data-theme="light"] {
+  color-scheme: light;
+  --bg: #eef2f8;
+  --surface: rgba(255, 255, 255, 0.96);
+  --surface-solid: #ffffff;
+  --border: rgba(148, 163, 184, 0.45);
+  --text: #111827;
+  --text-dim: #64748b;
+  --green: #5b8c48;
+  --green-bright: #3f8f56;
+  --yellow: #c7981c;
+  --gray-tile: #cbd5e1;
+  --accent: #e85d75;
+  --accent-glow: rgba(232, 93, 117, 0.16);
+  --purple: #7c3aed;
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+}
+
+#app {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 0 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ===== Header ===== */
+#header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 4px 8px;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.title {
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  color: var(--accent);
+}
+
+.timer {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-dim);
+  background: rgba(58, 58, 60, 0.5);
+  padding: 2px 10px;
+  border-radius: 10px;
+  letter-spacing: 0.05em;
+  font-variant-numeric: tabular-nums;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+
+/* ===== Hub Button ===== */
+.hub-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: rgba(58, 58, 60, 0.6);
+  border: 1.5px solid var(--border);
+  color: var(--text-dim);
+  text-decoration: none;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+.hub-btn:hover {
+  background: var(--accent-glow);
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+/* ===== Icon Buttons (new puzzle, stats) ===== */
+.icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 28px;
+  border-radius: 6px;
+  background: rgba(58, 58, 60, 0.5);
+  border: 1.5px solid var(--border);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+.icon-btn:hover, .icon-btn.active {
+  background: var(--accent-glow);
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+/* ===== Stats Dropdown ===== */
+.stats-dropdown {
+  position: absolute;
+  top: 50px;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  max-width: 476px;
+  background: var(--surface-solid);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  z-index: 80;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  animation: dropdownIn 0.2s ease-out;
+}
+.stats-dropdown.hidden { display: none; }
+
+@keyframes dropdownIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.stats-dropdown-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.05em;
+}
+
+.stats-close {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.stat-item {
+  text-align: center;
+  background: rgba(58, 58, 60, 0.3);
+  padding: 8px 4px;
+  border-radius: 8px;
+}
+
+.stat-val {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--accent);
+}
+
+.stat-lbl {
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: var(--text-dim);
+  letter-spacing: 0.05em;
+  margin-top: 2px;
+}
+
+.stats-history {
+  max-height: 150px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stats-history:empty { display: none; }
+
+.stats-h-entry {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.72rem;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: rgba(58, 58, 60, 0.2);
+}
+
+.stats-h-word {
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--text);
+}
+
+.stats-h-time {
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.stats-h-badge {
+  display: inline-block;
+  font-size: 0.52rem;
+  font-weight: 800;
+  background: var(--accent);
+  color: #fff;
+  padding: 1px 4px;
+  border-radius: 3px;
+  margin-left: 5px;
+  vertical-align: middle;
+  letter-spacing: 0.03em;
+}
+
+/* ===== Game Area ===== */
+#game-area {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  padding: 8px 0 6px 0;
+  justify-content: center;
+  align-items: center;
+}
+
+.mode-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 8px;
+  width: 100%;
+}
+
+.puzzle-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-dim);
+  letter-spacing: 0.05em;
+  text-align: center;
+}
+
+/* ===== Daily Badge ===== */
+.daily-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #ffab00;
+  background: rgba(255, 171, 0, 0.12);
+  border: 1px solid rgba(255, 171, 0, 0.3);
+  border-radius: 12px;
+  padding: 3px 10px;
+  letter-spacing: 0.05em;
+  animation: dailyGlow 2s ease-in-out infinite alternate;
+  flex-shrink: 0;
+}
+
+@keyframes dailyGlow {
+  from { box-shadow: 0 0 4px rgba(255, 171, 0, 0.2); }
+  to   { box-shadow: 0 0 10px rgba(255, 171, 0, 0.4); }
+}
+
+/* ===== Difficulty Toggle ===== */
+.difficulty-toggle {
+  display: flex;
+  gap: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1.5px solid var(--border);
+  flex-shrink: 0;
+}
+
+.diff-btn {
+  font-family: inherit;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 4px 10px;
+  border: none;
+  background: rgba(58, 58, 60, 0.3);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.diff-btn:hover {
+  background: rgba(58, 58, 60, 0.6);
+  color: var(--text);
+}
+
+.diff-btn.active {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* ===== Grid ===== */
+.wordle-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  width: 100%;
+  max-width: calc(var(--cols, 5) * 69px + (var(--cols, 5) - 1) * 5px);
+  margin: 0 auto;
+}
+
+.wordle-row {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  position: relative;
+  transition: opacity 0.2s;
+}
+
+/* ===== Tiles ===== */
+.wordle-tile {
+  width: clamp(46px, calc(100% / var(--cols, 5) - 5px), 64px);
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(1.3rem, 4vw, 1.8rem);
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  border-radius: 4px;
+  text-transform: uppercase;
+  transition: all 0.15s ease;
+  color: #fff;
+  border: 2px solid transparent;
+}
+
+/* Pattern tiles — show color even when empty */
+.wordle-tile.pattern-correct {
+  background: var(--green);
+  border-color: rgba(83, 141, 78, 0.6);
+}
+
+.wordle-tile.pattern-present {
+  background: var(--yellow);
+  border-color: rgba(181, 159, 59, 0.6);
+}
+
+.wordle-tile.pattern-absent {
+  background: var(--gray-tile);
+  border-color: rgba(58, 58, 60, 0.6);
+}
+
+/* Empty pattern tiles — slightly dimmed */
+.wordle-tile.pattern-correct:not(.has-letter):not(.locked),
+.wordle-tile.pattern-present:not(.has-letter):not(.locked),
+.wordle-tile.pattern-absent:not(.has-letter):not(.locked) {
+  opacity: 0.55;
+}
+
+/* Tile with typed letter — bright */
+.wordle-tile.has-letter {
+  opacity: 1;
+}
+
+/* Pop only the just-typed tile */
+.wordle-tile.tile-pop {
+  animation: tilePop 0.1s ease;
+}
+
+/* Invalid word — red ring + shake */
+.wordle-tile.tile-invalid {
+  border: 2px solid rgba(220, 50, 50, 0.9) !important;
+  box-shadow: 0 0 8px rgba(220, 50, 50, 0.45);
+  animation: tileShake 0.4s ease;
+}
+
+@keyframes tileShake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-4px); }
+  40% { transform: translateX(4px); }
+  60% { transform: translateX(-3px); }
+  80% { transform: translateX(3px); }
+}
+
+/* Cursor position — pulsing dashed border */
+.wordle-tile.cursor {
+  border: 2px dashed rgba(255, 255, 255, 0.7);
+  animation: cursorPulse 1.2s ease-in-out infinite;
+  opacity: 0.75;
+}
+
+@keyframes cursorPulse {
+  0%, 100% { border-color: rgba(255, 255, 255, 0.4); }
+  50% { border-color: rgba(255, 255, 255, 0.9); }
+}
+
+@keyframes tilePop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
+/* Locked/solved tiles */
+.wordle-tile.locked {
+  opacity: 1;
+  border-color: transparent;
+}
+
+/* Active row indicator */
+.wordle-row.active-row {
+  filter: none;
+}
+
+/* Solved row — subtle checkmark indicator */
+.wordle-row.solved-row::after {
+  content: '✓';
+  position: absolute;
+  right: -20px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.9rem;
+  color: var(--green-bright);
+  opacity: 0.8;
+}
+
+/* ===== Answer Row Divider + Styling ===== */
+.wordle-row.answer-row {
+  margin-top: 8px;
+  padding-top: 10px;
+  border-top: 2px solid rgba(106, 170, 100, 0.4);
+}
+
+.wordle-tile.answer-tile {
+  background: var(--green);
+  border-color: var(--green-bright);
+  color: #fff;
+  font-weight: 800;
+  opacity: 1;
+  box-shadow: 0 0 8px rgba(106, 170, 100, 0.3);
+}
+
+/* Row solve animation */
+.wordle-row.just-solved .wordle-tile {
+  animation: rowSolve 0.4s ease;
+}
+
+@keyframes rowSolve {
+  0% { transform: scale(1); }
+  30% { transform: scale(1.06); }
+  100% { transform: scale(1); }
+}
+
+/* ===== QWERTY Keyboard ===== */
+.keyboard {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px 0 10px;
+  flex-shrink: 0;
+}
+
+.kb-row {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+}
+
+.kb-key {
+  height: 48px;
+  flex: 1;
+  max-width: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+  background: rgba(145, 147, 153, 0.55);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s, transform 0.1s;
+  font-family: inherit;
+  padding: 0;
+  user-select: none;
+}
+
+html[data-theme="light"] .kb-key {
+  background: #dbe4f0;
+  color: #0f172a;
+}
+
+.kb-key:active {
+  background: rgba(90, 90, 92, 0.9);
+  transform: scale(0.95);
+}
+
+.kb-key.wide {
+  flex: 1.5;
+  max-width: 62px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+}
+
+.kb-key.enter {
+  background: var(--accent);
+  color: #fff;
+}
+
+.kb-key.enter:active {
+  background: #ff8888;
+}
+
+.kb-key.backspace {
+  font-size: 1.2rem;
+}
+
+/* Keyboard — 3-state coloring */
+.kb-key.in-answer {
+  background: var(--green) !important;
+  color: #fff;
+}
+
+.kb-key.kb-used {
+  background: rgba(58, 58, 60, 0.55) !important;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+html[data-theme="light"] .kb-key.kb-used {
+  background: #cbd5e1 !important;
+  color: #64748b;
+}
+
+/* ===== Error Toast ===== */
+.error-toast {
+  position: fixed;
+  top: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #dc2626;
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 8px 20px;
+  border-radius: 8px;
+  z-index: 50;
+  animation: toastIn 0.3s ease-out;
+  pointer-events: none;
+  white-space: nowrap;
+  max-width: 90vw;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.error-toast.hidden {
+  display: none;
+}
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translate(-50%, -10px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+.error-toast.shake {
+  animation: toastIn 0.3s ease-out, toastShake 0.4s ease 0.1s;
+}
+
+@keyframes toastShake {
+  0%, 100% { transform: translate(-50%, 0); }
+  25% { transform: translate(calc(-50% - 6px), 0); }
+  75% { transform: translate(calc(-50% + 6px), 0); }
+}
+
+/* ===== Win Overlay ===== */
+.win-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 20px;
+}
+
+html[data-theme="light"] .win-overlay {
+  background: rgba(226, 232, 240, 0.8);
+}
+
+.win-overlay.hidden {
+  display: none;
+}
+
+.win-modal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+  background: var(--surface-solid);
+  padding: 28px 32px;
+  border-radius: 20px;
+  border: 2px solid var(--accent);
+  box-shadow: 0 0 40px var(--accent-glow);
+  animation: bounceIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  max-width: 340px;
+  width: 100%;
+}
+
+@keyframes bounceIn {
+  0% { transform: scale(0.5); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.win-emoji {
+  font-size: 3rem;
+}
+
+.win-title {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--accent);
+  letter-spacing: 0.05em;
+}
+
+.win-word {
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: 0.25em;
+  color: var(--green-bright);
+}
+
+.win-info {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+
+.win-info strong {
+  color: var(--accent);
+}
+
+.win-countdown {
+  margin-top: 4px;
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  letter-spacing: 0.05em;
+}
+
+/* ===== Safe area padding for notched phones ===== */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .keyboard {
+    padding-bottom: calc(10px + env(safe-area-inset-bottom));
+  }
+}
+
+/* =====================================================================
+   3D KEYCAP SKIN  (v7)
+   Same visual grammar as RecTangled / erecTangled: top-light inset +
+   inner bottom lip + hard slab + tight cast, board in a recessed tray.
+
+   UnWordle-specific: an UNFILLED pattern tile is a pressed-in socket and
+   a filled one is a raised keycap, so remaining work reads as depth
+   instead of the old 55% opacity dimming.
+
+   Every slab darkens its own face colour and is written FLAT per state —
+   a custom property that nests var() freezes at the declaring element,
+   so one shared --slab would silently paint every tile the same colour.
+   ===================================================================== */
+
+/* --- shell lifts off near-black: a dark slab on a #0d0d0f shell is invisible --- */
+:root {
+  --bg: #141b2e;
+  --surface-solid: #1b2338;
+  --border: rgba(255, 255, 255, 0.08);
+}
+html[data-theme="light"] {
+  --bg: #e8edf7;
+  --surface-solid: #ffffff;
+  --border: rgba(28, 34, 51, 0.16);
+}
+
+/* ===== Chrome: header controls as small keycaps ===== */
+.hub-btn,
+.icon-btn,
+.timer {
+  background: #232c47;
+  border: none;
+  color: #c9d2e8;
+  box-shadow:
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.16),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.30),
+    0 3px 0 #0d1322,
+    0 5px 7px rgba(0, 0, 0, 0.42);
+}
+html[data-theme="light"] .hub-btn,
+html[data-theme="light"] .icon-btn,
+html[data-theme="light"] .timer {
+  background: #ffffff;
+  color: #45506a;
+  box-shadow:
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.9),
+    inset 0 -2px 0 rgba(28, 34, 51, 0.10),
+    0 3px 0 #b9c3d6,
+    0 5px 7px rgba(28, 34, 51, 0.16);
+}
+.hub-btn:hover,
+.icon-btn:hover,
+.icon-btn.active,
+html[data-theme="light"] .hub-btn:hover,
+html[data-theme="light"] .icon-btn:hover,
+html[data-theme="light"] .icon-btn.active {
+  background: var(--accent);
+  color: #fff;
+  box-shadow:
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.30),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.24),
+    0 3px 0 #97383c,
+    0 5px 7px rgba(0, 0, 0, 0.42);
+}
+.hub-btn:active,
+.icon-btn:active {
+  box-shadow:
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.14),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.26),
+    0 1px 0 #0d1322;
+}
+.timer { padding: 4px 11px; border-radius: 9px; }
+
+.daily-badge {
+  background: #e5a72c;
+  border: none;
+  color: #3d2700;
+  animation: none;
+  box-shadow:
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.40),
+    0 3px 0 #8f640d,
+    0 5px 7px rgba(0, 0, 0, 0.38);
+}
+
+.difficulty-toggle {
+  border: none;
+  border-radius: 10px;
+  box-shadow: 0 3px 0 #0d1322, 0 5px 7px rgba(0, 0, 0, 0.38);
+}
+html[data-theme="light"] .difficulty-toggle {
+  box-shadow: 0 3px 0 #b9c3d6, 0 5px 7px rgba(28, 34, 51, 0.16);
+}
+.diff-btn { background: #232c47; color: #9aa4c2; }
+html[data-theme="light"] .diff-btn { background: #ffffff; color: #5b6478; }
+.diff-btn:hover { background: #2d385a; color: #dfe5f3; }
+html[data-theme="light"] .diff-btn:hover { background: #eef2f9; color: #1c2233; }
+/* NOTE: html[data-theme="light"] .diff-btn is (0,2,1) and beats a plain
+   .diff-btn.active (0,2,0), so every accent STATE needs its own light
+   twin or it silently loses its colour. Same trap as .kb-key.enter. */
+.diff-btn.active {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, 0.32);
+}
+html[data-theme="light"] .diff-btn.active {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, 0.32);
+}
+
+/* ===== Board tray — the grid becomes a recessed console =====
+   Hard mode is 6 rows of up to 64px and ALREADY overflows a 667px-tall
+   phone before this skin existed (measured: needs 676px, iPhone SE has
+   667). The tray must therefore cost ~nothing vertically, or it deepens
+   an existing clip. Roomy padding is kept only where there is headroom;
+   see the max-height block at the end of this file. */
+.wordle-grid {
+  gap: 5px;
+  max-width: calc(var(--cols, 5) * 69px + (var(--cols, 5) - 1) * 5px + 14px);
+  padding: 5px 7px 6px;
+  border-radius: 14px;
+  background: #0e1424;
+  box-shadow:
+    inset 0 3px 8px rgba(0, 0, 0, 0.62),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.05);
+}
+html[data-theme="light"] .wordle-grid {
+  background: #d7dfee;
+  box-shadow:
+    inset 0 3px 7px rgba(28, 34, 51, 0.20),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.7);
+}
+.wordle-row { gap: 5px; }
+
+/* ===== Tiles ===== */
+.wordle-tile {
+  border-radius: 11px;
+  border-color: transparent;
+}
+
+/* Raised keycap — filled pattern tiles. Slab darkens the tile's own face. */
+.wordle-tile.pattern-correct {
+  background: #57a45f;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.30),
+    inset 0 -3px 0 rgba(0, 0, 0, 0.28),
+    0 4px 0 #2c5f33,
+    0 6px 7px rgba(0, 0, 0, 0.40);
+}
+.wordle-tile.pattern-present {
+  background: #d3a838;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.34),
+    inset 0 -3px 0 rgba(0, 0, 0, 0.26),
+    0 4px 0 #85631a,
+    0 6px 7px rgba(0, 0, 0, 0.40);
+}
+.wordle-tile.pattern-absent {
+  background: #525a72;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.16),
+    inset 0 -3px 0 rgba(0, 0, 0, 0.30),
+    0 4px 0 #2e3444,
+    0 6px 7px rgba(0, 0, 0, 0.40);
+}
+html[data-theme="light"] .wordle-tile.pattern-correct {
+  background: #57bd64;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.42),
+    inset 0 -3px 0 rgba(0, 0, 0, 0.20),
+    0 4px 0 #2f7a39,
+    0 6px 7px rgba(28, 34, 51, 0.20);
+}
+html[data-theme="light"] .wordle-tile.pattern-present {
+  background: #e0aa2e;
+  color: #3d2c00;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.46),
+    inset 0 -3px 0 rgba(0, 0, 0, 0.18),
+    0 4px 0 #946c12,
+    0 6px 7px rgba(28, 34, 51, 0.20);
+}
+html[data-theme="light"] .wordle-tile.pattern-absent {
+  background: #a8b2c6;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.34),
+    inset 0 -3px 0 rgba(0, 0, 0, 0.18),
+    0 4px 0 #6d7791,
+    0 6px 7px rgba(28, 34, 51, 0.20);
+}
+
+/* Pressed-in socket — pattern tile with no letter yet.
+   Replaces the old opacity:0.55 dimming (which is cancelled below). */
+.wordle-tile.pattern-correct:not(.has-letter):not(.locked),
+.wordle-tile.pattern-present:not(.has-letter):not(.locked),
+.wordle-tile.pattern-absent:not(.has-letter):not(.locked) {
+  opacity: 1;
+}
+.wordle-tile.pattern-correct:not(.has-letter):not(.locked) {
+  background: #31563a;
+  box-shadow: inset 0 3px 7px rgba(0, 0, 0, 0.60);
+}
+.wordle-tile.pattern-present:not(.has-letter):not(.locked) {
+  background: #6d5620;
+  box-shadow: inset 0 3px 7px rgba(0, 0, 0, 0.60);
+}
+.wordle-tile.pattern-absent:not(.has-letter):not(.locked) {
+  background: #343b4d;
+  box-shadow: inset 0 3px 7px rgba(0, 0, 0, 0.60);
+}
+html[data-theme="light"] .wordle-tile.pattern-correct:not(.has-letter):not(.locked) {
+  background: #bfe0c5;
+  box-shadow: inset 0 3px 6px rgba(28, 34, 51, 0.22);
+}
+html[data-theme="light"] .wordle-tile.pattern-present:not(.has-letter):not(.locked) {
+  background: #eddcaa;
+  box-shadow: inset 0 3px 6px rgba(28, 34, 51, 0.22);
+}
+html[data-theme="light"] .wordle-tile.pattern-absent:not(.has-letter):not(.locked) {
+  background: #c4ccdb;
+  box-shadow: inset 0 3px 6px rgba(28, 34, 51, 0.22);
+}
+
+/* Press a raised tile — slab collapses 4px -> 1px (not a transform, so the
+   letter stays crisp and the neighbours don't shift). */
+.wordle-tile.has-letter:active,
+.wordle-tile.locked:active {
+  box-shadow:
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.18),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.26),
+    0 1px 0 rgba(0, 0, 0, 0.55);
+}
+
+/* Answer row — the one tile that should sit proudest.
+   margin/padding trimmed from 8/10 to pay for the tray's 17px. */
+.wordle-row.answer-row {
+  margin-top: 3px;
+  padding-top: 7px;
+  border-top: 2px solid rgba(99, 189, 110, 0.45);
+}
+.wordle-tile.answer-tile {
+  background: #63bd6e;
+  border-color: transparent;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.36),
+    inset 0 -3px 0 rgba(0, 0, 0, 0.26),
+    0 5px 0 #2c5f33,
+    0 8px 11px rgba(45, 120, 55, 0.32);
+}
+html[data-theme="light"] .wordle-tile.answer-tile {
+  background: #4fb95d;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.44),
+    inset 0 -3px 0 rgba(0, 0, 0, 0.18),
+    0 5px 0 #2f7a39,
+    0 8px 11px rgba(45, 120, 55, 0.26);
+}
+
+/* Cursor — redeclared AFTER the border-color reset above so it still shows */
+.wordle-tile.cursor {
+  border: 2px dashed rgba(255, 255, 255, 0.7);
+  opacity: 1;
+}
+html[data-theme="light"] .wordle-tile.cursor {
+  border-color: rgba(28, 34, 51, 0.55);
+}
+
+/* Invalid — keep the extrusion, add the red ring, so the shake still has depth */
+.wordle-tile.tile-invalid {
+  box-shadow:
+    inset 0 0 0 2.5px rgba(220, 50, 50, 0.95),
+    inset 0 2px 0 rgba(255, 255, 255, 0.20),
+    0 4px 0 #6d1f1f,
+    0 6px 8px rgba(160, 30, 30, 0.45);
+}
+
+/* Solved-row check sits clear of the tray padding */
+.wordle-row.solved-row::after { right: -17px; }
+
+/* ===== Keyboard keycaps ===== */
+.kb-key {
+  border-radius: 8px;
+  background: #4b5573;
+  box-shadow:
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.20),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.30),
+    0 4px 0 #262d44,
+    0 6px 7px rgba(0, 0, 0, 0.42);
+}
+html[data-theme="light"] .kb-key {
+  background: #ffffff;
+  color: #1c2233;
+  box-shadow:
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.9),
+    inset 0 -2px 0 rgba(28, 34, 51, 0.12),
+    0 4px 0 #b9c3d6,
+    0 6px 7px rgba(28, 34, 51, 0.16);
+}
+.kb-key.in-answer {
+  background: #57a45f !important;
+  box-shadow:
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.28),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.26),
+    0 4px 0 #2c5f33,
+    0 6px 7px rgba(0, 0, 0, 0.42);
+}
+html[data-theme="light"] .kb-key.in-answer {
+  background: #57bd64 !important;
+  color: #fff;
+  box-shadow:
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.40),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.18),
+    0 4px 0 #2f7a39,
+    0 6px 7px rgba(28, 34, 51, 0.18);
+}
+.kb-key.kb-used {
+  background: #2b3248 !important;
+  color: #6a7391;
+  box-shadow:
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.06),
+    0 3px 0 #171c2b;
+}
+html[data-theme="light"] .kb-key.kb-used {
+  background: #c9cfdc !important;
+  color: #7d8598;
+  box-shadow:
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.5),
+    0 3px 0 #a7b0c3;
+}
+.kb-key.enter,
+html[data-theme="light"] .kb-key.enter {
+  background: var(--accent);
+  color: #fff;
+  box-shadow:
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.32),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.24),
+    0 4px 0 #97383c,
+    0 6px 7px rgba(0, 0, 0, 0.42);
+}
+html[data-theme="light"] .kb-key.enter {
+  box-shadow:
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.36),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.18),
+    0 4px 0 #a63f52,
+    0 6px 7px rgba(28, 34, 51, 0.20);
+}
+/* Press = slab collapse, replacing the old scale() so keys never overlap */
+.kb-key:active {
+  transform: none;
+  box-shadow:
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.14),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.24),
+    0 1px 0 rgba(0, 0, 0, 0.5);
+}
+.kb-key.enter:active { background: #ff8888; }
+
+/* ===== Panels ===== */
+.stats-dropdown,
+.win-modal {
+  border: none;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.10),
+    0 6px 0 rgba(0, 0, 0, 0.45),
+    0 14px 30px rgba(0, 0, 0, 0.55);
+}
+html[data-theme="light"] .stats-dropdown,
+html[data-theme="light"] .win-modal {
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.9),
+    0 6px 0 #b9c3d6,
+    0 14px 30px rgba(28, 34, 51, 0.22);
+}
+.stat-item {
+  background: #232c47;
+  box-shadow:
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.12),
+    0 3px 0 #0d1322;
+}
+html[data-theme="light"] .stat-item {
+  background: #eef2f9;
+  box-shadow:
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.9),
+    0 3px 0 #c9d2e2;
+}
+.error-toast {
+  box-shadow: 0 4px 0 #8f1d1d, 0 8px 14px rgba(0, 0, 0, 0.45);
+}
+
+/* Depth is repaint-heavy; drop the extra layers when motion is unwelcome. */
+@media (prefers-reduced-motion: reduce) {
+  .wordle-tile,
+  .kb-key { transition: none; }
+}
+
+/* Tall screens have the headroom for a roomier tray; short ones don't.
+   Written as a max-height override of a compact default so that the
+   phone case — the one that clips — is what the base rules describe. */
+@media (min-height: 760px) {
+  .wordle-grid { gap: 6px; padding: 11px 9px 13px; border-radius: 16px; }
+  .wordle-row { gap: 6px; }
+  .wordle-row.answer-row { margin-top: 6px; padding-top: 10px; }
+}
+
+/* ─── Light-theme legend swatch (2026-07-30) ──────────────────────────
+   The how-to-play legend swatches carry a dark inline background and no
+   colour of their own, so in light mode the letter inherits var(--text)
+   and goes near-black on a dark chip. game-help.css sets #fff but is not
+   linked on this page, so pin it locally. */
+.gh-legend-swatch {
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+}

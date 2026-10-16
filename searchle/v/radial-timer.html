@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Searchle 3.0 — Radial Timer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: transparent;
+      font-family: 'Inter', 'Segoe UI', sans-serif;
+      color: #f1f5f9;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    #timer-container {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Arc styling */
+    .timer-arc-bg {
+      fill: none;
+      stroke: rgba(148, 163, 184, 0.1);
+    }
+    .timer-arc-fg {
+      fill: none;
+      stroke-linecap: round;
+      filter: drop-shadow(0 0 8px currentColor);
+      transition: stroke 0.5s ease;
+    }
+    .timer-arc-glow {
+      fill: none;
+      stroke-linecap: round;
+      opacity: 0.3;
+      filter: blur(6px);
+    }
+
+    /* Center text */
+    .timer-time {
+      font-size: 42px;
+      font-weight: 800;
+      fill: #f1f5f9;
+      font-variant-numeric: tabular-nums;
+      text-anchor: middle;
+      dominant-baseline: central;
+    }
+    .timer-label {
+      font-size: 11px;
+      font-weight: 700;
+      fill: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      text-anchor: middle;
+    }
+
+    /* Guess count ring */
+    .guess-ring-bg {
+      fill: none;
+      stroke: rgba(148, 163, 184, 0.06);
+    }
+    .guess-ring-fg {
+      fill: none;
+      stroke-linecap: round;
+      stroke: #22d3ee;
+      filter: drop-shadow(0 0 4px rgba(34, 211, 238, 0.4));
+    }
+    .guess-count-text {
+      font-size: 14px;
+      font-weight: 700;
+      fill: #22d3ee;
+      text-anchor: middle;
+    }
+    .guess-count-label {
+      font-size: 9px;
+      font-weight: 600;
+      fill: rgba(34, 211, 238, 0.6);
+      text-anchor: middle;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+    }
+
+    /* Jackpot arc */
+    .jackpot-arc-bg {
+      fill: none;
+      stroke: rgba(251, 191, 36, 0.08);
+    }
+    .jackpot-arc-fg {
+      fill: none;
+      stroke-linecap: round;
+      stroke: #fbbf24;
+      filter: drop-shadow(0 0 4px rgba(251, 191, 36, 0.4));
+    }
+    .jackpot-text {
+      font-size: 14px;
+      font-weight: 800;
+      fill: #fbbf24;
+      text-anchor: middle;
+      text-shadow: 0 0 6px rgba(251, 191, 36, 0.3);
+    }
+    .jackpot-label {
+      font-size: 9px;
+      font-weight: 600;
+      fill: rgba(251, 191, 36, 0.6);
+      text-anchor: middle;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+    }
+
+    /* Tick marks */
+    .tick-mark {
+      stroke: rgba(148, 163, 184, 0.15);
+      stroke-width: 1;
+    }
+    .tick-mark-major {
+      stroke: rgba(148, 163, 184, 0.3);
+      stroke-width: 1.5;
+    }
+
+    /* Closest word */
+    #closest-info {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
+      white-space: nowrap;
+    }
+    .closest-word {
+      font-size: 22px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #34d399;
+      text-shadow: 0 0 12px rgba(52, 211, 153, 0.4);
+    }
+    .closest-rank {
+      font-size: 13px;
+      font-weight: 600;
+      color: #94a3b8;
+      margin-top: 2px;
+    }
+    .closest-user {
+      font-size: 12px;
+      color: rgba(148, 163, 184, 0.7);
+      margin-top: 1px;
+    }
+
+    /* Library word toast — OBS overlay (all users, larger) */
+    .library-toast {
+      position: fixed;
+      top: 60px;
+      right: 20px;
+      background: linear-gradient(135deg, #1a0f00, #2d1f0a);
+      border: 2px solid #8b6914;
+      border-radius: 16px;
+      padding: 24px 40px;
+      color: #f5deb3;
+      font-size: 28px;
+      font-weight: 700;
+      z-index: 10000;
+      opacity: 0;
+      transform: translateX(60px);
+      transition: opacity 0.4s, transform 0.4s;
+      pointer-events: none;
+      box-shadow: 0 6px 30px rgba(139, 105, 20, 0.4);
+      max-width: 500px;
+    }
+    .library-toast.show { opacity: 1; transform: translateX(0); }
+    .library-toast strong { color: #ffd700; letter-spacing: 1px; }
+    .library-toast .toast-player { font-size: 18px; color: #c0a050; margin-top: 4px; }
+  </style>
+</head>
+<body>
+  <div id="timer-container">
+    <svg id="timer-svg"></svg>
+    <div id="closest-info"></div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script>
+  (function () {
+    var socket = io({ reconnection: true, reconnectionDelay: 2000, reconnectionDelayMax: 10000, reconnectionAttempts: Infinity, transports: ['polling', 'websocket'] });
+
+    // Config
+    var SIZE = Math.min(window.innerWidth, window.innerHeight) - 40;
+    var CENTER = SIZE / 2;
+    var OUTER_R = SIZE / 2 - 10;
+    var INNER_R = OUTER_R - 20;
+    var GUESS_R = INNER_R - 8;
+    var GUESS_INNER_R = GUESS_R - 10;
+    var JACKPOT_R = GUESS_INNER_R - 8;
+    var JACKPOT_INNER_R = JACKPOT_R - 10;
+
+    // State
+    var startTime = null;
+    var guessCount = 0;
+    var isWon = false;
+    var latestGuess = null;
+    var jackpotValue = 3000;
+
+    // SVG setup
+    var svg = d3.select('#timer-svg')
+      .attr('width', SIZE)
+      .attr('height', SIZE)
+      .attr('viewBox', '0 0 ' + SIZE + ' ' + SIZE);
+
+    // Arc generators
+    var timerArc = d3.arc().innerRadius(INNER_R).outerRadius(OUTER_R).cornerRadius(2);
+    var guessArc = d3.arc().innerRadius(GUESS_INNER_R).outerRadius(GUESS_R).cornerRadius(1);
+    var jackpotArc = d3.arc().innerRadius(JACKPOT_INNER_R).outerRadius(JACKPOT_R).cornerRadius(1);
+
+    var g = svg.append('g').attr('transform', 'translate(' + CENTER + ',' + CENTER + ')');
+
+    // Tick marks
+    var tickG = g.append('g');
+    for (var i = 0; i < 60; i++) {
+      var angle = (i / 60) * Math.PI * 2 - Math.PI / 2;
+      var isMajor = i % 5 === 0;
+      var r1 = OUTER_R + 2;
+      var r2 = OUTER_R + (isMajor ? 8 : 5);
+      tickG.append('line')
+        .attr('class', isMajor ? 'tick-mark-major' : 'tick-mark')
+        .attr('x1', Math.cos(angle) * r1)
+        .attr('y1', Math.sin(angle) * r1)
+        .attr('x2', Math.cos(angle) * r2)
+        .attr('y2', Math.sin(angle) * r2);
+    }
+
+    // Timer background arc (full circle)
+    g.append('path')
+      .attr('class', 'timer-arc-bg')
+      .attr('stroke-width', OUTER_R - INNER_R)
+      .attr('d', timerArc({ startAngle: 0, endAngle: Math.PI * 2 }));
+
+    // Timer glow arc
+    var glowPath = g.append('path')
+      .attr('class', 'timer-arc-glow')
+      .attr('stroke-width', OUTER_R - INNER_R + 8)
+      .attr('d', timerArc({ startAngle: 0, endAngle: 0 }));
+
+    // Timer foreground arc (animated)
+    var fgPath = g.append('path')
+      .attr('class', 'timer-arc-fg')
+      .attr('stroke-width', OUTER_R - INNER_R)
+      .attr('d', timerArc({ startAngle: 0, endAngle: 0 }));
+
+    // Guess ring background
+    g.append('path')
+      .attr('class', 'guess-ring-bg')
+      .attr('stroke-width', GUESS_R - GUESS_INNER_R)
+      .attr('d', guessArc({ startAngle: 0, endAngle: Math.PI * 2 }));
+
+    // Guess ring foreground
+    var guessPath = g.append('path')
+      .attr('class', 'guess-ring-fg')
+      .attr('stroke-width', GUESS_R - GUESS_INNER_R)
+      .attr('d', guessArc({ startAngle: 0, endAngle: 0 }));
+
+    // Jackpot ring background
+    g.append('path')
+      .attr('class', 'jackpot-arc-bg')
+      .attr('stroke-width', JACKPOT_R - JACKPOT_INNER_R)
+      .attr('d', jackpotArc({ startAngle: 0, endAngle: Math.PI * 2 }));
+
+    // Jackpot ring foreground
+    var jackpotPath = g.append('path')
+      .attr('class', 'jackpot-arc-fg')
+      .attr('stroke-width', JACKPOT_R - JACKPOT_INNER_R)
+      .attr('d', jackpotArc({ startAngle: 0, endAngle: 0 }));
+
+    // Center text — time
+    var timeText = g.append('text')
+      .attr('class', 'timer-time')
+      .attr('y', -12)
+      .text('0:00');
+
+    // Center label
+    g.append('text')
+      .attr('class', 'timer-label')
+      .attr('y', 24)
+      .text('ELAPSED');
+
+    // Guess count text (positioned on guess ring)
+    var gcY = -(GUESS_R + GUESS_INNER_R) / 2;
+    g.append('text').attr('class', 'guess-count-label').attr('y', gcY - 8).text('GUESSES');
+    var guessText = g.append('text').attr('class', 'guess-count-text').attr('y', gcY + 8).text('0');
+
+    // Jackpot text (positioned on jackpot ring)
+    var jpY = (JACKPOT_R + JACKPOT_INNER_R) / 2;
+    g.append('text').attr('class', 'jackpot-label').attr('y', jpY - 8).text('JACKPOT');
+    var jackpotText = g.append('text').attr('class', 'jackpot-text').attr('y', jpY + 8).text('3,000');
+
+    // Color scale: elapsed time → hue (green → yellow → red)
+    function timeToColor(seconds) {
+      if (seconds < 120) return '#34d399';    // Green: 0-2min
+      if (seconds < 300) return '#fbbf24';    // Yellow: 2-5min
+      if (seconds < 600) return '#f97316';    // Orange: 5-10min
+      return '#f43f5e';                        // Red: 10min+
+    }
+
+    // Calculate jackpot
+    function calculatePot(numGuesses, gameStartTime) {
+      var seconds = (Date.now() - new Date(gameStartTime).getTime()) / 1000;
+      var guessBonus = numGuesses <= 1000 ? numGuesses * 10 : 10000 * Math.pow(numGuesses / 1000, 1.5);
+      var timeBonus = seconds <= 600 ? (seconds / 600) * 10000 : 10000 * Math.pow(seconds / 600, 1.5);
+      return Math.max(3000, Math.round(guessBonus + timeBonus));
+    }
+
+    // Animate timer arc
+    function updateTimer() {
+      if (!startTime || isWon) return;
+      var elapsed = (Date.now() - new Date(startTime).getTime()) / 1000;
+      var mins = Math.floor(elapsed / 60);
+      var secs = Math.floor(elapsed % 60);
+      timeText.text(mins + ':' + secs.toString().padStart(2, '0'));
+
+      // Arc sweeps 360° every 60 seconds (like a clock)
+      var secondsFrac = elapsed % 60;
+      var endAngle = (secondsFrac / 60) * Math.PI * 2;
+      var color = timeToColor(elapsed);
+
+      fgPath
+        .attr('d', timerArc({ startAngle: 0, endAngle: endAngle }))
+        .style('stroke', color);
+      glowPath
+        .attr('d', timerArc({ startAngle: 0, endAngle: endAngle }))
+        .style('stroke', color);
+
+      // Update jackpot
+      var pot = calculatePot(guessCount, startTime);
+      if (pot !== jackpotValue) {
+        jackpotValue = pot;
+        jackpotText.text(pot.toLocaleString());
+        // Jackpot arc: fill based on pot (3000 = 0%, 50000 = 100%)
+        var jpFill = Math.min(1, (pot - 3000) / 47000);
+        jackpotPath
+          .transition().duration(300)
+          .attrTween('d', function () {
+            var interp = d3.interpolate(
+              this._currentAngle || 0,
+              jpFill * Math.PI * 2
+            );
+            this._currentAngle = jpFill * Math.PI * 2;
+            return function (t) {
+              return jackpotArc({ startAngle: 0, endAngle: interp(t) });
+            };
+          });
+      }
+    }
+
+    // Update guess ring
+    function updateGuessRing() {
+      guessText.text(guessCount.toLocaleString());
+      // Fill based on guess count (0 = 0%, 500 = 100%)
+      var fill = Math.min(1, guessCount / 500);
+      guessPath
+        .transition().duration(400).ease(d3.easeBackOut)
+        .attrTween('d', function () {
+          var interp = d3.interpolate(
+            this._currentAngle || 0,
+            fill * Math.PI * 2
+          );
+          this._currentAngle = fill * Math.PI * 2;
+          return function (t) {
+            return guessArc({ startAngle: 0, endAngle: interp(t) });
+          };
+        });
+    }
+
+    // Update closest word info
+    function updateClosest(guess) {
+      if (!guess) return;
+      var info = document.getElementById('closest-info');
+      info.innerHTML =
+        '<div class="closest-word">' + guess.word + '</div>' +
+        '<div class="closest-rank">#' + guess.rank.toLocaleString() + '</div>' +
+        '<div class="closest-user">' + (guess.user.displayName || '') + '</div>';
+    }
+
+    // Socket events
+    socket.on('game-state', function (state) {
+      startTime = state.startTime;
+      isWon = state.isWon;
+      guessCount = (state.guesses || []).length;
+      if (state.guesses && state.guesses.length > 0) {
+        // Find closest guess (lowest rank)
+        var closest = state.guesses.slice().sort(function (a, b) { return a.rank - b.rank; })[0];
+        updateClosest(closest);
+      }
+      updateGuessRing();
+    });
+
+    socket.on('new-guess', function (guess) {
+      guessCount++;
+      latestGuess = guess;
+      updateGuessRing();
+      updateClosest(guess);
+    });
+
+    socket.on('game-won', function (data) {
+      isWon = true;
+      timeText.text('WON!').style('fill', '#fbbf24');
+    });
+
+    socket.on('new-game', function (data) {
+      startTime = data.startTime;
+      isWon = false;
+      guessCount = 0;
+      latestGuess = null;
+      jackpotValue = 3000;
+      timeText.text('0:00').style('fill', '#f1f5f9');
+      guessText.text('0');
+      jackpotText.text('3,000');
+      document.getElementById('closest-info').innerHTML = '';
+      // Reset arcs
+      fgPath.attr('d', timerArc({ startAngle: 0, endAngle: 0 }));
+      glowPath.attr('d', timerArc({ startAngle: 0, endAngle: 0 }));
+      guessPath.attr('d', guessArc({ startAngle: 0, endAngle: 0 }));
+      guessPath.node()._currentAngle = 0;
+      jackpotPath.attr('d', jackpotArc({ startAngle: 0, endAngle: 0 }));
+      jackpotPath.node()._currentAngle = 0;
+    });
+
+    // ─── Library Word Toast (all users) ───
+    socket.on('library-word-new', function(data) {
+      if (!data || !data.word) return;
+      var t = document.createElement('div');
+      t.className = 'library-toast';
+      var html = '\uD83D\uDCDA Word Found! <strong>' + data.word.toUpperCase() + '</strong>';
+      if (data.displayName) html += '<div class="toast-player">' + data.displayName + '</div>';
+      t.innerHTML = html;
+      document.body.appendChild(t);
+      setTimeout(function() { t.classList.add('show'); }, 10);
+      setTimeout(function() {
+        t.classList.remove('show');
+        setTimeout(function() { t.remove(); }, 400);
+      }, 4000);
+    });
+
+    // Timer loop (requestAnimationFrame for smooth arc)
+    d3.timer(updateTimer);
+  })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,1484 @@
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --bg-tile: #252540;
+  --border: #3a3a55;
+  --text: #e8e8f0;
+  --text-dim: #6a6a88;
+  --red: #e74c3c;
+  --red-glow: rgba(231, 76, 60, 0.3);
+  --red-bg: rgba(231, 76, 60, 0.15);
+  --green: #4ade80;
+  --green-glow: rgba(74, 222, 128, 0.3);
+  --yellow: #f1c40f;
+  --yellow-glow: rgba(241, 196, 15, 0.3);
+  --accent: #8b5cf6;
+  --accent-glow: rgba(139, 92, 246, 0.4);
+  --neon-purple: #b44aff;
+  --neon-purple-glow: rgba(180, 74, 255, 0.6);
+  --neon-purple-glow-soft: rgba(180, 74, 255, 0.3);
+  --game-bg: #15202b;
+  --row-bg: rgba(17, 27, 36, 0.9);
+  --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+body {
+  font-family: var(--font);
+  background: #000;
+  height: 100svh;
+  color: var(--text);
+  height: 100dvh;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  overflow-x: hidden;
+}
+
+/* === App Container === */
+#app {
+  display: flex;
+  flex-direction: column;
+  height: 100svh;
+  height: 100dvh;
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 6px;
+}
+
+/* === Game Area (neon border) === */
+.game-area {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  border: 2px solid var(--neon-purple);
+  border-radius: 16px;
+  background: rgba(21, 32, 43, 0.9);
+  box-shadow: inset 0 0 10px var(--neon-purple-glow-soft);
+  overflow: hidden;
+  filter:
+    drop-shadow(0 0 6px var(--neon-purple-glow))
+    drop-shadow(0 0 14px var(--neon-purple-glow-soft))
+    drop-shadow(0 0 30px var(--neon-purple-glow-soft));
+}
+
+/* === Top Bar === */
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 14px 6px;
+  z-index: 2;
+  flex-shrink: 0;
+  border-bottom: 1px solid rgba(180, 74, 255, 0.1);
+}
+
+.title-area {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.daily-badge {
+  font-size: 11px;
+  font-weight: 700;
+  color: #ffab00;
+  background: rgba(255, 171, 0, 0.15);
+  padding: 2px 8px;
+  border-radius: 8px;
+  letter-spacing: 1px;
+  animation: daily-glow 2s ease-in-out infinite alternate;
+}
+
+.daily-badge.hidden { display: none; }
+
+@keyframes daily-glow {
+  from { box-shadow: 0 0 4px rgba(255, 171, 0, 0.3); }
+  to { box-shadow: 0 0 10px rgba(255, 171, 0, 0.6); }
+}
+
+.title-text {
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: 3px;
+  color: var(--neon-purple);
+  text-shadow: 0 0 10px var(--neon-purple-glow);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 0.15s;
+}
+.title-text:active {
+  opacity: 0.6;
+}
+
+.title-sub {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+
+.top-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hub-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 7px;
+  color: #fff;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.hub-btn:hover { border-color: rgba(255, 255, 255, 0.8); background: rgba(255, 255, 255, 0.08); }
+.hub-btn:active {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.discord-login-btn.hidden { display: none; }
+.discord-login-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 7px;
+  padding: 7px 11px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: var(--font);
+  text-decoration: none;
+  transition: all 0.2s;
+  letter-spacing: 0.4px;
+}
+
+.discord-login-btn:hover { border-color: rgba(255, 255, 255, 0.8); background: rgba(255, 255, 255, 0.08); }
+.discord-login-btn:active {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.discord-login-btn.logged-in {
+  background: transparent;
+  border-color: rgba(74, 222, 128, 0.55);
+  color: var(--green);
+  pointer-events: none;
+}
+
+.discord-login-btn .user-pic {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* === Login Prompt === */
+.sp-login-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: transparent;
+  pointer-events: none;
+}
+
+.sp-login-screen.hidden { display: none; }
+
+.sp-login-card {
+  position: relative;
+  width: min(100%, 360px);
+  padding: 32px 28px;
+  border-radius: 20px;
+  background: rgba(18, 18, 19, 0.72);
+  border: 1px solid rgba(58, 58, 60, 0.7);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  text-align: center;
+  color: #fff;
+  pointer-events: auto;
+}
+
+.sp-login-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #b9bcc4;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.16s ease, color 0.16s ease, transform 0.16s ease;
+}
+
+.sp-login-close:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  transform: scale(1.02);
+}
+
+.sp-login-card h1 {
+  margin: 0 0 8px;
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  color: var(--neon-purple);
+  text-shadow: 0 0 10px var(--neon-purple-glow);
+}
+
+.sp-login-card p {
+  color: #a3a3bf;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  margin: 0 0 4px;
+}
+
+.sp-guest-section { margin: 20px 0 0; }
+
+.sp-guest-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  padding: 4px;
+}
+
+.sp-guest-input {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: #fff;
+  font-size: 0.95rem;
+  font-family: var(--font);
+  outline: none;
+}
+
+.sp-guest-input::placeholder { color: #818384; }
+
+.sp-guest-btn,
+.sp-discord-btn,
+.sp-github-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  border: none;
+  border-radius: 10px;
+  font-family: var(--font);
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: transform 0.16s ease, opacity 0.16s ease, background 0.16s ease;
+  box-sizing: border-box;
+}
+
+.sp-guest-btn {
+  width: auto;
+  flex-shrink: 0;
+  padding: 12px 18px;
+  background: #39ff14;
+  color: #1a1a2e;
+  cursor: pointer;
+}
+
+.sp-discord-btn {
+  padding: 14px 18px;
+  background: #5865F2;
+  color: #fff;
+}
+
+.sp-github-btn {
+  padding: 14px 18px;
+  background: #333;
+  color: #fff;
+}
+
+.sp-guest-btn:hover,
+.sp-discord-btn:hover,
+.sp-github-btn:hover {
+  transform: translateY(-1px);
+  opacity: 0.96;
+}
+
+.sp-login-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0;
+  color: #818384;
+  font-size: 0.75rem;
+}
+
+.sp-login-divider::before,
+.sp-login-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.stats-btn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 7px;
+  min-width: 34px;
+  height: 34px;
+  padding: 6px 8px;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.stats-btn:hover { border-color: rgba(255, 255, 255, 0.8); background: rgba(255, 255, 255, 0.08); }
+.stats-btn:active {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+/* === Game Frame === */
+.game-frame {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 4px 8px 6px;
+  overflow: hidden;
+}
+
+/* === Input Area (input tiles + length toggle) === */
+.input-area {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+  padding: 2px 8px;
+  order: 2;
+  flex-shrink: 0;
+}
+
+.len-toggle {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 2px solid var(--neon-purple);
+  background: rgba(180, 74, 255, 0.15);
+  color: var(--neon-purple);
+  font-size: 16px;
+  font-weight: 800;
+  font-family: var(--font);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s;
+  text-shadow: 0 0 8px var(--neon-purple-glow);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.len-toggle:active {
+  background: rgba(180, 74, 255, 0.35);
+  transform: scale(0.9);
+}
+
+/* === Length Selector (legacy, hidden) === */
+.length-selector {
+  display: none;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 4px 6px;
+  flex-shrink: 0;
+}
+
+.length-label {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+.length-buttons {
+  display: flex;
+  gap: 4px;
+  flex: 1;
+  justify-content: center;
+}
+
+.len-btn {
+  width: 32px;
+  height: 28px;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: var(--font);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-tile);
+  color: var(--text-dim);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.len-btn:active {
+  transform: scale(0.95);
+}
+
+.len-btn.active {
+  background: rgba(180, 74, 255, 0.2);
+  border-color: var(--neon-purple);
+  color: var(--neon-purple);
+  box-shadow: 0 0 8px var(--neon-purple-glow-soft);
+  font-weight: 800;
+}
+
+.len-btn.disabled {
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+/* === Input Row === */
+.input-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  flex: 1;
+}
+
+.input-tile {
+  flex: 1 1 0;
+  width: 100%;
+  max-width: 42px;
+  aspect-ratio: 1 / 1;
+  height: auto;
+  border: 2px solid var(--border);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text);
+  background: var(--bg-tile);
+  transition: border-color 0.15s;
+  text-transform: uppercase;
+}
+
+.input-tile.filled {
+  border-color: var(--neon-purple);
+  box-shadow: 0 0 6px var(--neon-purple-glow-soft);
+}
+
+/* Reorder: guesses at top, input+keyboard at bottom */
+.guesses-wrapper  { order: 1; }
+.input-area       { order: 2; }
+#keyboard         { order: 3; }
+
+/* === Guess History === */
+.guesses-wrapper {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+#guesses {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 2px;
+  padding: 2px 0;
+}
+
+/* === Guess Row — solo (no avatar, triangle on right) === */
+.guess-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  padding: 0 4px;
+  background: transparent;
+  color: #ffffff;
+  animation: rowIn 0.3s ease;
+  min-width: 0;
+  min-height: 0;
+}
+
+.guess-num { display: none; }
+
+/* === Liquid-glass letter pill === */
+.guess-letters {
+  position: relative;
+  display: inline-flex;
+  gap: 0;
+  flex: 0 0 auto;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: 18px;
+  clip-path: inset(0 round 18px);
+  padding: 0 22px;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.4),
+    0 8px 24px rgba(0, 0, 0, 0.6),
+    0 2px 6px rgba(0, 0, 0, 0.45);
+}
+
+.pill-base {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background-image:
+    radial-gradient(ellipse 60% 60% at 22% 28%, rgba(255, 255, 255, 0.7) 0%, transparent 55%),
+    radial-gradient(ellipse 55% 55% at 78% 72%, rgba(0, 0, 0, 0.55) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 90% at 55% 50%, rgba(255, 255, 255, 0.3) 0%, transparent 70%),
+    var(--guess-gradient, linear-gradient(180deg, #3a3a55, #2a2a40));
+}
+
+.pill-glass {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  background: linear-gradient(180deg,
+    rgba(255, 255, 255, 0.16) 0%,
+    rgba(255, 255, 255, 0.04) 50%,
+    rgba(0, 0, 0, 0.1) 100%);
+  backdrop-filter: blur(14px) saturate(180%);
+  -webkit-backdrop-filter: blur(14px) saturate(180%);
+  pointer-events: none;
+}
+
+.pill-spec {
+  position: absolute;
+  top: 0; left: 6%; right: 6%; height: 55%;
+  z-index: 2;
+  background: linear-gradient(180deg,
+    rgba(255, 255, 255, 0.4) 0%,
+    rgba(255, 255, 255, 0.1) 55%,
+    rgba(255, 255, 255, 0) 100%);
+  border-radius: 50% / 50%;
+  filter: blur(2px);
+  pointer-events: none;
+}
+
+.letter-tile {
+  position: relative;
+  z-index: 3;
+  width: 42px;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 800;
+  background: transparent;
+  border: none;
+  color: inherit;
+  text-transform: uppercase;
+  text-shadow:
+    -1px -1px 0 rgba(0, 0, 0, 0.7),
+     1px -1px 0 rgba(0, 0, 0, 0.7),
+    -1px  1px 0 rgba(0, 0, 0, 0.7),
+     1px  1px 0 rgba(0, 0, 0, 0.7),
+     0 0 5px rgba(0, 0, 0, 0.55);
+}
+.letter-tile:not(:last-child) {
+  border-right: 1px solid rgba(0, 0, 0, 0.32);
+}
+
+/* Tap-cycle states colour the GLYPH (background stays the pill gradient).
+   Adds a coloured ring around the glyph so the state is unmistakable. */
+.letter-tile.neutral { color: #ffffff; }
+.letter-tile.correct {
+  color: var(--green);
+  text-shadow:
+    -1px -1px 0 rgba(0, 0, 0, 0.85),
+     1px -1px 0 rgba(0, 0, 0, 0.85),
+    -1px  1px 0 rgba(0, 0, 0, 0.85),
+     1px  1px 0 rgba(0, 0, 0, 0.85),
+     0 0 8px var(--green-glow);
+}
+.letter-tile.present {
+  color: var(--yellow);
+  text-shadow:
+    -1px -1px 0 rgba(0, 0, 0, 0.85),
+     1px -1px 0 rgba(0, 0, 0, 0.85),
+    -1px  1px 0 rgba(0, 0, 0, 0.85),
+     1px  1px 0 rgba(0, 0, 0, 0.85),
+     0 0 8px var(--yellow-glow);
+}
+.letter-tile.absent {
+  color: var(--red);
+  text-shadow:
+    -1px -1px 0 rgba(0, 0, 0, 0.85),
+     1px -1px 0 rgba(0, 0, 0, 0.85),
+    -1px  1px 0 rgba(0, 0, 0, 0.85),
+     1px  1px 0 rgba(0, 0, 0, 0.85),
+     0 0 8px var(--red-glow);
+}
+
+.guess-row .letter-tile {
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: transform 0.1s ease;
+}
+
+.letter-tile.tile-tap {
+  transform: scale(0.88);
+}
+
+.guess-row.all-absent .guess-letters {
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.4),
+    0 0 26px var(--red-glow),
+    0 8px 24px rgba(0, 0, 0, 0.6);
+}
+
+.guess-row.all-correct .guess-letters {
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.26),
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.4),
+    0 0 30px var(--green-glow),
+    0 8px 24px rgba(0, 0, 0, 0.6);
+}
+
+/* Empty pre-rendered rows — faint placeholder */
+.guess-row.empty-row {
+  opacity: 0.25;
+  animation: none;
+}
+.guess-row.empty-row .letter-tile {
+  cursor: default;
+}
+.guess-row.empty-row .empty-counts {
+  visibility: hidden;
+}
+
+/* Loss overlay */
+.win-bubble.loss {
+  border-color: var(--red, #f87171);
+  box-shadow: 0 0 40px rgba(248, 113, 113, 0.2);
+}
+
+/* === Triangle stats — perches on the pill's right edge === */
+.guess-counts {
+  position: relative;
+  z-index: 5;
+  margin-left: -22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.guess-triangle {
+  width: 56px;
+  height: auto;
+  display: block;
+  flex-shrink: 0;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.8));
+}
+
+.guess-triangle .tri-wedge-correct { fill: var(--green); }
+.guess-triangle .tri-wedge-present { fill: var(--yellow); }
+.guess-triangle .tri-wedge-absent  { fill: var(--red); }
+.guess-triangle .tri-outline {
+  fill: none;
+  stroke: rgba(0, 0, 0, 0.6);
+  stroke-width: 1.25;
+  stroke-linejoin: round;
+}
+.guess-triangle .tri-spokes {
+  fill: none;
+  stroke: rgba(0, 0, 0, 0.45);
+  stroke-width: 1;
+  stroke-linecap: round;
+}
+.guess-triangle text {
+  font-family: inherit;
+  font-weight: 800;
+  text-anchor: middle;
+  dominant-baseline: central;
+  font-size: 13px;
+  paint-order: stroke;
+  stroke: rgba(0, 0, 0, 0.45);
+  stroke-width: 0.7;
+}
+.guess-triangle .t-correct { fill: #15151f; }
+.guess-triangle .t-present { fill: #15151f; }
+.guess-triangle .t-absent  { fill: #ffffff; }
+
+/* === Keyboard === */
+#keyboard {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  max-width: 520px;
+  margin: 4px auto 0;
+  flex-shrink: 0;
+  padding: 0 2px;
+}
+
+.keyboard-row {
+  display: flex;
+  gap: 5px;
+  justify-content: center;
+}
+
+.key {
+  flex: 1;
+  max-width: 48px;
+  height: 40px;
+  padding: 0 2px;
+  font-size: 16px;
+  font-weight: 700;
+  font-family: var(--font);
+  border: 1px solid rgba(139, 92, 246, 0.35);
+  border-radius: 8px;
+  background: rgba(55, 55, 95, 0.95);
+  color: #f0f0ff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  transition: all 0.2s ease;
+  text-shadow: 0 0 8px rgba(200, 200, 255, 0.25);
+  box-shadow: 0 0 4px rgba(139, 92, 246, 0.12);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.key:active { background: rgba(80, 80, 120, 0.95); }
+
+.key.wide {
+  max-width: 64px;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+}
+
+.key.enter-key {
+  background: rgba(74, 222, 128, 0.3);
+  color: var(--green);
+  border-color: rgba(74, 222, 128, 0.4);
+  text-shadow: 0 0 8px rgba(74, 222, 128, 0.4);
+}
+
+.key.enter-key:active {
+  background: rgba(74, 222, 128, 0.5);
+}
+
+.key.used {
+  background: rgba(40, 40, 65, 0.85);
+  color: rgba(200, 200, 220, 0.55);
+  border: 1px solid rgba(100, 80, 160, 0.25);
+  text-shadow: none;
+  box-shadow: none;
+}
+
+.key.absent {
+  background: rgba(40, 30, 35, 0.6);
+  color: rgba(231, 76, 60, 0.35);
+  border: 1px solid rgba(231, 76, 60, 0.12);
+  text-shadow: none;
+  box-shadow: none;
+}
+
+.key.inword {
+  background: rgba(74, 222, 128, 0.25);
+  color: var(--green);
+  border: 1px solid rgba(74, 222, 128, 0.4);
+  text-shadow: 0 0 8px rgba(74, 222, 128, 0.4);
+  box-shadow: 0 0 6px rgba(74, 222, 128, 0.15);
+}
+
+/* === Loading Overlay === */
+.loading-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(21, 32, 43, 0.95);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  z-index: 20;
+  border-radius: 16px;
+}
+
+.loading-overlay.hidden { display: none; }
+
+.loading-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid rgba(180, 74, 255, 0.2);
+  border-top-color: var(--neon-purple);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.loading-text {
+  font-size: 14px;
+  color: var(--text-dim);
+  letter-spacing: 1px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* === Win Overlay === */
+#win-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  border-radius: 16px;
+  animation: fadeIn 0.3s ease;
+}
+
+#win-overlay.hidden { display: none; }
+
+.win-bubble {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  background: #000;
+  padding: 28px 36px;
+  border-radius: 20px;
+  border: 2px solid var(--green);
+  box-shadow: 0 0 40px var(--green-glow);
+  animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  max-width: 90%;
+  text-align: center;
+}
+
+.win-emoji {
+  font-size: 48px;
+  line-height: 1;
+}
+
+.win-word {
+  font-size: 32px;
+  font-weight: 900;
+  letter-spacing: 6px;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+.win-detail {
+  font-size: 14px;
+  color: var(--text-dim);
+  letter-spacing: 1px;
+}
+
+.play-again-btn {
+  margin-top: 4px;
+  padding: 12px 32px;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: var(--font);
+  border: none;
+  border-radius: 10px;
+  background: rgba(74, 222, 128, 0.25);
+  color: var(--green);
+  border: 1.5px solid rgba(74, 222, 128, 0.4);
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: all 0.2s;
+}
+
+.play-again-btn:active {
+  background: rgba(74, 222, 128, 0.4);
+  transform: scale(0.97);
+}
+
+/* === Stats Overlay === */
+#stats-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 15;
+  border-radius: 16px;
+  animation: fadeIn 0.2s ease;
+}
+
+#stats-overlay.hidden { display: none; }
+
+.stats-panel {
+  background: #000;
+  border: 2px solid var(--neon-purple);
+  box-shadow: 0 0 30px var(--neon-purple-glow-soft);
+  border-radius: 16px;
+  padding: 20px 24px;
+  width: 90%;
+  max-width: 360px;
+  max-height: 80%;
+  overflow-y: auto;
+  animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.stats-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 3px;
+  color: var(--neon-purple);
+}
+
+.stats-close {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 22px;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.stat-card {
+  background: rgba(37, 37, 64, 0.6);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 24px;
+  font-weight: 900;
+  color: var(--text);
+  line-height: 1.2;
+}
+
+.stat-value.green { color: var(--green); }
+.stat-value.purple { color: var(--neon-purple); }
+.stat-value.yellow { color: var(--yellow); }
+
+.stat-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: var(--text-dim);
+  margin-top: 4px;
+}
+
+.stats-history-label {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+}
+
+.stats-history {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.history-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  background: rgba(37, 37, 64, 0.4);
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.history-word {
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.history-guesses {
+  font-weight: 700;
+  color: var(--green);
+  font-size: 12px;
+}
+
+.history-loss {
+  color: var(--red);
+}
+
+.stats-empty {
+  font-size: 13px;
+  color: var(--text-dim);
+  text-align: center;
+  padding: 16px 0;
+}
+
+/* === Error Toast === */
+.toast {
+  position: absolute;
+  top: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(231, 76, 60, 0.9);
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  z-index: 25;
+  animation: toastIn 0.3s ease, toastOut 0.3s ease 1.5s forwards;
+  pointer-events: none;
+}
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+@keyframes toastOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+/* === Animations === */
+@keyframes rowIn {
+  from { opacity: 0; transform: translateY(-12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes popIn {
+  0% { transform: scale(0.5); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* === Scrollbar === */
+.stats-history::-webkit-scrollbar { width: 4px; }
+.stats-history::-webkit-scrollbar-track { background: transparent; }
+.stats-history::-webkit-scrollbar-thumb { background: #30363d; border-radius: 2px; }
+.stats-panel::-webkit-scrollbar { width: 4px; }
+.stats-panel::-webkit-scrollbar-track { background: transparent; }
+.stats-panel::-webkit-scrollbar-thumb { background: #30363d; border-radius: 2px; }
+
+@media (pointer: coarse) {
+  #app {
+    padding: 4px;
+  }
+
+  .top-bar {
+    padding: 6px 10px;
+  }
+
+  .game-frame {
+    padding: 4px 6px 4px;
+  }
+
+  .input-area {
+    gap: 6px;
+    padding: 1px 6px;
+  }
+
+  .input-row {
+    gap: 4px;
+  }
+
+  .input-tile {
+    max-width: 40px;
+    font-size: 20px;
+  }
+
+  .len-toggle {
+    width: 34px;
+    height: 34px;
+    font-size: 15px;
+  }
+
+  #guesses {
+    gap: 1px;
+    padding: 1px 0;
+  }
+
+  .guess-row {
+    gap: 4px;
+    padding: 2px 5px;
+  }
+
+  .guess-letters {
+    gap: 2px;
+  }
+
+  .letter-tile {
+    max-width: 46px;
+    font-size: clamp(10px, 3vw, 15px);
+  }
+
+  .guess-counts {
+    gap: 3px;
+  }
+
+  .count {
+    width: 32px;
+    height: 32px;
+    font-size: 15px;
+  }
+
+  #keyboard {
+    gap: 3px;
+    margin: 2px auto 0;
+  }
+
+  .keyboard-row {
+    gap: 4px;
+  }
+
+  .key {
+    max-width: 46px;
+    height: 36px;
+    font-size: 15px;
+  }
+
+  .key.wide {
+    max-width: 60px;
+    font-size: 11px;
+  }
+}
+
+@keyframes ov-gradient-flow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* === Desktop shell framing (non-touch, wide viewport) === */
+@media (min-width: 520px) and (pointer: fine) {
+  body {
+    background: #000;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   TOON SKIN — 1px ink · flat saturated fills · one hard highlight band ·
+   thick coloured slab · no soft cast.          Added 2026-07-27.
+
+   Shares its vocabulary with RecTangled/erecTangled and with Color 500, so
+   the four games read as one family.
+
+   Deliberately ADDITIVE: nothing above this line is edited, and no property
+   that drives layout (tile width/height, gaps, font-size, flex order) is
+   touched — the board geometry is byte-for-byte what it was.
+
+   ── THE TWO RULES THIS BLOCK IS BUILT AROUND ──────────────────────────────
+   1. Every slab is written FLAT. A custom property that nests var() inside
+      another custom property is substituted where it is DECLARED and then
+      inherits as an already-resolved string, so `--toon: … var(--slab) …`
+      on a parent can never be recoloured by a child setting --slab.
+      Verified in this browser: the child's --slab is ignored outright.
+      Therefore each state below repeats its own shadow in full.
+   2. Every slab is a darkened version of ITS OWN FACE COLOUR, never a
+      shared near-black. This shell is dark; a black slab on it is invisible
+      and the extrusion reads as nothing at all.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── the shell lifts so a 1px ink line has something to sit on ──
+      An ink outline is invisible on a near-black panel. This is the one
+      place the skin leaves the old palette, and it is the whole point. */
+body { background: #141a2e; }
+@media (min-width: 520px) and (pointer: fine) { body { background: #141a2e; } }
+
+.game-area {
+  background: #232c4d;
+  border: 1px solid #0a0b12;
+  border-radius: 20px;
+  /* the neon-purple bloom is what the skin replaces */
+  filter: none;
+  box-shadow: none;
+}
+.top-bar { border-bottom: 1px solid #0a0b12; }
+
+.title-text {
+  color: #fff;
+  text-shadow:
+    -1px -1px 0 #0a0b12, 1px -1px 0 #0a0b12,
+    -1px  1px 0 #0a0b12, 1px  1px 0 #0a0b12, 0 2px 0 #0a0b12;
+}
+.title-sub { color: #9aa3c8; }
+
+/* ── the guess stack becomes a recessed tray the pills sit inside ──
+   The horizontal inset is kept to 8px total: a guess row is a fixed ~288px
+   (five 42px tiles + 44px pill padding + the triangle, less its 22px
+   overlap), so on a 320px phone there is only a few px of slack to spend. */
+.guesses-wrapper {
+  background: #161d38;
+  border-radius: 16px;
+  box-shadow: 0 0 0 1px #0a0b12, inset 0 5px 0 rgba(0, 0, 0, 0.32);
+  padding: 8px 2px;
+  margin: 4px 2px;
+}
+
+/* ── the guess pill ──
+      clip-path has to go: it clips the element's own box-shadow, which would
+      eat both the ink ring and the slab. overflow:visible is safe here
+      because the pill's 22px horizontal padding means no square letter tile
+      ever reaches a rounded corner. The slab is one fixed dark navy rather
+      than a per-row colour: the pill's fill is a live hue ramp (0deg red →
+      120deg green) and a single dark slab reads correctly under all of it. */
+.guess-letters {
+  border-radius: 16px;
+  clip-path: none;
+  overflow: visible;
+  /* clears the 8px slab; #guesses' own 1-2px row gap sits on top of this */
+  margin-bottom: 8px;
+  box-shadow: 0 0 0 1px #0a0b12, 0 8px 0 #151a30, 0 8px 0 1px #0a0b12;
+}
+.guess-letters .pill-base,
+.guess-letters .pill-glass { border-radius: 16px; }
+
+/* flat fill + ONE hard highlight band, cut off square at 34% */
+.pill-base { background-image: var(--guess-gradient, linear-gradient(180deg, #3a3a55, #2a2a40)); }
+.pill-glass {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: linear-gradient(180deg,
+    rgba(255, 255, 255, 0.34) 0%,
+    rgba(255, 255, 255, 0.34) 34%,
+    rgba(255, 255, 255, 0) 34.5%);
+}
+.pill-spec { display: none; }
+
+.letter-tile {
+  color: #fff;
+  text-shadow:
+    -1px -1px 0 #0a0b12, 1px -1px 0 #0a0b12,
+    -1px  1px 0 #0a0b12, 1px  1px 0 #0a0b12, 0 2px 0 #0a0b12;
+}
+.letter-tile:not(:last-child) { border-right-color: #0a0b12; }
+/* the tap-cycle states keep their meaning, just brighter against the ink */
+.letter-tile.correct { color: #7dffab; }
+.letter-tile.present { color: #ffe14d; }
+.letter-tile.absent  { color: #ff8b7d; }
+
+/* ── feedback triangle ──
+      stroke-width is in viewBox units, not px: the viewBox is 64 wide and
+      the svg renders at 56px, so 1px on screen is 64/56 ≈ 1.15. The digit
+      halo stays heavier — it is doing legibility, not outlining, and at
+      1.15 the numbers muddy into the wedge behind them. */
+.guess-triangle { filter: none; }
+.guess-triangle .tri-wedge-correct { fill: #2fbe62; }
+.guess-triangle .tri-wedge-present { fill: #ffcc22; }
+.guess-triangle .tri-wedge-absent  { fill: #f0554a; }
+.guess-triangle .tri-outline { stroke: #0a0b12; stroke-width: 1.15; }
+.guess-triangle .tri-spokes  { stroke: #0a0b12; stroke-width: 1.15; }
+.guess-triangle text { stroke: #0a0b12; stroke-width: 1.9; paint-order: stroke; }
+.guess-triangle .t-correct,
+.guess-triangle .t-present,
+.guess-triangle .t-absent { fill: #ffffff; }
+
+/* ── input tiles + length toggle ── */
+.input-tile {
+  border: 0;
+  border-radius: 10px;
+  background: #4b3fa8;
+  color: #fff;
+  box-shadow: 0 0 0 1px #0a0b12, 0 5px 0 #241a52, 0 5px 0 1px #0a0b12;
+}
+.input-tile.filled {
+  background: #a855f7;
+  box-shadow: 0 0 0 1px #0a0b12, 0 5px 0 #4a1080, 0 5px 0 1px #0a0b12;
+}
+.len-toggle {
+  border: 0;
+  background: #a855f7;
+  color: #fff;
+  text-shadow: none;
+  box-shadow: 0 0 0 1px #0a0b12, 0 5px 0 #4a1080, 0 5px 0 1px #0a0b12;
+}
+.len-toggle:active {
+  background: #a855f7;
+  box-shadow: 0 0 0 1px #0a0b12, 0 1px 0 #4a1080, 0 1px 0 1px #0a0b12;
+}
+.input-area { padding-bottom: 8px; }
+
+/* ── keyboard: every state repeats its whole shadow, see rule 1 above ──
+      ONLY the vertical gap grows, to clear the 5px slab under each key.
+      The horizontal gap is deliberately left alone: play.css narrows it to
+      4px at (pointer: coarse) so ten keys still fit a phone, and this block
+      loads AFTER that media query — widening it here would win the cascade
+      and push the last key off the screen on every real phone. */
+#keyboard { gap: 9px; }
+@media (pointer: coarse) { #keyboard { gap: 8px; } }
+.key {
+  border: 0;
+  border-radius: 10px;
+  background: #4b3fa8;
+  color: #fff;
+  font-weight: 900;
+  text-shadow:
+    -1px -1px 0 #0a0b12, 1px -1px 0 #0a0b12,
+    -1px  1px 0 #0a0b12, 1px  1px 0 #0a0b12;
+  box-shadow: 0 0 0 1px #0a0b12, 0 5px 0 #241a52, 0 5px 0 1px #0a0b12;
+}
+.key:active {
+  background: #4b3fa8;
+  box-shadow: 0 0 0 1px #0a0b12, 0 1px 0 #241a52, 0 1px 0 1px #0a0b12;
+}
+.key.enter-key,
+.key.inword {
+  background: #2fbe62;
+  color: #fff;
+  border: 0;
+  box-shadow: 0 0 0 1px #0a0b12, 0 5px 0 #125c30, 0 5px 0 1px #0a0b12;
+}
+.key.enter-key:active {
+  background: #2fbe62;
+  box-shadow: 0 0 0 1px #0a0b12, 0 1px 0 #125c30, 0 1px 0 1px #0a0b12;
+}
+.key.absent {
+  background: #5c2a32;
+  color: #ffb0a8;
+  border: 0;
+  text-shadow: none;
+  box-shadow: 0 0 0 1px #0a0b12, 0 5px 0 #2a1116, 0 5px 0 1px #0a0b12;
+}
+.key.used {
+  background: #33306b;
+  color: #c4c0f0;
+  border: 0;
+  text-shadow: none;
+  box-shadow: 0 0 0 1px #0a0b12, 0 5px 0 #141230, 0 5px 0 1px #0a0b12;
+}
+
+/* ── top-bar controls ── */
+.hub-btn,
+.stats-btn,
+.discord-login-btn {
+  border: 0;
+  background: #33306b;
+  color: #fff;
+  box-shadow: 0 0 0 1px #0a0b12, 0 5px 0 #141230, 0 5px 0 1px #0a0b12;
+}
+.hub-btn:hover,
+.stats-btn:hover,
+.discord-login-btn:hover { background: #3d3a80; }
+.hub-btn:active,
+.stats-btn:active,
+.discord-login-btn:active {
+  background: #33306b;
+  box-shadow: 0 0 0 1px #0a0b12, 0 1px 0 #141230, 0 1px 0 1px #0a0b12;
+}
+.daily-badge {
+  background: #ffab00;
+  color: #3a2400;
+  font-weight: 900;
+  border-radius: 8px;
+  /* the pulsing glow keyframe is replaced by the slab */
+  animation: none;
+  box-shadow: 0 0 0 1px #0a0b12, 0 5px 0 #7a4a00, 0 5px 0 1px #0a0b12;
+}
+
+/* ── overlays: the player sees the win bubble every single round, so it
+      cannot stay on the old glass treatment ── */
+.win-bubble {
+  background: #2b3560;
+  border: 1px solid #0a0b12;
+  border-radius: 18px;
+  box-shadow: 0 0 0 1px #0a0b12, 0 8px 0 #141a30, 0 8px 0 1px #0a0b12;
+}
+.win-bubble.loss { border-color: #0a0b12; }
+.win-word {
+  text-shadow:
+    -1px -1px 0 #0a0b12, 1px -1px 0 #0a0b12,
+    -1px  1px 0 #0a0b12, 1px  1px 0 #0a0b12, 0 2px 0 #0a0b12;
+}
+.win-detail { color: #9aa3c8; }
+.play-again-btn {
+  border: 0;
+  background: #2fbe62;
+  color: #fff;
+  box-shadow: 0 0 0 1px #0a0b12, 0 5px 0 #125c30, 0 5px 0 1px #0a0b12;
+}
+.play-again-btn:active {
+  background: #2fbe62;
+  transform: none;
+  box-shadow: 0 0 0 1px #0a0b12, 0 1px 0 #125c30, 0 1px 0 1px #0a0b12;
+}
+.stats-panel {
+  background: #2b3560;
+  border: 1px solid #0a0b12;
+  box-shadow: 0 0 0 1px #0a0b12, 0 8px 0 #141a30, 0 8px 0 1px #0a0b12;
+}
+.stats-header { color: #fff; }
+.stat-card,
+.history-row {
+  background: #39406f;
+  border: 0;
+  box-shadow: 0 0 0 1px #0a0b12, 0 3px 0 #1b2040, 0 3px 0 1px #0a0b12;
+}
+.stat-label,
+.stats-history-label { color: #9aa3c8; }
+.loading-overlay { background: #232c4d; }
+
+@media (prefers-reduced-motion: reduce) {
+  .daily-badge { animation: none; }
+}

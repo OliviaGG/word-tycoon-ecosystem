@@ -1,0 +1,2268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="theme-color" content="#0d1320">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="erecTangled">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="description" content="erecTangled is a free word search puzzle game like Squaredle with expanding ring grids. Find hidden words as the grid grows outward — common, rare, and ultra-rare words to discover. A unique Squaredle alternative with live multiplayer and daily puzzles.">
+  <meta name="keywords" content="squaredle, squaredle game, squaredle alternative, word search puzzle, word search game, erectangled, find words in grid, daily word puzzle, multiplayer word game, free word game, letter grid game, squaredle online, word puzzle game">
+  <title>erecTangled — Expanding Word Search Puzzle | Squaredle Alternative</title>
+  <link rel="canonical" href="https://erectangled.com/">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" type="image/svg+xml" href="/app-icon.svg">
+  <link rel="apple-touch-icon" href="/app-icon.svg">
+  <!-- Open Graph -->
+  <meta property="og:title" content="erecTangled — Word Search Game Like Squaredle">
+  <meta property="og:description" content="A free Squaredle-style word search puzzle with expanding ring grids. Find hidden words as the grid grows — live multiplayer and daily puzzles.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://erectangled.com/">
+  <meta property="og:image" content="https://erectangled.com/app-icon.svg">
+  <meta property="og:site_name" content="erecTangled">
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="erecTangled — Word Search Game Like Squaredle">
+  <meta name="twitter:description" content="Free Squaredle alternative with expanding ring grids. Find hidden words as the puzzle grows — live multiplayer.">
+  <!-- JSON-LD -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "VideoGame",
+    "name": "erecTangled",
+    "alternateName": ["erecTangled Game", "Squaredle Alternative", "Expanding Word Search"],
+    "description": "erecTangled is a free word search puzzle game similar to Squaredle with a unique expanding ring mechanic. The grid starts small and grows outward — find hidden words by connecting adjacent letters as new rings unlock. Words are categorized by rarity. Features live multiplayer rounds and daily solo puzzles.",
+    "url": "https://erectangled.com/",
+    "genre": ["Word Game", "Puzzle", "Multiplayer", "Word Search"],
+    "gamePlatform": "Web Browser",
+    "applicationCategory": "Game",
+    "operatingSystem": "Any",
+    "inLanguage": "en",
+    "isAccessibleForFree": true,
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "CAD" },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.7",
+      "ratingCount": "95",
+      "bestRating": "5"
+    }
+  }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="sproutle-play.css">
+  <link rel="stylesheet" href="top-player-cards.css?v=3">
+  <style>
+    /* ─── Mobile layout: grid then 4 word lists ─── */
+    body {
+      padding: 2px 10px 20px;
+      min-height: 100vh;
+      overflow-y: auto;
+      position: static;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    /* OBS-style brand logo */
+    .obs-brand {
+      font-family: 'Fredoka', sans-serif;
+      font-weight: 700;
+      font-size: clamp(2.2rem, 8.2vw, 2.8rem);
+      letter-spacing: 0.7px;
+      line-height: 1;
+    }
+
+    /* Header top row */
+    .mobile-header-top {
+      width: 100%; max-width: 500px;
+      display: flex; align-items: flex-end; justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 0;
+      position: relative; z-index: 2;
+    }
+    a.obs-brand { text-decoration: none; }
+    .header-brand-wrap {
+      display: flex;
+      align-items: flex-end;
+      gap: 6px;
+      min-width: 0;
+      flex: 1 1 auto;
+    }
+
+    .header-right {
+      display: flex; flex-direction: column; align-items: flex-end; gap: 1px;
+      flex: 0 1 auto;
+      min-width: 0;
+      text-align: right;
+    }
+    .gh-help-btn { display: none !important; }
+    .mobile-wordcount {
+      font-size: clamp(1.5rem, 5.6vw, 1.95rem);
+      font-weight: 800;
+      white-space: nowrap;
+      line-height: 0.88;
+      letter-spacing: -0.02em;
+    }
+    .mobile-wordcount .found { color: var(--accent); }
+    .mobile-wordcount .total { color: var(--text-dim); }
+    .mobile-wordcount .label {
+      color: var(--text-dim);
+      font-size: clamp(0.88rem, 3vw, 1.08rem);
+      font-weight: 700;
+      letter-spacing: 0.01em;
+    }
+
+    /* Rare badges row — nested inside header-right */
+    .mobile-badges-row {
+      display: flex;
+      gap: 6px;
+      justify-content: flex-end;
+      margin-top: 1px;
+      flex-wrap: nowrap;
+    }
+    .mobile-rare-badge {
+      display: none;
+      padding: 2px 9px 3px;
+      font-size: clamp(0.68rem, 2.3vw, 0.8rem);
+      font-weight: 800;
+      border-radius: 999px;
+      letter-spacing: 0.3px;
+      white-space: nowrap;
+      line-height: 1.1;
+    }
+    .mobile-rare-badge.visible { display: inline-flex; align-items: center; }
+    .mobile-rare-badge.rare-badge {
+      background: rgba(251,191,36,0.12);
+      border: 1px solid rgba(251,191,36,0.4);
+      color: var(--neon-yellow);
+    }
+    .mobile-rare-badge.ultra-badge {
+      background: rgba(124,58,237,0.15);
+      border: 1px solid rgba(124,58,237,0.5);
+      color: #a78bfa;
+    }
+
+    /* Status badge */
+    .status-bar {
+      width: 100%; max-width: 500px;
+      text-align: center;
+      font-size: 0.7rem; font-weight: 600;
+      padding: 1px 0 2px;
+      letter-spacing: 0.5px;
+    }
+    .status-bar.connected { color: var(--accent); }
+    .status-bar.disconnected { color: var(--text-dim); }
+
+    /* Word announce banner (last found word) */
+    .mp-players-row {
+      display: flex; align-items: flex-end; gap: 4px;
+      width: 100%; margin-bottom: 0;
+    }
+    .ring-progress {
+      width: 100%;
+      max-width: 500px;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 6px;
+      margin: 0 0 2px;
+      font-size: clamp(0.76rem, 2.5vw, 0.88rem);
+      font-weight: 700;
+      line-height: 1.1;
+      text-align: right;
+      color: var(--text-dim);
+    }
+    .ring-progress .ring-label { color: var(--text-dim); }
+    .ring-progress .ring-phase-ring { color: #4ade80; }
+    .mp-players-row .top-players { flex: 0 0 auto; width: auto; align-items: flex-end; margin-bottom: 0; flex-direction: row !important; min-height: unset; }
+    .mp-word-announce {
+      flex: 1; min-width: 0;
+      display: flex; align-items: center; gap: 6px;
+      padding: 3px 6px 3px 4px;
+      border-radius: 12px;
+      height: 38px; box-sizing: border-box;
+      background: linear-gradient(135deg, rgba(30,40,80,0.94), rgba(20,30,60,0.9));
+      border: 1px solid rgba(255,255,255,0.15);
+      box-shadow: 0 3px 12px rgba(0,0,0,0.5);
+      flex-shrink: 0;
+    }
+    .mp-word-announce.hidden { display: none; }
+    .mp-announce-avatar {
+      width: 22px; height: 22px; border-radius: 50%;
+      object-fit: cover; border: 2px solid rgba(255,255,255,0.3); flex-shrink: 0;
+    }
+    .mp-announce-avatar-fallback {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: rgba(255,255,255,0.15); border: 2px solid rgba(255,255,255,0.25);
+      flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+      font-size: 0.85rem; color: rgba(255,255,255,0.6);
+    }
+    .mp-announce-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0; }
+    .mp-announce-top-line { display: flex; align-items: baseline; gap: 5px; min-width: 0; }
+    .mp-announce-name { font-size: 0.5rem; font-weight: 600; color: rgba(255,255,255,0.7); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.2; }
+    .mp-announce-score { font-size: 0.45rem; font-weight: 700; color: rgba(255,255,255,0.85); white-space: nowrap; }
+    .mp-announce-earned { font-size: 0.6rem; font-weight: 800; color: #4ade80; white-space: nowrap; flex-shrink: 0; }
+    .mp-announce-bottom { display: flex; align-items: center; gap: 4px; min-width: 0; }
+    .mp-announce-word { font-family: 'Fredoka', sans-serif; font-size: 0.7rem; font-weight: 700; color: #fff; text-transform: uppercase; white-space: nowrap; line-height: 1.2; }
+    .mp-announce-rarity {
+      font-size: 0.45rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;
+      line-height: 1; padding: 2px 5px; border-radius: 3px; flex-shrink: 0; white-space: nowrap;
+    }
+    .mp-announce-rarity.rarity-common  { color: #22d3ee; background: rgba(34,211,238,0.1); border: 1px solid rgba(34,211,238,0.3); }
+    .mp-announce-rarity.rarity-rare    { color: #fde047; background: rgba(253,224,71,0.12); border: 1px solid rgba(253,224,71,0.35); }
+    .mp-announce-rarity.rarity-hidden  { color: #a78bfa; background: rgba(167,139,250,0.12); border: 1px solid rgba(167,139,250,0.35); }
+    .mp-announce-rarity.rarity-three   { color: #4ade80; background: rgba(74,222,128,0.12); border: 1px solid rgba(74,222,128,0.35); }
+    @media (max-width: 390px) {
+      .mobile-header-top { gap: 8px; }
+      .obs-brand { font-size: clamp(1.9rem, 7.5vw, 2.3rem); }
+      .mobile-wordcount { font-size: clamp(1.3rem, 5vw, 1.6rem); }
+      .mobile-wordcount .label { font-size: 0.82rem; }
+      .mobile-badges-row { gap: 4px; }
+      .mobile-rare-badge { padding: 2px 7px 2px; font-size: 0.6rem; }
+      .ring-progress { font-size: 0.72rem; gap: 4px; margin: 0 0 2px; }
+    }
+    /* Hero badge — border + glow set inline by JS from badge theme color */
+
+    /* Scale cards for mobile */
+    .mp-players-row .tp-card.gold   { width: 56px; height: 56px; }
+    .mp-players-row .tp-card.silver  { width: 44px; height: 44px; }
+    .mp-players-row .tp-card.bronze  { width: 38px; height: 38px; }
+    .mp-players-row .tp-card.gold .tp-pfp   { width: 28px; height: 28px; }
+    .mp-players-row .tp-card.silver .tp-pfp  { width: 22px; height: 22px; }
+    .mp-players-row .tp-card.bronze .tp-pfp  { width: 18px; height: 18px; }
+    .mp-players-row .tp-card.gold .tp-name   { font-size: 0.38rem; }
+    .mp-players-row .tp-card.silver .tp-name  { font-size: 0.32rem; }
+    .mp-players-row .tp-card.bronze .tp-name  { font-size: 0.28rem; }
+    .mp-players-row .tp-card.gold .tp-score   { font-size: 0.34rem; }
+    .mp-players-row .tp-card.silver .tp-score  { font-size: 0.28rem; }
+    .mp-players-row .tp-card.bronze .tp-score  { font-size: 0.24rem; }
+
+    /* ─── Share modal ─── */
+    .share-overlay {
+      display: none; position: fixed; inset: 0; z-index: 2000;
+      background: rgba(0,0,0,0.72); backdrop-filter: blur(4px);
+      align-items: flex-end; justify-content: center;
+    }
+    .share-overlay.active { display: flex; }
+    .share-sheet {
+      width: 100%; max-width: 500px;
+      background: var(--surface); border-radius: 20px 20px 0 0;
+      padding: 20px 16px 36px;
+      animation: shareSlideUp 0.25s ease;
+    }
+    @keyframes shareSlideUp {
+      from { transform: translateY(100%); } to { transform: translateY(0); }
+    }
+    .share-handle {
+      width: 40px; height: 4px; border-radius: 2px;
+      background: var(--cell-border); margin: 0 auto 16px;
+    }
+    .share-sheet-title {
+      text-align: center; font-size: 1rem; font-weight: 800;
+      color: var(--text); letter-spacing: 0.04em; margin-bottom: 3px;
+    }
+    .share-sheet-sub {
+      text-align: center; font-size: 0.68rem; color: var(--text-dim); margin-bottom: 20px;
+    }
+    .share-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 14px;
+    }
+    .share-item {
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+      cursor: pointer; background: none; border: none; padding: 0; text-decoration: none;
+    }
+    .share-item:active .share-icon-circle { transform: scale(0.93); }
+    .share-icon-circle {
+      width: 52px; height: 52px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; font-weight: 900; transition: transform 0.1s;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .share-item-label {
+      font-size: 0.58rem; font-weight: 700; letter-spacing: 0.04em;
+      text-transform: uppercase; color: var(--text-dim);
+    }
+    .share-copy-row {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--bg); border: 1px solid var(--cell-border);
+      border-radius: 10px; padding: 8px 12px; margin-bottom: 12px;
+    }
+    .share-copy-url {
+      flex: 1; font-size: 0.68rem; color: var(--text-dim);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .share-copy-btn {
+      flex-shrink: 0; background: var(--accent); border: none;
+      border-radius: 6px; color: #0b0f19; font-size: 0.68rem; font-weight: 800;
+      padding: 5px 12px; cursor: pointer;
+    }
+    .share-close-btn {
+      width: 100%; background: var(--surface-light); border: 1px solid var(--cell-border);
+      border-radius: 10px; color: var(--text-dim); font-size: 0.85rem; font-weight: 700;
+      padding: 11px; cursor: pointer;
+    }
+    #game-help { display: none; }
+
+    /* Swipe or Type label */
+    .swipe-or-type-label {
+      font-size: 1.3rem; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--text-dim);
+      text-align: center; width: 100%; max-width: 500px;
+      line-height: 1; margin: 4px 0 0;
+    }
+
+    /* Keyboard prompt */
+    .keyboard-prompt {
+      width: 100%; max-width: 500px;
+      box-sizing: border-box;
+      background: var(--surface);
+      border: 1px solid var(--cell-border);
+      border-radius: 6px;
+      color: var(--text);
+      font-size: 16px; font-weight: 700; /* 16px prevents iOS auto-zoom */
+      padding: 7px 12px;
+      letter-spacing: 2px; text-transform: uppercase;
+      outline: none;
+      margin-bottom: 6px;
+      position: relative;
+      z-index: 12;
+      pointer-events: auto;
+      touch-action: manipulation;
+      user-select: text;
+      -webkit-user-select: text;
+    }
+    .keyboard-prompt::placeholder { color: var(--text-dim); font-weight: 500; letter-spacing: 0.5px; text-transform: none; }
+    .keyboard-prompt:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(34,211,238,0.15); }
+
+    /* Rarity key */
+    .rarity-key {
+      width: 100%; max-width: 500px;
+      display: flex; flex-wrap: nowrap; gap: 5px;
+      margin-bottom: 6px;
+    }
+    .rk-item {
+      flex: 1; text-align: center;
+      font-size: 0.58rem; font-weight: 700;
+      padding: 2px 4px; border-radius: 4px;
+      letter-spacing: 0.2px; white-space: nowrap;
+    }
+    .rk-item.three  { color: #4ade80; background: rgba(74,222,128,0.1);  border: 1px solid rgba(74,222,128,0.3); }
+    .rk-item.common { color: #22d3ee; background: rgba(34,211,238,0.1);  border: 1px solid rgba(34,211,238,0.3); }
+    .rk-item.rare   { color: #fde047; background: rgba(253,224,71,0.1);  border: 1px solid rgba(253,224,71,0.3); }
+    .rk-item.hidden { color: #a78bfa; background: rgba(167,139,250,0.1); border: 1px solid rgba(167,139,250,0.3); }
+
+    /* Game over banner */
+    .mp-incorrect-area {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-wrap: nowrap;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 5px;
+      height: 30px;
+      overflow: hidden;
+    }
+    .mp-incorrect-area-bottom {
+      flex: 0 0 auto;
+      height: 30px;
+      width: 100%;
+      max-width: 500px;
+      justify-content: flex-end;
+      margin: 0 auto 1px;
+    }
+    .mp-incorrect-word,
+    .mp-already-found-tag,
+    .mp-correct-word-tag {
+      font-weight: 700;
+      font-size: 0.82rem;
+      padding: 3px 10px;
+      border-radius: 6px;
+      flex-shrink: 0;
+      white-space: nowrap;
+      animation: mpSlideIn 0.25s ease;
+    }
+    .mp-incorrect-word {
+      color: var(--incorrect);
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.3);
+    }
+    .mp-already-found-tag {
+      color: var(--already);
+      background: rgba(251,191,36,0.08);
+      border: 1px solid rgba(251,191,36,0.3);
+    }
+    .mp-correct-word-tag {
+      color: #4ade80;
+      background: rgba(74,222,128,0.1);
+      border: 1px solid rgba(74,222,128,0.3);
+    }
+    @keyframes mpSlideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to   { transform: translateX(0);    opacity: 1; }
+    }
+    .game-over-banner {
+      width: 100%; max-width: 500px;
+      background: linear-gradient(135deg, rgba(244,63,94,0.12), rgba(34,211,238,0.08));
+      border: 1px solid var(--primary);
+      border-radius: 8px;
+      padding: 9px 14px;
+      text-align: center;
+      margin-bottom: 2px;
+      font-weight: 700; font-size: 0.85rem;
+      color: var(--primary);
+      display: none;
+    }
+    .game-over-banner.visible { display: block; }
+
+    /* Daily badge */
+    .daily-badge {
+      display: none;
+      padding: 1px 7px;
+      background: linear-gradient(135deg, #f97316, #fbbf24);
+      color: #1a0a00;
+      font-size: 0.6rem; font-weight: 800;
+      border-radius: 4px;
+      text-transform: uppercase; letter-spacing: 1px;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+    .daily-badge.visible { display: inline-block; }
+
+    /* ─── Word Lists ─── */
+    .word-lists {
+      width: 100%; max-width: 500px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 6px;
+    }
+
+    .wl-section {
+      background: var(--surface);
+      border: 1px solid var(--cell-border);
+      border-radius: 8px;
+      padding: 8px 8px 10px;
+      min-height: 80px;
+    }
+    .wl-section.wl-rare   { border-color: rgba(251,191,36,0.25); }
+    .wl-section.wl-hidden { border-color: rgba(124,58,237,0.25); }
+    .wl-section.wl-three  { border-color: rgba(167,139,250,0.2); }
+
+    .wl-header {
+      font-size: 0.65rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 1px;
+      margin-bottom: 6px;
+      display: flex; align-items: baseline; gap: 5px;
+    }
+    .wl-header.common { color: var(--accent); }
+    .wl-header.rare   { color: var(--neon-yellow); }
+    .wl-header.hidden { color: #7c3aed; }
+    .wl-header.three  { color: #4ade80; }
+
+    .wl-count {
+      font-size: 0.6rem; font-weight: 600; opacity: 0.7;
+    }
+
+    .wl-items {
+      display: flex; flex-wrap: wrap; gap: 4px;
+      max-height: 160px; overflow-y: auto;
+    }
+
+    .wl-empty {
+      color: var(--text-dim); font-size: 0.7rem;
+      font-style: italic;
+    }
+
+    .wp {
+      padding: 2px 7px;
+      font-size: 0.68rem; font-weight: 700;
+      border-radius: 4px;
+      letter-spacing: 0.5px; text-transform: uppercase;
+    }
+    .wp.common {
+      color: var(--accent);
+      background: rgba(34,211,238,0.1);
+      border: 1px solid rgba(34,211,238,0.25);
+    }
+    .wp.rare {
+      color: var(--neon-yellow);
+      background: rgba(251,191,36,0.08);
+      border: 1px solid rgba(251,191,36,0.3);
+    }
+    .wp.hidden {
+      color: #a78bfa;
+      background: rgba(124,58,237,0.08);
+      border: 1px solid rgba(124,58,237,0.3);
+    }
+    .wp.three {
+      color: #4ade80;
+      background: rgba(74,222,128,0.08);
+      border: 1px solid rgba(74,222,128,0.3);
+    }
+
+    @keyframes wordPop {
+      0%   { transform: scale(0.5); opacity: 0; }
+      70%  { transform: scale(1.12); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .wp.new-word { animation: wordPop 0.3s ease forwards; }
+
+    /* Scrollbar */
+    .wl-items::-webkit-scrollbar { width: 3px; }
+    .wl-items::-webkit-scrollbar-track { background: transparent; }
+    .wl-items::-webkit-scrollbar-thumb { background: var(--cell-border); border-radius: 4px; }
+
+    /* ─── Light mode ─── */
+    body.light-mode {
+      --bg: #fdf6ee;
+      --surface: #fef9f4;
+      --surface-light: #f3e8d8;
+      --primary: #e03050;
+      --primary-light: #f06080;
+      --accent: #0ea5c0;
+      --accent-dark: #0c8faa;
+      --neon-yellow: #c89010;
+      --text: #1e1a14;
+      --text-dim: #8a7a60;
+      --cell-bg: #f5ece0;
+      --cell-greyed: #e8ddd0;
+      --cell-border: #d4bfa0;
+      --incorrect: #dc2626;
+      --already: #b07820;
+      --glow-cyan: 0 0 10px rgba(14,165,192,0.2);
+      --glow-pink: 0 0 10px rgba(224,48,80,0.2);
+    }
+    body.light-mode .grid-container {
+      background: #ede0cc;
+    }
+    body.light-mode .grid-cell {
+      background: linear-gradient(145deg, #ffffff, #f5ece0) !important;
+    }
+    body.light-mode .wl-section.wl-rare   { border-color: rgba(180,140,30,0.35); }
+    body.light-mode .wl-section.wl-hidden { border-color: rgba(100,50,180,0.25); }
+    body.light-mode .wl-section.wl-three  { border-color: rgba(22,163,74,0.25); }
+    body.light-mode .mobile-rare-badge.ultra-badge {
+      background: rgba(100,50,180,0.1);
+      border-color: rgba(100,50,180,0.35);
+      color: #7c3aed;
+    }
+    body.light-mode .wp.hidden { color: #6d28d9; }
+    body.light-mode .wp.three  { color: #16a34a; }
+    body.light-mode .wl-header.hidden { color: #6d28d9; }
+    body.light-mode .wl-header.three  { color: #16a34a; }
+
+    /* Override coarse media: keep body scrollable, not fixed */
+    @media (pointer: coarse) {
+      html {
+        overflow-y: scroll;
+        overscroll-behavior: auto;
+        scrollbar-gutter: stable;
+        scrollbar-color: #a9d6ff rgba(169,214,255,0.18);
+      }
+      body {
+        position: static;
+        overflow-y: scroll;
+        scrollbar-gutter: stable;
+        scrollbar-color: #a9d6ff rgba(169,214,255,0.18);
+      }
+      .input-area { display: none; }
+    }
+
+    @media (pointer: coarse) {
+      html::-webkit-scrollbar,
+      body::-webkit-scrollbar {
+        width: 10px;
+      }
+    }
+
+    .mobile-scrollbar { display: none !important; }
+    .mobile-scrollbar-track {
+      width: 0;
+      height: 100%;
+      border-radius: 999px;
+      background: transparent;
+      box-shadow: none;
+    }
+    .mobile-scrollbar-thumb {
+      position: absolute;
+      top: 0;
+      left: 5px;
+      width: 13px;
+      min-height: 56px;
+      border-radius: 999px;
+      background: linear-gradient(180deg, #c7e6ff 0%, #a9d6ff 100%);
+      box-shadow: 0 2px 12px rgba(169,214,255,0.4);
+      border: 1px solid rgba(255,255,255,0.45);
+      pointer-events: auto;
+      touch-action: none;
+    }
+    .mobile-scrollbar.dragging .mobile-scrollbar-thumb {
+      background: linear-gradient(180deg, #d8efff 0%, #b8ddff 100%);
+      box-shadow: 0 4px 18px rgba(169,214,255,0.55);
+    }
+    @media (pointer: coarse) {
+      .mobile-scrollbar { display: flex; }
+    }
+    @media (min-width: 900px) {
+      .desktop-orientation-btn { display: inline-grid !important; }
+    }
+
+    /* ─── Swipe input ─── */
+    .game-board { position: relative; }
+    #grid-container { touch-action: none; }
+    #swipe-svg {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none; z-index: 5; overflow: visible;
+    }
+    /* compact-rotated margin set dynamically by JS based on grid aspect ratio */
+    .grid-cell.swipe-path {
+      background: rgba(34,211,238,0.18) !important;
+      border-color: rgba(34,211,238,0.5) !important;
+    }
+    .grid-cell.swipe-last {
+      background: rgba(34,211,238,0.38) !important;
+      border-color: var(--accent) !important;
+      box-shadow: 0 0 14px rgba(34,211,238,0.65) !important;
+    }
+    /* Word found highlights by rarity */
+    .grid-cell.found-highlight {
+      background: var(--accent) !important; color: #0b0f19 !important;
+      border-color: var(--accent) !important; transform: scale(1.1);
+      box-shadow: 0 0 22px rgba(34,211,238,0.6), 0 0 44px rgba(34,211,238,0.25);
+      transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+    }
+    .grid-cell.three-letter-highlight {
+      background: #4ade80 !important; color: #0b0f19 !important;
+      border-color: #4ade80 !important; transform: scale(1.1);
+      box-shadow: 0 0 22px rgba(74,222,128,0.6), 0 0 44px rgba(74,222,128,0.25);
+      transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+    }
+    .grid-cell.rare-highlight {
+      background: #fde047 !important; color: #0b0f19 !important;
+      border-color: #fde047 !important; transform: scale(1.1);
+      box-shadow: 0 0 22px rgba(253,224,71,0.6), 0 0 44px rgba(253,224,71,0.25);
+      transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+    }
+    .grid-cell.hidden-highlight {
+      background: #a78bfa !important; color: #0b0f19 !important;
+      border-color: #a78bfa !important; transform: scale(1.1);
+      box-shadow: 0 0 22px rgba(167,139,250,0.6), 0 0 44px rgba(167,139,250,0.25);
+      transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+    }
+
+    /* Current word bar */
+    .current-word-bar {
+      width: 100%; max-width: 500px;
+      min-height: 18px;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      font-size: 1.25rem; font-weight: 800;
+      letter-spacing: 4px; text-transform: uppercase;
+      color: var(--accent);
+    }
+    .current-word-bar.flash-correct { color: #4ade80; transition: color 0s; }
+    .current-word-bar.flash-wrong   { color: #ef4444; transition: color 0s; }
+    .current-word-bar .player-name {
+      font-size: 0.6rem; font-weight: 600; letter-spacing: 0;
+      color: var(--text-dim); text-transform: none;
+      border: 1px solid var(--cell-border); border-radius: 4px;
+      padding: 2px 6px; cursor: pointer; white-space: nowrap;
+    }
+
+    .seo-section{
+      width:100%;max-width:500px;
+      margin:22px auto 36px;
+      padding:16px 14px 18px;
+      border-radius:18px;
+      background:linear-gradient(180deg,rgba(17,24,39,0.96),rgba(9,14,26,0.98));
+      border:1px solid rgba(107,114,128,0.28);
+      box-shadow:0 14px 34px rgba(0,0,0,0.22);
+    }
+    .seo-section h2{margin:0 0 8px;font-size:1.05rem;font-weight:800;color:#f8fafc;}
+    .seo-section p{margin:0 0 12px;color:#cbd5e1;font-size:0.87rem;line-height:1.55;}
+    .seo-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:10px;}
+    .seo-panel{
+      padding:12px;border-radius:14px;background:rgba(255,255,255,0.03);
+      border:1px solid rgba(96,165,250,0.18);
+    }
+    .seo-panel h3{margin:0 0 6px;font-size:0.82rem;font-weight:800;color:#fff;}
+    .seo-list{display:grid;gap:8px;margin:12px 0 0;padding:0;list-style:none;}
+    .seo-list li{
+      padding:10px 12px;border-radius:12px;background:rgba(255,255,255,0.04);
+      border:1px solid rgba(167,139,250,0.18);color:#dbeafe;font-size:0.82rem;line-height:1.5;
+    }
+    @media (max-width: 420px){ .seo-grid{grid-template-columns:1fr;} }
+  </style>
+</head>
+<body>
+
+  <!-- Header: logo links to hub, word count + badges stacked right -->
+  <div class="mobile-header-top">
+    <div class="header-brand-wrap">
+      <a href="https://wordtycoon.live/portal" class="obs-brand" title="Portal"><span style="color:#44bb88">e</span><span style="color:#3EC8E8">r</span><span style="color:#F5920A">e</span><span style="color:#EFC000">c</span><span style="color:#1E52C8">T</span><span style="color:#E83020">a</span><span style="color:#42B238">n</span><span style="color:#88AAFF">g</span><span style="color:#C835B8">l</span><span style="color:#F5920A">e</span><span style="color:#1EB8A8">d</span></a>
+      <span class="daily-badge" id="daily-badge">Daily</span>
+    </div>
+    <div class="header-right">
+      <div class="mobile-wordcount">
+        <span class="found" id="found-count">0</span>
+        <span class="total"> / <span id="total-count">?</span></span>
+        <span class="label"> words</span>
+      </div>
+      <div class="mobile-badges-row">
+        <span class="mobile-rare-badge rare-badge" id="rare-badge"></span>
+        <span class="mobile-rare-badge ultra-badge" id="ultra-badge"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ring progress (between counts and players) -->
+  <div class="ring-progress" id="ring-progress" style="display:none"></div>
+
+  <!-- Top-3 player cards + word found banner (same row) -->
+  <div class="mp-players-row">
+    <div id="top-players" class="top-players"></div>
+    <div class="mp-word-announce hidden" id="mp-word-announce">
+      <div id="mp-announce-avatar-wrap"></div>
+      <div class="mp-announce-info">
+        <div class="mp-announce-top-line">
+          <span class="mp-announce-name" id="mp-announce-name"></span>
+          <span class="mp-announce-score" id="mp-announce-score"></span>
+          <span class="mp-announce-earned" id="mp-announce-earned"></span>
+        </div>
+        <div class="mp-announce-bottom">
+          <span class="mp-announce-word" id="mp-announce-word"></span>
+          <span class="mp-announce-rarity" id="mp-announce-rarity"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="game-toolbar-row" style="width:100%;max-width:500px;display:flex;align-items:center;gap:4px;position:relative;z-index:2">
+    <div id="mp-incorrect-area" class="mp-incorrect-area"></div>
+    <button id="rotate-btn" class="desktop-orientation-btn" title="Rotate board" style="
+      flex-shrink:0;background:var(--surface);border:1px solid var(--cell-border);
+      border-radius:6px;color:var(--text-dim);font-size:0.85rem;
+      padding:4px 8px;cursor:pointer;line-height:1;
+    ">⟳</button>
+    <button id="share-btn" title="Share" style="
+      flex-shrink:0;background:var(--surface);border:1px solid var(--cell-border);
+      border-radius:6px;color:var(--text-dim);font-size:0.85rem;
+      padding:4px 8px;cursor:pointer;line-height:1;
+    ">Share</button>
+    <button id="theme-btn" title="Toggle light mode" style="
+      flex-shrink:0;background:var(--surface);border:1px solid var(--cell-border);
+      border-radius:6px;color:var(--text-dim);font-size:0.85rem;
+      padding:4px 8px;cursor:pointer;line-height:1;
+    ">☀️</button>
+  </div>
+
+  <!-- Progress bar -->
+  <div class="progress-container">
+    <div class="progress-bar" id="progress-bar" style="width:0%"></div>
+  </div>
+
+  <!-- Game over banner -->
+  <div class="game-over-banner" id="game-over-banner">
+    All common words found! New game starting soon...
+  </div>
+
+  <!-- Grid -->
+  <div class="game-board" id="game-board">
+    <div class="grid-container" id="grid-container" style="--grid-cols:4">
+      <!-- populated by JS -->
+    </div>
+    <svg id="swipe-svg"></svg>
+  </div>
+
+  <div id="mp-incorrect-area-bottom" class="mp-incorrect-area mp-incorrect-area-bottom"></div>
+
+  <div class="swipe-or-type-label">Swipe or Type</div>
+
+  <!-- Current word being swiped -->
+  <div class="current-word-bar" id="current-word-bar">
+    <span id="current-word"></span>
+  </div>
+
+  <!-- Keyboard prompt -->
+  <input type="text" id="keyboard-input" class="keyboard-prompt"
+    placeholder="⌨  tap here to type a guess"
+    autocomplete="off" autocapitalize="off" maxlength="20">
+
+  <!-- Rarity key -->
+  <div class="rarity-key">
+    <span class="rk-item three">3-Letter · 100</span>
+    <span class="rk-item common">Common · 500</span>
+    <span class="rk-item rare">Rare · 1,000</span>
+    <span class="rk-item hidden">Ultra Rare · 1,500</span>
+  </div>
+
+  <!-- 4 Word Lists -->
+  <div class="word-lists">
+
+    <div class="wl-section wl-common">
+      <div class="wl-header common">
+        Words <span class="wl-count" id="cnt-common">(0)</span>
+      </div>
+      <div class="wl-items" id="list-common">
+        <span class="wl-empty">None yet</span>
+      </div>
+    </div>
+
+    <div class="wl-section wl-rare">
+      <div class="wl-header rare">
+        Rare <span class="wl-count" id="cnt-rare">(0)</span>
+      </div>
+      <div class="wl-items" id="list-rare">
+        <span class="wl-empty">None yet</span>
+      </div>
+    </div>
+
+    <div class="wl-section wl-hidden">
+      <div class="wl-header hidden">
+        Ultra Rare <span class="wl-count" id="cnt-hidden">(0)</span>
+      </div>
+      <div class="wl-items" id="list-hidden">
+        <span class="wl-empty">None yet</span>
+      </div>
+    </div>
+
+    <div class="wl-section wl-three">
+      <div class="wl-header three">
+        3-Letter <span class="wl-count" id="cnt-three">(0)</span>
+      </div>
+      <div class="wl-items" id="list-three">
+        <span class="wl-empty">None yet</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Share overlay -->
+  <div class="share-overlay" id="share-overlay">
+    <div class="share-sheet">
+      <div class="share-handle"></div>
+      <div class="share-sheet-title">Share eRecTangled 🎮</div>
+      <div class="share-sheet-sub">Challenge your friends to find hidden words!</div>
+      <div class="share-grid">
+        <button class="share-item" id="share-native">
+          <div class="share-icon-circle" style="background:#1a1a2e">📤</div>
+          <span class="share-item-label">Share</span>
+        </button>
+        <a class="share-item" id="share-twitter" target="_blank" rel="noopener">
+          <div class="share-icon-circle" style="background:#000;color:#fff;font-size:1.1rem;font-family:serif">𝕏</div>
+          <span class="share-item-label">Twitter</span>
+        </a>
+        <button class="share-item" id="share-instagram">
+          <div class="share-icon-circle" style="background:linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)">📸</div>
+          <span class="share-item-label">Instagram</span>
+        </button>
+        <button class="share-item" id="share-tiktok">
+          <div class="share-icon-circle" style="background:#010101">🎵</div>
+          <span class="share-item-label">TikTok</span>
+        </button>
+        <a class="share-item" id="share-facebook" target="_blank" rel="noopener">
+          <div class="share-icon-circle" style="background:#1877f2;color:#fff;font-size:1.3rem;font-weight:900">f</div>
+          <span class="share-item-label">Facebook</span>
+        </a>
+        <a class="share-item" id="share-whatsapp" target="_blank" rel="noopener">
+          <div class="share-icon-circle" style="background:#25d366">💬</div>
+          <span class="share-item-label">WhatsApp</span>
+        </a>
+        <a class="share-item" id="share-telegram" target="_blank" rel="noopener">
+          <div class="share-icon-circle" style="background:#2aabee">✈️</div>
+          <span class="share-item-label">Telegram</span>
+        </a>
+        <a class="share-item" id="share-threads" target="_blank" rel="noopener">
+          <div class="share-icon-circle" style="background:#101010;color:#fff;font-size:1.1rem">🧵</div>
+          <span class="share-item-label">Threads</span>
+        </a>
+      </div>
+      <div class="share-copy-row">
+              <span class="share-copy-url">erectangled.com</span>
+        <button class="share-copy-btn" id="share-copy-btn">Copy</button>
+      </div>
+      <button class="share-close-btn" id="share-close">Close</button>
+    </div>
+  </div>
+
+  <!-- Game Instructions -->
+  <div id="game-help" data-game="erectangled" data-accent="#44bb88" data-name="eRecTangled" hidden style="display:none!important">
+
+    <div class="game-help-step" data-step="1">
+      <h3>Find Words in the Grid</h3>
+      <p><strong>Swipe</strong> or <strong>type</strong> to connect adjacent letters and form words. Letters can connect horizontally, vertically, or diagonally.</p>
+      <div class="gh-example">
+        <div class="gh-example-label">Swipe to spell a word</div>
+        <div class="gh-word-grid" style="grid-template-columns: repeat(4, 36px);">
+          <div class="gh-grid-cell">T</div>
+          <div class="gh-grid-cell traced">R</div>
+          <div class="gh-grid-cell">A</div>
+          <div class="gh-grid-cell">P</div>
+          <div class="gh-grid-cell">O</div>
+          <div class="gh-grid-cell traced">E</div>
+          <div class="gh-grid-cell">N</div>
+          <div class="gh-grid-cell">S</div>
+          <div class="gh-grid-cell traced">E</div>
+          <div class="gh-grid-cell">L</div>
+          <div class="gh-grid-cell">I</div>
+          <div class="gh-grid-cell">D</div>
+          <div class="gh-grid-cell">W</div>
+          <div class="gh-grid-cell">K</div>
+          <div class="gh-grid-cell">U</div>
+          <div class="gh-grid-cell">M</div>
+        </div>
+        <div class="gh-arrow"><span class="gh-arrow-icon">↑</span> TREE — each letter must touch the previous one</div>
+      </div>
+      <div class="gh-tip">
+        <span class="gh-tip-icon">💡</span>
+        Words must be at least <strong>3 letters</strong> long. You can also tap the keyboard prompt to type guesses!
+      </div>
+    </div>
+
+    <div class="game-help-step" data-step="2">
+      <h3>Expand the Grid</h3>
+      <p>The grid starts small — only the <strong>center cells</strong> are revealed. Find words to <strong>expand outward</strong> ring by ring!</p>
+      <div class="gh-example">
+        <div class="gh-legend">
+          <div class="gh-legend-item">
+            <div class="gh-legend-swatch" style="background:#080c14; color:transparent; border:1px solid rgba(50,60,80,0.3);">?</div>
+            <span><strong style="color:#888;">Dark</strong> — Unrevealed (ring not yet reached)</span>
+          </div>
+          <div class="gh-legend-item">
+            <div class="gh-legend-swatch" style="background:#1a1e2e; border:1px solid rgba(34,211,238,0.3);">A</div>
+            <span><strong style="color:#22d3ee;">Active</strong> — Has unfound words passing through it</span>
+          </div>
+          <div class="gh-legend-item">
+            <div class="gh-legend-swatch" style="background:#111827; border:1px solid rgba(50,60,80,0.2); opacity:0.5;">B</div>
+            <span><strong style="color:#555;">Greyed</strong> — All common words through it found</span>
+          </div>
+        </div>
+      </div>
+      <div class="gh-tip">
+        <span class="gh-tip-icon">🌱</span>
+        Find all common words in the revealed cells to unlock the next ring. New rings expand outward until the full grid is revealed!
+      </div>
+    </div>
+
+    <div class="game-help-step" data-step="3">
+      <h3>Word Rarity & Scoring</h3>
+      <p>Words are classified by rarity — rarer words earn more coins!</p>
+      <div class="gh-example">
+        <div class="gh-legend">
+          <div class="gh-legend-item">
+            <div class="gh-legend-swatch" style="background:#334155; color:#94a3b8; font-size:11px;">cat</div>
+            <span><strong style="color:#94a3b8;">3-Letter</strong> — 100 coins</span>
+          </div>
+          <div class="gh-legend-item">
+            <div class="gh-legend-swatch" style="background:#1e3a5f; color:#60a5fa; font-size:11px;">tree</div>
+            <span><strong style="color:#60a5fa;">Common</strong> — 500 coins</span>
+          </div>
+          <div class="gh-legend-item">
+            <div class="gh-legend-swatch" style="background:#4a1942; color:#e879f9; font-size:11px;">rare</div>
+            <span><strong style="color:#e879f9;">Rare</strong> — 1,000 coins</span>
+          </div>
+          <div class="gh-legend-item">
+            <div class="gh-legend-swatch" style="background:#4a1919; color:#fbbf24; font-size:11px;">ultra</div>
+            <span><strong style="color:#fbbf24;">Ultra Rare</strong> — 1,500 coins</span>
+          </div>
+        </div>
+      </div>
+      <div class="gh-tip">
+        <span class="gh-tip-icon">🎯</span>
+        In multiplayer, everyone plays the same grid! Type words in stream chat or swipe here to compete for the highest score. Corner hints unlock as the current ring fills: the <strong>red bottom-right number</strong> appears at <strong>25%</strong> and shows how many common words pass through that cell, and the <strong>green bottom-left number</strong> appears at <strong>50%</strong> and shows how many common words start there.
+      </div>
+    </div>
+
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://wordtycoon.live/portal/js/progress-card.js"></script>
+  <script src="top-player-cards.js?v=3"></script>
+  <script>
+    // ─── State ────────────────────────────────────────────────────────
+    let renderedGrid = null;
+    let currentCols  = 4;
+    let currentRows  = 4;
+    let swipeLetters = []; // flat grid letters for quick word building
+    let mpCellStarts = {};
+    let mpCellUsage  = {};
+    let mpHintPct    = 0;
+
+    const displayed = { common: new Set(), rare: new Set(), hidden: new Set(), three: new Set() };
+
+    // ─── Elements ─────────────────────────────────────────────────────
+    const gridContainer  = document.getElementById('grid-container');
+    const swipeSvg       = document.getElementById('swipe-svg');
+    const foundCountEl   = document.getElementById('found-count');
+    const totalCountEl   = document.getElementById('total-count');
+    const progressBar    = document.getElementById('progress-bar');
+    const gameOverBanner = document.getElementById('game-over-banner');
+    const dailyBadge     = document.getElementById('daily-badge');
+    const mpWordAnnounce = document.getElementById('mp-word-announce');
+    const mpAvatarWrap   = document.getElementById('mp-announce-avatar-wrap');
+    const mpName         = document.getElementById('mp-announce-name');
+    const mpWord         = document.getElementById('mp-announce-word');
+    const mpRarity       = document.getElementById('mp-announce-rarity');
+    const mpEarned       = document.getElementById('mp-announce-earned');
+    const mpScore        = document.getElementById('mp-announce-score');
+    const rareBadgeEl    = document.getElementById('rare-badge');
+    const ultraBadgeEl   = document.getElementById('ultra-badge');
+    const currentWordEl  = document.getElementById('current-word');
+    const currentWordBar = document.getElementById('current-word-bar');
+    const playerNameBadge = { textContent: '', addEventListener: () => {} }; // removed from UI
+
+    // ─── Player identity ──────────────────────────────────────────────
+    let playerId   = localStorage.getItem('rect_id') || (Math.random().toString(36).slice(2) + Date.now().toString(36));
+    let playerName = localStorage.getItem('rect_name') || '';
+    let playerPic  = null;
+    let identityReady = false;
+    let localPlayerWordCosmeticsKey = null;
+    let localPlayerWordCosmeticsPromise = Promise.resolve({});
+    localStorage.setItem('rect_id', playerId);
+
+    function isLikelyDiscordUserId(value) {
+      return /^\d{5,}$/.test(String(value || ''));
+    }
+
+    function getCosmeticsPromise(platform, userId) {
+      if (!platform || !userId || typeof TopPlayerCards === 'undefined' || !TopPlayerCards.getCosmetics) {
+        return Promise.resolve({});
+      }
+      return TopPlayerCards.getCosmetics(platform, userId).then(function(cos) {
+        return cos || {};
+      }).catch(function() {
+        return {};
+      });
+    }
+
+    function refreshLocalPlayerWordCosmetics() {
+      localPlayerWordCosmeticsKey = isLikelyDiscordUserId(playerId) ? String(playerId) : null;
+      localPlayerWordCosmeticsPromise = localPlayerWordCosmeticsKey
+        ? getCosmeticsPromise('discord', localPlayerWordCosmeticsKey)
+        : Promise.resolve({});
+      return localPlayerWordCosmeticsPromise;
+    }
+
+    function getLocalPlayerWordCosmeticsPromise() {
+      const nextKey = isLikelyDiscordUserId(playerId) ? String(playerId) : null;
+      if (nextKey !== localPlayerWordCosmeticsKey) return refreshLocalPlayerWordCosmetics();
+      return localPlayerWordCosmeticsPromise;
+    }
+
+    function getFoundWordCosmeticsPromise(data) {
+      return data && data.platform && data.platformUserId
+        ? getCosmeticsPromise(data.platform, data.platformUserId)
+        : Promise.resolve({});
+    }
+
+    function updateNameBadge() {
+      playerNameBadge.textContent = playerName || 'Set name';
+    }
+    updateNameBadge();
+
+    // Tap badge to manually set a name (optional override)
+    playerNameBadge.addEventListener('click', () => {
+      const n = prompt('Your display name:', playerName);
+      if (n === null) return;
+      playerName = n.trim().slice(0, 20);
+      localStorage.setItem('rect_name', playerName);
+      updateNameBadge();
+    });
+
+    // Check hub session — use account if logged in, no prompt otherwise
+    fetch('https://wordtycoon.live/api/me/session', { credentials: 'include' }).then(r => r.json()).then(data => {
+      if (data.ok && data.user) {
+        playerId   = data.user.id;
+        playerName = data.user.displayName || data.user.globalName || data.user.username || playerName;
+        if (data.user.avatar) {
+          playerPic = data.user.avatar;
+        }
+        localStorage.setItem('rect_id', playerId);
+        localStorage.setItem('rect_name', playerName);
+        updateNameBadge();
+        refreshLocalPlayerWordCosmetics();
+      }
+    }).catch(() => {}).finally(() => {
+      identityReady = true;
+    });
+    refreshLocalPlayerWordCosmetics();
+
+    // ─── Grid ─────────────────────────────────────────────────────────
+    let currentRevealedCells = null;  // Track revealed cells for ring mechanic
+    let currentReplacedCells = null;  // Cells whose letter was swapped at gen time
+
+    function renderGrid(grid, rows, cols, revealedCells, replacedCells) {
+      const key = JSON.stringify(grid);
+      if (key === renderedGrid) return;
+      renderedGrid = key;
+      currentCols  = cols;
+      currentRows  = rows;
+      swipeLetters = grid.flat();
+      currentRevealedCells = revealedCells ? new Set(revealedCells) : null;
+      currentReplacedCells = replacedCells ? new Set(replacedCells) : new Set();
+
+      gridContainer.style.setProperty('--grid-cols', cols);
+      gridContainer.innerHTML = '';
+
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const idx    = r * cols + c;
+          const letter = grid[r][c];
+          const cell = document.createElement('div');
+          cell.className = 'grid-cell';
+          cell.dataset.idx = idx;
+          // Ring mechanic: hide unrevealed cells
+          if (currentRevealedCells && !currentRevealedCells.has(idx)) {
+            cell.classList.add('unrevealed');
+          }
+          // Replaced cells: letter was swapped to make it reachable — show different shade
+          if (currentReplacedCells.has(idx)) {
+            cell.classList.add('ring-replaced');
+          }
+          cell.innerHTML =
+            `<span class="cell-letter">${letter}</span>` +
+            `<span class="cell-starts"></span>` +
+            `<span class="cell-uses"></span>`;
+          gridContainer.appendChild(cell);
+        }
+      }
+      // Recalc rotation margin after grid dimensions change
+      if (typeof syncRotationMargin === 'function') syncRotationMargin();
+    }
+
+    // Match OBS overlay hint gating:
+    // - uses counts unlock after 25% of current-ring common words are found
+    // - starts-with counts unlock after 50%
+    function updateCellNumbers() {
+      const showUses = mpHintPct >= 0.25;
+      const showStarts = mpHintPct >= 0.50;
+      gridContainer.querySelectorAll('.grid-cell').forEach(cell => {
+        const idx = parseInt(cell.dataset.idx, 10);
+        const isGreyed    = cell.classList.contains('greyed');
+        const isUnrevealed = cell.classList.contains('unrevealed');
+        const isActive    = !isGreyed && !isUnrevealed;
+        const startsEl    = cell.querySelector('.cell-starts');
+        const usesEl      = cell.querySelector('.cell-uses');
+        const startsCount = mpCellStarts[idx] || 0;
+        const usesCount   = mpCellUsage[idx]  || 0;
+        const hasWords    = isActive && (startsCount > 0 || usesCount > 0);
+        cell.classList.toggle('has-words', hasWords);
+        if (startsEl) startsEl.textContent = (startsCount > 0 && isActive && showStarts) ? (startsCount >= 10 ? '+' : startsCount) : '';
+        if (usesEl)   usesEl.textContent   = (usesCount   > 0 && isActive && showUses) ? (usesCount   >= 10 ? '+' : usesCount)   : '';
+      });
+    }
+
+    function updateActiveCells(activeCells, revealedCells) {
+      const cells = gridContainer.querySelectorAll('.grid-cell');
+      const active = new Set(activeCells || []);
+      const revealed = revealedCells ? new Set(revealedCells) : currentRevealedCells;
+      if (revealedCells) currentRevealedCells = new Set(revealedCells);
+
+      cells.forEach((cell, i) => {
+        if (revealed && !revealed.has(i)) {
+          cell.classList.add('unrevealed');
+          cell.classList.remove('greyed');
+        } else {
+          cell.classList.remove('unrevealed');
+          const isGreyed = active.size > 0 && !active.has(i);
+          cell.classList.toggle('greyed', isGreyed);
+          // Replaced cells keep their dark shade even when greyed
+          if (currentReplacedCells && currentReplacedCells.has(i)) {
+            cell.classList.add('ring-replaced');
+          }
+        }
+      });
+    }
+
+    function revealRingCells(newCells) {
+      if (!newCells || !newCells.length) return;
+      const cells = gridContainer.querySelectorAll('.grid-cell');
+      newCells.forEach(idx => {
+        const cell = cells[idx];
+        if (!cell) return;
+        if (currentRevealedCells) currentRevealedCells.add(idx);
+        cell.classList.remove('unrevealed');
+        cell.classList.add('ring-reveal');
+        setTimeout(() => cell.classList.remove('ring-reveal'), 600);
+      });
+    }
+
+    function getWordCosmeticStyles(cos) {
+      if (!cos) return null;
+      const wordColor = cos.word_color;
+      const wordGlow = cos.word_glow;
+      if (!wordColor && !wordGlow) return null;
+      return {
+        color: (wordColor && wordColor.color) || '',
+        textShadow: (wordGlow && wordGlow.textShadow) || '',
+        animation: (wordColor && wordColor.animation) || (wordGlow && wordGlow.animation) || ''
+      };
+    }
+
+    function clearWordCosmetics(targetEl) {
+      if (!targetEl) return;
+      targetEl.style.color = '';
+      targetEl.style.textShadow = '';
+      targetEl.style.animation = '';
+    }
+
+    function applyWordCosmetics(targetEl, wordStyles, withAnimation) {
+      if (!targetEl) return;
+      clearWordCosmetics(targetEl);
+      if (!wordStyles) return;
+      if (wordStyles.color) targetEl.style.color = wordStyles.color;
+      if (wordStyles.textShadow) targetEl.style.textShadow = wordStyles.textShadow;
+      if (withAnimation && wordStyles.animation) targetEl.style.animation = wordStyles.animation;
+    }
+
+    function flashAnimatedWordPill(pill) {
+      let animationActive = true;
+      setTimeout(() => {
+        animationActive = false;
+        pill.classList.remove('new-word');
+        clearWordCosmetics(pill);
+      }, 400);
+      getLocalPlayerWordCosmeticsPromise().then(cos => {
+        if (!animationActive) return;
+        applyWordCosmetics(pill, getWordCosmeticStyles(cos), true);
+      }).catch(() => {});
+    }
+
+    function flashCells(cellIndices, cls, duration, cosmeticsPromise) {
+      if (!cellIndices || !cellIndices.length) return;
+      const cells = gridContainer.querySelectorAll('.grid-cell');
+      let wordStyles = null;
+
+      if (cosmeticsPromise) {
+        cosmeticsPromise.then(function(cos) {
+          wordStyles = getWordCosmeticStyles(cos);
+          if (!wordStyles) return;
+          cellIndices.forEach(function(i) {
+            const cell = cells[i];
+            if (!cell || !cell.classList.contains(cls)) return;
+            const letterEl = cell.querySelector('.cell-letter');
+            if (letterEl) applyWordCosmetics(letterEl, wordStyles, false);
+          });
+        }).catch(function() {});
+      }
+
+      cellIndices.forEach(i => {
+        const cell = cells[i];
+        if (!cell) return;
+        cell.classList.add(cls);
+        if (wordStyles) {
+          const letterEl = cell.querySelector('.cell-letter');
+          if (letterEl) applyWordCosmetics(letterEl, wordStyles, false);
+        }
+        setTimeout(() => {
+          cell.classList.remove(cls);
+          cell.classList.add('found-fadeout');
+          setTimeout(() => {
+            cell.classList.remove('found-fadeout');
+            const letterEl = cell.querySelector('.cell-letter');
+            if (letterEl) clearWordCosmetics(letterEl);
+          }, 800);
+        }, duration);
+      });
+    }
+
+    // ─── Swipe input ──────────────────────────────────────────────────
+      let swipePath   = [];
+      let swipeActive = false;
+      let cellCenters = []; // [{x,y}] cached at touchstart for SVG drawing
+      let cellHitboxes = [];
+
+    function isAdjacent(a, b) {
+      const dr = Math.abs(Math.floor(a / currentCols) - Math.floor(b / currentCols));
+      const dc = Math.abs((a % currentCols) - (b % currentCols));
+      return dr <= 1 && dc <= 1 && a !== b;
+    }
+
+    // When a fast swipe jumps over cells, trace the straight-line path through
+    // all intermediate grid cells using linear interpolation on row/col coords.
+    function interpolatePath(fromIdx, toIdx) {
+      const r1 = Math.floor(fromIdx / currentCols), c1 = fromIdx % currentCols;
+      const r2 = Math.floor(toIdx   / currentCols), c2 = toIdx   % currentCols;
+      const steps = Math.max(Math.abs(r2 - r1), Math.abs(c2 - c1));
+      const result = [];
+      for (let i = 1; i <= steps; i++) {
+        const r = Math.round(r1 + (r2 - r1) * i / steps);
+        const c = Math.round(c1 + (c2 - c1) * i / steps);
+        result.push(r * currentCols + c);
+      }
+      return result;
+    }
+
+    // Maps a touch point to a cell index.
+    // Only registers if the touch is within a tight circle around the cell centre —
+    // prevents accidental input from grazing the edge of a neighbouring tile.
+    function resolveCell(tx, ty) {
+      if (!cellHitboxes.length) cacheCellCenters();
+      let bestIdx = -1;
+      let bestDistSq = Infinity;
+      for (const hitbox of cellHitboxes) {
+        const dx = tx - hitbox.x;
+        const dy = ty - hitbox.y;
+        const distSq = dx * dx + dy * dy;
+        if (distSq <= hitbox.radiusSq && distSq < bestDistSq) {
+          bestIdx = hitbox.idx;
+          bestDistSq = distSq;
+        }
+      }
+      return bestIdx;
+    }
+
+    function cacheCellCenters() {
+      cellCenters = [];
+      cellHitboxes = [];
+      gridContainer.querySelectorAll('.grid-cell').forEach((cell, idx) => {
+        const rect = cell.getBoundingClientRect();
+        const x = rect.left + rect.width / 2;
+        const y = rect.top + rect.height / 2;
+        const radius = Math.min(rect.width, rect.height) * 0.40;
+        cellCenters.push({ x, y });
+        cellHitboxes.push({ idx, x, y, radiusSq: radius * radius });
+      });
+    }
+
+    function applySwipeHighlight() {
+      const pathSet = new Set(swipePath);
+      const lastIdx = swipePath.length > 0 ? swipePath[swipePath.length - 1] : -1;
+      gridContainer.querySelectorAll('.grid-cell').forEach((cell, i) => {
+        cell.classList.toggle('swipe-path', pathSet.has(i) && i !== lastIdx);
+        cell.classList.toggle('swipe-last', i === lastIdx);
+      });
+
+      if (swipePath.length < 2 || !cellCenters.length) { swipeSvg.innerHTML = ''; return; }
+      const boardRect = document.getElementById('game-board').getBoundingClientRect();
+      const pts = swipePath
+        .map(idx => cellCenters[idx]
+          ? `${(cellCenters[idx].x - boardRect.left).toFixed(1)},${(cellCenters[idx].y - boardRect.top).toFixed(1)}`
+          : null)
+        .filter(Boolean).join(' ');
+      swipeSvg.innerHTML =
+        `<polyline points="${pts}" fill="none"
+           stroke="rgba(34,211,238,0.55)" stroke-width="4"
+           stroke-linecap="round" stroke-linejoin="round"/>`;
+    }
+
+    function updateWordDisplay() {
+      currentWordEl.textContent = swipePath.map(i => swipeLetters[i] || '').join('');
+    }
+
+    function clearSwipe() {
+      swipePath   = [];
+      swipeActive = false;
+      applySwipeHighlight();
+      currentWordEl.textContent = '';
+    }
+
+    let activePointerId = null;
+
+    function isSwipeCellAllowed(idx) {
+      return !(currentRevealedCells && !currentRevealedCells.has(idx));
+    }
+
+    gridContainer.addEventListener('pointerdown', e => {
+      cacheCellCenters();
+      const idx = resolveCell(e.clientX, e.clientY);
+      if (idx < 0 || !isSwipeCellAllowed(idx)) return;
+      gridContainer.setPointerCapture(e.pointerId);
+      activePointerId = e.pointerId;
+      swipeActive = true;
+      swipePath   = [idx];
+      applySwipeHighlight();
+      updateWordDisplay();
+    });
+
+    gridContainer.addEventListener('pointermove', e => {
+      if (!swipeActive || e.pointerId !== activePointerId) return;
+      const idx = resolveCell(e.clientX, e.clientY);
+      if (idx < 0 || !isSwipeCellAllowed(idx)) return;
+
+      const last = swipePath[swipePath.length - 1];
+      if (idx === last) return;
+
+      const toAdd = isAdjacent(last, idx) ? [idx] : interpolatePath(last, idx);
+      for (const cellIdx of toAdd) {
+        if (!isSwipeCellAllowed(cellIdx)) break;
+        const prev = swipePath.indexOf(cellIdx);
+        if (prev >= 0) {
+          swipePath = swipePath.slice(0, prev + 1);
+          break;
+        }
+        swipePath.push(cellIdx);
+      }
+
+      applySwipeHighlight();
+      updateWordDisplay();
+    });
+
+    gridContainer.addEventListener('pointerup', e => {
+      if (!swipeActive || e.pointerId !== activePointerId) return;
+      swipeActive     = false;
+      activePointerId = null;
+      const word = swipePath.map(i => swipeLetters[i] || '').join('').toLowerCase();
+      if (word.length >= 3) submitWord(word);
+      else clearSwipe();
+    });
+
+    gridContainer.addEventListener('pointercancel', e => {
+      if (e.pointerId === activePointerId) clearSwipe();
+      activePointerId = null;
+    });
+
+    // ─── Word submission ──────────────────────────────────────────────
+    let pendingSwipePath = [];
+    let lastTopPlayers = [];
+    const pendingWords   = new Set(); // words submitted, awaiting result — suppress word-found animation for these
+
+    function submitWord(word) {
+      if (!identityReady) return;
+      pendingSwipePath = [...swipePath]; // capture before socket round-trip
+      pendingWords.add(word);
+      socket.emit('guess', {
+        word,
+        platform: 'web',
+        platformUserId: playerId,
+        displayName: playerName || 'Anonymous',
+        profilePic: playerPic || null
+      });
+    }
+
+    // ─── Word Lists ────────────────────────────────────────────────────
+    function syncList(listId, cntId, words, cssClass, knownSet) {
+      const container = document.getElementById(listId);
+      const cntEl     = document.getElementById(cntId);
+      if (!container || !cntEl) return;
+
+      if (words.length > 0) {
+        const placeholder = container.querySelector('.wl-empty');
+        if (placeholder) placeholder.remove();
+      } else if (knownSet.size === 0) {
+        container.innerHTML = '<span class="wl-empty">None yet</span>';
+        cntEl.textContent = '(0)';
+        return;
+      }
+
+      for (const w of words) {
+        if (!knownSet.has(w)) {
+          knownSet.add(w);
+          const pill = document.createElement('span');
+          pill.className = `wp ${cssClass} new-word`;
+          pill.textContent = w;
+          container.appendChild(pill);
+          flashAnimatedWordPill(pill);
+        }
+      }
+      cntEl.textContent = `(${knownSet.size})`;
+    }
+
+    function resetLists() {
+      for (const k of Object.keys(displayed)) displayed[k].clear();
+      ['list-common','list-rare','list-hidden','list-three'].forEach(id => {
+        document.getElementById(id).innerHTML = '<span class="wl-empty">None yet</span>';
+      });
+      ['cnt-common','cnt-rare','cnt-hidden','cnt-three'].forEach(id => {
+        document.getElementById(id).textContent = '(0)';
+      });
+    }
+
+    function applyWordLists(state) {
+      syncList('list-common', 'cnt-common', state.foundCommonWords      || [], 'common', displayed.common);
+      syncList('list-rare',   'cnt-rare',   state.foundRareWords        || [], 'rare',   displayed.rare);
+      syncList('list-hidden', 'cnt-hidden', state.foundHiddenWords      || [], 'hidden', displayed.hidden);
+      syncList('list-three',  'cnt-three',  state.foundThreeLetterWords || [], 'three',  displayed.three);
+    }
+
+    // ─── Word Announce Banner ─────────────────────────────────────────
+    let mpScoreTarget = 0, mpScoreAnimFrame = null;
+    let mpWordAnnounceToken = 0;
+
+    function animateMpScore(target) {
+      if (mpScoreAnimFrame) cancelAnimationFrame(mpScoreAnimFrame);
+      const start = mpScoreTarget, diff = target - start, duration = 600, t0 = performance.now();
+      mpScoreTarget = target;
+      function step(now) {
+        const p = Math.min((now - t0) / duration, 1);
+        const ease = 1 - Math.pow(1 - p, 3);
+        mpScore.textContent = Math.round(start + diff * ease).toLocaleString() + ' pts';
+        if (p < 1) mpScoreAnimFrame = requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    }
+
+    function showMpWordAnnounce(data, topPlayers, cosmeticsPromise) {
+      if (!data || !data.word) return;
+      const name = data.displayName || 'Anonymous';
+      const pic  = data.profilePic || null;
+
+      // Avatar
+      if (pic) {
+        mpAvatarWrap.innerHTML = `<img class="mp-announce-avatar" src="${pic}" alt="" onerror="this.outerHTML='<div class=mp-announce-avatar-fallback>${name[0].toUpperCase()}</div>'">`;
+      } else {
+        mpAvatarWrap.innerHTML = `<div class="mp-announce-avatar-fallback">${name[0].toUpperCase()}</div>`;
+      }
+
+      mpName.textContent = name;
+      mpWord.textContent = data.word.toUpperCase();
+      clearWordCosmetics(mpWord);
+      const announceToken = ++mpWordAnnounceToken;
+
+      // Rarity
+      let rarityText, rarityClass;
+      if (data.isThreeLetter) { rarityText = '3-Letter'; rarityClass = 'rarity-three'; }
+      else if (data.isHidden)  { rarityText = 'Ultra Rare'; rarityClass = 'rarity-hidden'; }
+      else if (data.isRare)    { rarityText = 'Rare'; rarityClass = 'rarity-rare'; }
+      else                     { rarityText = 'Common'; rarityClass = 'rarity-common'; }
+      mpRarity.textContent = rarityText;
+      mpRarity.className = `mp-announce-rarity ${rarityClass}`;
+
+      // Earned pts
+      const basePts = data.isThreeLetter ? 100 : (data.isHidden ? 1500 : (data.isRare ? 1000 : 500));
+      const pts = basePts + (data.letterRarityBonus || 0) + (data.wordLengthBonus || 0);
+      mpEarned.textContent = `+${pts.toLocaleString()}`;
+
+      // Total score from topPlayers
+      if (topPlayers) {
+        const finder = (topPlayers || []).find(p =>
+          (p.displayName === name) || (p.platformUserId === data.platformUserId));
+        if (finder) animateMpScore(finder.score || 0);
+      }
+
+      // Hero badge on word-announce banner
+      TopPlayerCards.clearHeroBadge(mpWordAnnounce);
+      if (cosmeticsPromise) {
+        cosmeticsPromise.then(function(cos) {
+          if (announceToken !== mpWordAnnounceToken || !cos) return;
+          TopPlayerCards.applyHeroBadge(mpWordAnnounce, cos);
+          applyWordCosmetics(mpWord, getWordCosmeticStyles(cos), true);
+        }).catch(function(){});
+      }
+
+      mpWordAnnounce.classList.remove('hidden');
+    }
+
+    // ─── Rare Badges ──────────────────────────────────────────────────
+    function updateRareBadges(state) {
+      const rareFound = Number(state.foundRareCount ?? (state.foundRareWords || []).length ?? 0);
+      const rareTotal = Number(state.rareCount || 0);
+      const ultraFound = Number(state.foundHiddenCount ?? (state.foundHiddenWords || []).length ?? 0);
+      const ultraTotal = Number(state.hiddenCount || 0);
+
+      rareBadgeEl.textContent = `${rareFound}/${rareTotal} rare`;
+      rareBadgeEl.classList.toggle('visible', rareTotal > 0);
+
+      ultraBadgeEl.textContent = `${ultraFound}/${ultraTotal} ultra rare`;
+      ultraBadgeEl.classList.toggle('visible', ultraTotal > 0);
+    }
+
+    function updateRingProgress(state) {
+      const el = document.getElementById('ring-progress');
+      if (!el) return;
+      if (!state.totalRings || state.totalRings <= 1 || state.ringPhase === 'complete') {
+        el.style.display = 'none';
+        return;
+      }
+      el.style.display = '';
+      const remaining = (state.ringCommonTotal || 0) - (state.ringCommonFound || 0);
+      el.innerHTML = `<span class="ring-label">Ring ${state.currentRing}/${state.totalRings - 1}</span> · <span class="ring-phase-ring">${remaining} word${remaining !== 1 ? 's' : ''} to expand</span>`;
+    }
+
+    // ─── Full State Update ─────────────────────────────────────────────
+    function applyState(state) {
+      if (!state || !state.grid) return;
+
+      renderGrid(state.grid, state.rows, state.cols, state.revealedCells, state.replacedCells);
+      updateActiveCells(state.activeCells, state.revealedCells);
+
+      // Update ring progress display
+      updateRingProgress(state);
+
+      // Update letterStats for cell number reveal
+      if (state.letterStats) {
+        mpCellStarts = state.letterStats.cellStartsWith || {};
+        mpCellUsage  = state.letterStats.cellUsage     || {};
+      }
+      mpHintPct = (state.ringCommonTotal || 0) > 0 ? (state.ringCommonFound || 0) / state.ringCommonTotal : 0;
+      updateCellNumbers();
+
+      foundCountEl.textContent = state.foundCount  || 0;
+      totalCountEl.textContent = state.totalCount  || '?';
+
+      const pct = state.percentage ||
+        (state.totalCount > 0 ? Math.round((state.foundCount / state.totalCount) * 100) : 0);
+      progressBar.style.width = Math.max(0, Math.min(100, pct)) + '%';
+
+      dailyBadge.classList.toggle('visible', !!state.isDaily);
+      lastTopPlayers = state.topPlayers || lastTopPlayers;
+      if (typeof TopPlayerCards !== 'undefined') TopPlayerCards.renderTopPlayerCards('top-players', lastTopPlayers);
+      updateRareBadges(state);
+      applyWordLists(state);
+      renderMpTags(state.recentGuessTags || []);
+    }
+
+    // ─── Keyboard input ───────────────────────────────────────────────
+    // Desktop: clicking anywhere outside an interactive element focuses the
+    // type-to-guess input so players can start typing immediately. Mobile/
+    // touch devices are excluded because focusing a text input pops the
+    // on-screen keyboard, which covers the grid and fights swipe input.
+    const isTouchCapableMP = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+    const keyboardInput = document.getElementById('keyboard-input');
+    const mpCurrentWordEl = document.getElementById('current-word');
+    ['pointerdown', 'mousedown', 'touchstart', 'click'].forEach(evtName => {
+      keyboardInput.addEventListener(evtName, e => {
+        e.stopPropagation();
+        if (document.activeElement !== keyboardInput) keyboardInput.focus();
+      }, evtName === 'touchstart' ? { passive: true } : undefined);
+    });
+    if (!isTouchCapableMP) {
+      document.addEventListener('click', function (e) {
+        const t = e.target;
+        if (!t || !t.closest) return;
+        if (t.closest('.grid-cell, .grid-wrap, .grid-container, #keyboard-input, button, a, input, select, textarea, [contenteditable], .share-sheet, .win-modal, .gameover-banner, .mp-word-announce, .archive-panel')) return;
+        keyboardInput.focus();
+      });
+    }
+    keyboardInput.addEventListener('input', () => {
+      mpCurrentWordEl.textContent = keyboardInput.value.toUpperCase();
+    });
+    keyboardInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        const word = keyboardInput.value.trim().toLowerCase();
+        if (word.length >= 3) {
+          submitWord(word);
+          keyboardInput.value = '';
+          mpCurrentWordEl.textContent = '';
+        }
+      } else if (e.key === 'Escape') {
+        keyboardInput.value = '';
+        mpCurrentWordEl.textContent = '';
+        keyboardInput.blur();
+      }
+    });
+    // Restore scroll to top when Android keyboard closes
+    function scrollToTop() { window.scrollTo(0, 0); document.documentElement.scrollTop = 0; }
+    if (window.visualViewport) {
+      let prevVvh = window.visualViewport.height;
+      window.visualViewport.addEventListener('resize', () => {
+        if (window.visualViewport.height > prevVvh) scrollToTop();
+        prevVvh = window.visualViewport.height;
+      });
+    } else {
+      let prevVh = window.innerHeight;
+      window.addEventListener('resize', () => {
+        if (window.innerHeight > prevVh) scrollToTop();
+        prevVh = window.innerHeight;
+      });
+    }
+    keyboardInput.addEventListener('blur', () => { setTimeout(scrollToTop, 300); });
+
+    // ─── Socket.IO ────────────────────────────────────────────────────
+    // Streamer-private session: detect bare /<handle> URL path
+    // (e.g. erectangled.com/jorrybeaufart) and forward on the socket
+    // handshake so the server scopes us to that streamer's session.
+    const _sessionParam = (() => {
+      try {
+        const m = location.pathname.match(/^\/([a-z0-9_-]{1,32})\/?$/);
+        if (m && m[1]) return m[1];
+        return new URLSearchParams(location.search).get('session') || null;
+      } catch (_) { return null; }
+    })();
+    const socket = _sessionParam
+      ? io({ auth: { session: _sessionParam } })
+      : io();
+    window._gameSocket = socket;
+    const STREAM_BRIDGE_ENABLED = /\/stream\/?$/i.test(location.pathname);
+    const STREAM_BRIDGE_STORAGE_KEY = 'erect_stream_bridge_url';
+    const DEFAULT_STREAM_BRIDGE_URL = 'http://127.0.0.1:21420';
+    const streamBridgeParams = new URLSearchParams(location.search);
+    const streamBridgeOverride = (streamBridgeParams.get('bridge') || '').trim();
+    if (streamBridgeOverride) localStorage.setItem(STREAM_BRIDGE_STORAGE_KEY, streamBridgeOverride);
+    const STREAM_BRIDGE_URL = streamBridgeOverride || localStorage.getItem(STREAM_BRIDGE_STORAGE_KEY) || DEFAULT_STREAM_BRIDGE_URL;
+    let streamBridgeSocket = null;
+
+    function extractStreamBridgeWord(message) {
+      const raw = String(message || '').trim();
+      if (!raw || raw.startsWith('/') || raw.startsWith('!') || raw.startsWith('@')) return '';
+      return raw
+        .split(/\s+/)[0]
+        .replace(/[./]|\p{Emoji_Presentation}|\p{Extended_Pictographic}/gu, '')
+        .trim()
+        .toLowerCase();
+    }
+
+    function emitStreamBridgeGuess(msg) {
+      if (!msg || !msg.user || !msg.message) return;
+      const word = extractStreamBridgeWord(msg.message);
+      if (!word || word.length < 3) return;
+      const user = msg.user || {};
+      socket.emit('guess', {
+        word,
+        platform: msg.platform || 'tiktok',
+        platformUserId: user.id || user.username || user.displayName || 'stream-bridge-user',
+        displayName: user.displayName || user.username || 'Streamer Viewer',
+        profilePic: user.profilePictureUrl || ''
+      });
+    }
+
+    function initStreamBridgeMode() {
+      if (!STREAM_BRIDGE_ENABLED || typeof io === 'undefined') return;
+      try {
+        streamBridgeSocket = io(STREAM_BRIDGE_URL, {
+          transports: ['websocket', 'polling'],
+          withCredentials: false,
+          reconnection: true,
+          reconnectionDelay: 1500,
+          reconnectionDelayMax: 8000
+        });
+        window._streamBridgeSocket = streamBridgeSocket;
+        document.body.dataset.streamMode = 'tickfinity';
+        document.body.dataset.streamBridge = 'connecting';
+        streamBridgeSocket.on('connect', () => {
+          document.body.dataset.streamBridge = 'connected';
+          console.info('[eRecTangled stream] Connected to local stream bridge at', STREAM_BRIDGE_URL);
+        });
+        streamBridgeSocket.on('disconnect', () => {
+          document.body.dataset.streamBridge = 'disconnected';
+          console.warn('[eRecTangled stream] Local stream bridge disconnected');
+        });
+        streamBridgeSocket.on('connect_error', (error) => {
+          document.body.dataset.streamBridge = 'error';
+          console.warn('[eRecTangled stream] Unable to reach local stream bridge:', error && error.message ? error.message : error);
+        });
+        streamBridgeSocket.on('bridge-status', (snapshot) => {
+          document.body.dataset.streamBridge = snapshot && snapshot.tickfinityConnected ? 'connected' : 'waiting';
+        });
+        streamBridgeSocket.on('chat-message', emitStreamBridgeGuess);
+      } catch (error) {
+        document.body.dataset.streamBridge = 'error';
+        console.warn('[eRecTangled stream] Stream bridge startup failed:', error && error.message ? error.message : error);
+      }
+    }
+
+    socket.on('connect', () => {});
+    socket.on('disconnect', () => {});
+    initStreamBridgeMode();
+
+    let initialLoadDone = false;
+    socket.on('game-state', state => {
+      gameOverBanner.classList.remove('visible');
+      applyState(state);
+      if (!initialLoadDone && state.lastFoundWord) {
+        showMpWordAnnounce(state.lastFoundWord, state.topPlayers || [], getFoundWordCosmeticsPromise(state.lastFoundWord));
+      }
+      // Apply display settings (number/letter scale) — same rules as OBS overlay
+      if (state.displaySettings) {
+        const ds = state.displaySettings;
+        if (ds.numberScale !== undefined) document.documentElement.style.setProperty('--number-scale', ds.numberScale);
+        if (ds.letterScale !== undefined) document.documentElement.style.setProperty('--letter-scale', ds.letterScale);
+      }
+      initialLoadDone = true;
+    });
+
+    socket.on('new-game', state => {
+      gameOverBanner.classList.remove('visible');
+      mpWordAnnounce.classList.add('hidden');
+      renderedGrid = null;
+      resetLists();
+      clearSwipe();
+      applyState(state);
+    });
+
+    socket.on('word-found', data => {
+      const cosmeticsPromise = getFoundWordCosmeticsPromise(data);
+      showMpWordAnnounce(data, lastTopPlayers, cosmeticsPromise);
+      // Show green found tag
+      mpAddTag('mp-correct-word-tag', (data.word || '') + ' ✓');
+      // Immediately increment common word count so display doesn't wait for game-state
+      if (!data.isThreeLetter && !data.isRare && !data.isHidden) {
+        const cur = parseInt(foundCountEl.textContent, 10) || 0;
+        foundCountEl.textContent = cur + 1;
+        const total = parseInt(totalCountEl.textContent, 10) || 0;
+        if (total > 0) {
+          progressBar.style.width = Math.max(0, Math.min(100, Math.round((cur + 1) / total * 100))) + '%';
+          updateCellNumbers();
+        }
+      }
+      // Always update ring progress counter (shows remaining words in current ring)
+      updateRingProgress(data);
+
+      // Ring expansion: animate newly revealed cells
+      if (data.ringAdvanced && data.newRevealedCells && data.newRevealedCells.length > 0) {
+        revealRingCells(data.newRevealedCells);
+        if (data.activeCells) updateActiveCells(data.activeCells, data.revealedCells);
+      }
+
+      // Skip server-path animation for words we just submitted — we animate our own swipe path
+      if (pendingWords.has(data.word)) { pendingWords.delete(data.word); return; }
+      if (data.cells) {
+        const cls = data.isThreeLetter ? 'three-letter-highlight'
+                  : data.isHidden      ? 'hidden-highlight'
+                  : data.isRare        ? 'rare-highlight'
+                  :                      'found-highlight';
+        flashCells(data.cells, cls, 1200, cosmeticsPromise);
+      }
+    });
+
+    const mpIncorrectArea = document.getElementById('mp-incorrect-area');
+    const mpIncorrectAreaBottom = document.getElementById('mp-incorrect-area-bottom');
+    const MP_MAX_TAGS = 12;
+    function syncMpTagAreas() {
+      if (!mpIncorrectArea || !mpIncorrectAreaBottom) return;
+      mpIncorrectAreaBottom.innerHTML = '';
+      Array.from(mpIncorrectArea.children).forEach(tag => {
+        mpIncorrectAreaBottom.appendChild(tag.cloneNode(true));
+      });
+    }
+    function getMpTagPayload(tag) {
+      if (!tag || !tag.word) return null;
+      if (tag.result === 'incorrect') return { cls: 'mp-incorrect-word', text: tag.word };
+      if (tag.result === 'already_found') return { cls: 'mp-already-found-tag', text: `${tag.word} ✓` };
+      return null;
+    }
+    function renderMpTags(tags) {
+      if (!mpIncorrectArea) return;
+      mpIncorrectArea.innerHTML = '';
+      (Array.isArray(tags) ? tags : []).slice(-MP_MAX_TAGS).forEach(tag => {
+        const payload = getMpTagPayload(tag);
+        if (!payload) return;
+        const el = document.createElement('span');
+        el.className = payload.cls;
+        el.textContent = payload.text;
+        mpIncorrectArea.appendChild(el);
+      });
+      syncMpTagAreas();
+    }
+    function mpAddTag(cls, text) {
+      if (!mpIncorrectArea) return;
+      while (mpIncorrectArea.children.length >= MP_MAX_TAGS) mpIncorrectArea.firstChild.remove();
+      const tag = document.createElement('span');
+      tag.className = cls;
+      tag.textContent = text;
+      mpIncorrectArea.appendChild(tag);
+      syncMpTagAreas();
+    }
+    syncMpTagAreas();
+    if (mpIncorrectArea && mpIncorrectAreaBottom && 'MutationObserver' in window) {
+      new MutationObserver(syncMpTagAreas).observe(mpIncorrectArea, { childList: true, subtree: false });
+    }
+
+    socket.on('chat-guess', data => {
+      if (data.result === 'incorrect') mpAddTag('mp-incorrect-word', data.word || '');
+      else if (data.result === 'already_found') mpAddTag('mp-already-found-tag', (data.word || '') + ' ✓');
+    });
+
+    socket.on('guess-result', result => {
+      if (result.result === 'incorrect') mpAddTag('mp-incorrect-word', result.word || '');
+      if (result.result === 'already_found') mpAddTag('mp-already-found-tag', (result.word || '') + ' ✓');
+      if (result.result === 'correct' && pendingSwipePath.length) {
+        const cls = result.isThreeLetter ? 'three-letter-highlight'
+                  : result.isHidden      ? 'hidden-highlight'
+                  : result.isRare        ? 'rare-highlight'
+                  :                        'found-highlight';
+        flashCells(pendingSwipePath, cls, 1200, getLocalPlayerWordCosmeticsPromise());
+      }
+      pendingWords.delete(result.word);
+      pendingSwipePath = [];
+      const flash = result.result === 'correct' ? 'flash-correct' : 'flash-wrong';
+      currentWordBar.classList.add(flash);
+      setTimeout(() => {
+        currentWordBar.classList.remove(flash);
+        clearSwipe();
+      }, 500);
+    });
+
+    socket.on('game-over', () => {
+      gameOverBanner.classList.add('visible');
+    });
+
+    // ─── Light mode toggle ────────────────────────────────────────────
+    const themeBtn = document.getElementById('theme-btn');
+    if (localStorage.getItem('rect_light') === '1') document.body.classList.add('light-mode');
+    themeBtn.addEventListener('click', () => {
+      const on = document.body.classList.toggle('light-mode');
+      localStorage.setItem('rect_light', on ? '1' : '0');
+    });
+
+    // ─── Desktop board rotation ──────────────────────────────────────
+    const rotateBtn = document.getElementById('rotate-btn');
+    const gameBoard = document.getElementById('game-board');
+    const detectDesktopView = () => window.innerWidth >= 900;
+    let isDesktopView = detectDesktopView();
+    let desktopRotation = 90;
+    let mobileFlipped = localStorage.getItem('sproutle_mp_mobile_rotated_180') === '1';
+    if (!isDesktopView) {
+      desktopRotation = 0;
+    } else {
+      const saved = localStorage.getItem('sproutle_mp_desktop_rotation');
+      if (saved === '270') desktopRotation = 270;
+    }
+    function syncRotationMargin() {
+      const isRotated = isDesktopView && desktopRotation !== 0;
+      if (isRotated) {
+        requestAnimationFrame(() => {
+          const w = gridContainer.offsetWidth;
+          const h = gridContainer.offsetHeight;
+          const gap = Math.abs(h - w) / 2;
+          if (gap > 0) {
+            gameBoard.style.marginTop = (-gap) + 'px';
+            gameBoard.style.marginBottom = (-gap) + 'px';
+          } else {
+            gameBoard.style.marginTop = '';
+            gameBoard.style.marginBottom = '';
+          }
+        });
+      } else {
+        gameBoard.style.marginTop = '';
+        gameBoard.style.marginBottom = '';
+      }
+    }
+    function applyBoardOrientation() {
+      gridContainer.classList.remove('rotated-90', 'rotated-180', 'rotated-270');
+      if (isDesktopView && (desktopRotation === 90 || desktopRotation === 270)) {
+        gridContainer.classList.add(desktopRotation === 90 ? 'rotated-90' : 'rotated-270');
+      } else if (!isDesktopView && mobileFlipped) {
+        gridContainer.classList.add('rotated-180');
+      }
+      syncRotationMargin();
+      rotateBtn.textContent = '⟳';
+    }
+    rotateBtn.addEventListener('click', e => {
+      e.preventDefault();
+      e.stopPropagation();
+      isDesktopView = detectDesktopView();
+      if (isDesktopView) {
+        desktopRotation = desktopRotation === 90 ? 270 : 90;
+        localStorage.setItem('sproutle_mp_desktop_rotation', String(desktopRotation));
+      } else {
+        mobileFlipped = !mobileFlipped;
+        localStorage.setItem('sproutle_mp_mobile_rotated_180', mobileFlipped ? '1' : '0');
+      }
+      applyBoardOrientation();
+    });
+    applyBoardOrientation();
+    window.addEventListener('resize', () => {
+      const nextDesktopView = detectDesktopView();
+      if (nextDesktopView !== isDesktopView) {
+        isDesktopView = nextDesktopView;
+        desktopRotation = isDesktopView ? (desktopRotation === 270 ? 270 : 90) : 0;
+      }
+      applyBoardOrientation();
+    });
+
+    // ─── Share ────────────────────────────────────────────────────────
+    (function() {
+const SHARE_URL  = 'https://erectangled.com/';
+      const SHARE_TEXT = '🎮 Playing eRecTangled — swipe the grid to find hidden words before the stream does! Play free:';
+      const enc = encodeURIComponent;
+      const overlay = document.getElementById('share-overlay');
+
+      document.getElementById('share-btn').addEventListener('click', () => overlay.classList.add('active'));
+      document.getElementById('share-close').addEventListener('click', () => overlay.classList.remove('active'));
+      overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('active'); });
+
+      document.getElementById('share-native').addEventListener('click', async () => {
+        if (navigator.share) {
+          try { await navigator.share({ title: 'eRecTangled', text: SHARE_TEXT, url: SHARE_URL }); return; } catch(e) {}
+        }
+        copyLink();
+      });
+      document.getElementById('share-twitter').href   = `https://twitter.com/intent/tweet?text=${enc(SHARE_TEXT + ' ' + SHARE_URL)}`;
+      document.getElementById('share-facebook').href  = `https://www.facebook.com/sharer/sharer.php?u=${enc(SHARE_URL)}`;
+      document.getElementById('share-instagram').addEventListener('click', () => { copyLink(); alert('Link copied! Open Instagram and paste it in your bio or story 📸'); });
+      document.getElementById('share-tiktok').addEventListener('click', () => { copyLink(); alert('Link copied! Open TikTok and paste it in your bio or video caption 🎵'); });
+      document.getElementById('share-whatsapp').href  = `https://wa.me/?text=${enc(SHARE_TEXT + ' ' + SHARE_URL)}`;
+      document.getElementById('share-telegram').href  = `https://t.me/share/url?url=${enc(SHARE_URL)}&text=${enc(SHARE_TEXT)}`;
+      document.getElementById('share-threads').href   = `https://www.threads.net/intent/post?text=${enc(SHARE_TEXT + ' ' + SHARE_URL)}`;
+      document.getElementById('share-reddit').href    = `https://reddit.com/submit?url=${enc(SHARE_URL)}&title=${enc('eRecTangled — swipe the grid to find hidden words!')}`;
+
+      const copyBtn = document.getElementById('share-copy-btn');
+      copyBtn.addEventListener('click', copyLink);
+      function copyLink() {
+        navigator.clipboard.writeText(SHARE_URL).catch(() => {});
+        copyBtn.textContent = 'Copied!';
+        setTimeout(() => copyBtn.textContent = 'Copy', 2000);
+      }
+    })();
+  </script>
+
+  <script src="https://wordtycoon.live/portal/js/library-toast.js" data-mode="player"></script>
+  <script>
+    (function() {
+      if (!window.matchMedia || !window.matchMedia('(pointer: coarse)').matches || window.innerWidth >= 900) return;
+
+      var docEl = document.documentElement;
+      var rail = document.createElement('div');
+      rail.className = 'mobile-scrollbar';
+      rail.innerHTML = '<div class="mobile-scrollbar-track"></div><div class="mobile-scrollbar-thumb"></div>';
+      document.body.appendChild(rail);
+
+      var thumb = rail.querySelector('.mobile-scrollbar-thumb');
+      var dragging = false;
+      var activePointerId = null;
+      var dragRailRect = null;
+      var maxThumbTop = 0;
+      var thumbHeight = 56;
+      function getScrollTop() {
+        return window.pageYOffset || docEl.scrollTop || document.body.scrollTop || 0;
+      }
+      function setScrollTop(value) {
+        docEl.scrollTop = value;
+        document.body.scrollTop = value;
+        window.scrollTo(0, value);
+      }
+
+      function getClientY(event) {
+        if (event.touches && event.touches.length) return event.touches[0].clientY;
+        if (event.changedTouches && event.changedTouches.length) return event.changedTouches[0].clientY;
+        return event.clientY;
+      }
+
+      function syncThumb() {
+        var viewport = window.innerHeight;
+        var scrollHeight = Math.max(docEl.scrollHeight, document.body.scrollHeight);
+        var scrollable = Math.max(0, scrollHeight - viewport);
+        var railRect = rail.getBoundingClientRect();
+        var trackHeight = Math.max(railRect.height, 1);
+        thumbHeight = scrollable > 0 ? Math.max(56, Math.round(trackHeight * 0.23)) : trackHeight;
+        maxThumbTop = Math.max(0, trackHeight - thumbHeight);
+        thumb.style.height = thumbHeight + 'px';
+        var scrollTop = getScrollTop();
+        var top = scrollable > 0 ? (scrollTop / scrollable) * maxThumbTop : 0;
+        thumb.style.transform = 'translateY(' + top + 'px)';
+        rail.style.opacity = scrollable > 0 ? '1' : '0.45';
+      }
+
+      function scrollFromClientY(clientY, railRect) {
+        railRect = railRect || rail.getBoundingClientRect();
+        var scrollHeight = Math.max(docEl.scrollHeight, document.body.scrollHeight);
+        var scrollable = Math.max(0, scrollHeight - window.innerHeight);
+        if (scrollable <= 0) return;
+        var rawTop = clientY - railRect.top - (thumbHeight / 2);
+        var thumbTop = Math.max(0, Math.min(maxThumbTop, rawTop));
+        var ratio = maxThumbTop > 0 ? (thumbTop / maxThumbTop) : 0;
+        setScrollTop(ratio * scrollable);
+      }
+
+      function onMove(event) {
+        if (!dragging || event.pointerId !== activePointerId) return;
+        event.preventDefault();
+        scrollFromClientY(getClientY(event), dragRailRect);
+        syncThumb();
+      }
+
+      function stopDrag(event) {
+        if (event && dragging && event.pointerId !== activePointerId) return;
+        if (!dragging) return;
+        dragging = false;
+        rail.classList.remove('dragging');
+        if (activePointerId !== null && thumb.releasePointerCapture) {
+          try { thumb.releasePointerCapture(activePointerId); } catch (e) {}
+        }
+        activePointerId = null;
+        dragRailRect = null;
+      }
+
+      function startDrag(event) {
+        dragging = true;
+        activePointerId = event.pointerId;
+        dragRailRect = rail.getBoundingClientRect();
+        rail.classList.add('dragging');
+        if (thumb.setPointerCapture) {
+          try { thumb.setPointerCapture(event.pointerId); } catch (e) {}
+        }
+        event.preventDefault();
+        scrollFromClientY(getClientY(event), dragRailRect);
+        syncThumb();
+      }
+
+      thumb.addEventListener('pointerdown', startDrag);
+      window.addEventListener('pointermove', onMove, { passive: false });
+      window.addEventListener('pointerup', stopDrag);
+      window.addEventListener('pointercancel', stopDrag);
+      rail.addEventListener('pointerdown', function(event) {
+        if (event.target === thumb) return;
+        dragRailRect = rail.getBoundingClientRect();
+        scrollFromClientY(getClientY(event), dragRailRect);
+        syncThumb();
+      });
+      window.addEventListener('scroll', syncThumb, { passive: true });
+      window.addEventListener('resize', syncThumb);
+      syncThumb();
+      setTimeout(syncThumb, 250);
+      setTimeout(syncThumb, 1000);
+    })();
+  </script>
+
+  <!-- Auth bridge: standalone session + in-page guest/login prompt -->
+  <script>(function(){
+    var HUB='https://wordtycoon.live';
+    var USER_KEY='sproutle_user';
+    var promptEl=null;
+    var promptInput=null;
+    var keyboardInput=document.getElementById('keyboard-input');
+    var cachedUser=null;
+    try{cachedUser=JSON.parse(localStorage.getItem(USER_KEY)||'null');}catch(e){}
+    var params=new URLSearchParams(location.search),tok=params.get('auth_token')||params.get('auth');
+    function ensurePrompt(){
+      if(promptEl) return;
+      var style=document.createElement('style');
+      style.textContent='.wt-auth-screen{display:none;position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;padding:20px;background:transparent;pointer-events:none}.wt-auth-card{position:relative;pointer-events:auto;width:min(92vw,430px);padding:28px 24px 22px;border-radius:20px;border:1px solid rgba(58,58,60,.7);background:rgba(18,18,19,.68);box-shadow:0 8px 32px rgba(0,0,0,.45);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);color:#fff;text-align:center}.wt-auth-title{margin:0 0 8px;font-family:\"Fredoka\",sans-serif;font-size:32px;font-weight:700;letter-spacing:1px;line-height:1.05}.wt-auth-title span{display:inline-block}.wt-auth-card p{margin:0 0 18px;color:#818384;font-size:14px;line-height:1.45}.wt-auth-close{position:absolute;top:12px;right:12px;width:34px;height:34px;border:none;border-radius:999px;background:rgba(255,255,255,.08);color:#b9bcc4;font-size:20px;line-height:1;cursor:pointer}.wt-auth-row{display:flex;gap:10px;margin-bottom:16px}.wt-auth-input{flex:1;min-width:0;padding:14px 16px;border-radius:10px;border:none;background:transparent;color:#fff;font-size:15px;outline:none}.wt-auth-input-wrap{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.05);border-radius:10px;padding:4px}.wt-auth-input::placeholder{color:#818384}.wt-auth-play{border:0;border-radius:10px;padding:12px 18px;background:#39ff14;color:#1a1a2e;font-size:14px;font-weight:800;cursor:pointer}.wt-auth-divider{display:flex;align-items:center;gap:10px;margin:14px 0 12px;color:#818384;font-size:12px;font-weight:700}.wt-auth-divider:before,.wt-auth-divider:after{content:\"\";flex:1;height:1px;background:rgba(255,255,255,.1)}.wt-auth-link{display:flex;align-items:center;justify-content:center;gap:10px;padding:14px 16px;border-radius:10px;text-decoration:none;color:#fff;font-size:15px;font-weight:800;margin-top:10px}.wt-auth-link.discord{background:#5865F2}.wt-auth-link.github{background:#333}';
+      document.head.appendChild(style);
+      promptEl=document.createElement('div');
+      promptEl.className='wt-auth-screen';
+      promptEl.innerHTML='<div class="wt-auth-card"><button id="wt-auth-close" type="button" class="wt-auth-close" aria-label="Continue as guest">&times;</button><h2 class="wt-auth-title" aria-label="eRecTangled"><span style="color:#44bb88">e</span><span style="color:#3EC8E8">r</span><span style="color:#F5920A">e</span><span style="color:#EFC000">c</span><span style="color:#1E52C8">T</span><span style="color:#E83020">a</span><span style="color:#42B238">n</span><span style="color:#88AAFF">g</span><span style="color:#C835B8">l</span><span style="color:#F5920A">e</span><span style="color:#1EB8A8">d</span></h2><p>Play right away as Anonymous, or enter a name to customize it.</p><div class="wt-auth-row"><div class="wt-auth-input-wrap"><input id="wt-auth-name" type="text" class="wt-auth-input" placeholder="Choose a username (optional)" maxlength="20" autocomplete="off" autocapitalize="off"><button id="wt-auth-play" type="button" class="wt-auth-play">Play</button></div></div><div class="wt-auth-divider">or sign in for stats &amp; rewards</div><a id="wt-auth-discord" class="wt-auth-link discord" href="#">Login with Discord</a><a id="wt-auth-github" class="wt-auth-link github" href="#">Login with GitHub</a></div>';
+      document.body.appendChild(promptEl);
+      promptInput=promptEl.querySelector('#wt-auth-name');
+      promptEl.querySelector('#wt-auth-discord').href=HUB+'/auth/discord?returnTo='+encodeURIComponent(location.href);
+      promptEl.querySelector('#wt-auth-github').href=HUB+'/auth/github?returnTo='+encodeURIComponent(location.href);
+      function submitGuest(){
+        var nextName=((promptInput&&promptInput.value)||'').trim().slice(0,20);
+        playerName=nextName||'Anonymous';
+        try{
+          localStorage.setItem('rect_id',playerId);
+          localStorage.setItem('rect_name',playerName);
+        }catch(e){}
+        if(typeof updateNameBadge==='function') updateNameBadge();
+        hidePrompt();
+        if(keyboardInput) setTimeout(function(){keyboardInput.focus();},30);
+      }
+      promptEl.querySelector('#wt-auth-play').addEventListener('click',submitGuest);
+      promptEl.querySelector('#wt-auth-close').addEventListener('click',function(){ if(promptInput) promptInput.value=''; submitGuest(); });
+      promptInput.addEventListener('keydown',function(e){
+        if(e.key==='Enter'){
+          e.preventDefault();
+          submitGuest();
+        }
+      });
+    }
+    function showPrompt(){
+      ensurePrompt();
+      if(promptInput && !promptInput.value){
+        var seed=(localStorage.getItem('rect_name')||playerName||'');
+        promptInput.value=seed==='Anonymous'?'':seed.slice(0,20);
+      }
+      promptEl.style.display='flex';
+      setTimeout(function(){ if(promptInput) promptInput.focus(); },0);
+    }
+    function hidePrompt(){
+      if(promptEl) promptEl.style.display='none';
+    }
+    function persistUser(u){
+      if(!u) return;
+      try{
+        localStorage.setItem(USER_KEY,JSON.stringify({id:u.id||playerId,username:u.username||'',globalName:u.globalName||'',displayName:u.displayName||u.globalName||u.username||playerName||'Player',avatar:u.avatar||playerPic||null}));
+      }catch(e){}
+    }
+    function applyUser(u){
+      if(!u) return;
+      playerId=u.id||playerId;
+      playerName=u.displayName||u.globalName||u.username||playerName;
+      playerPic=u.avatar||playerPic||null;
+      persistUser(u);
+      try{
+        localStorage.setItem('rect_id',playerId);
+        localStorage.setItem('rect_name',playerName||'Player');
+      }catch(e){}
+      if(typeof updateNameBadge==='function') updateNameBadge();
+      hidePrompt();
+    }
+    if(cachedUser&&cachedUser.id) applyUser(cachedUser);
+    if(tok){
+      params.delete('auth');
+      params.delete('sso_checked');
+      var rest=params.toString();
+      history.replaceState({},'',location.pathname+(rest?'?'+rest:''));
+      fetch(HUB+'/api/auth/exchange?token='+encodeURIComponent(tok),{credentials:'include'}).then(function(r){return r.json();}).then(function(d){
+        if(d.ok&&d.user){applyUser(d.user);}
+        else if(cachedUser&&cachedUser.id){applyUser(cachedUser);}
+        else{showPrompt();}
+      }).catch(function(){
+        if(cachedUser&&cachedUser.id){applyUser(cachedUser);}
+        else{showPrompt();}
+      });
+      return;
+    }
+    if(params.get('sso_checked')){
+      params.delete('sso_checked');
+      var rest=params.toString();
+      history.replaceState({},'',location.pathname+(rest?'?'+rest:''));
+    }
+    fetch(HUB+'/api/me/session',{credentials:'include'}).then(function(r){return r.json();}).then(function(d){
+      if(d.ok&&d.user){applyUser(d.user);return;}
+      if(cachedUser&&cachedUser.id){applyUser(cachedUser);return;}
+      showPrompt();
+    }).catch(function(){
+      if(cachedUser&&cachedUser.id){applyUser(cachedUser);}
+      else{showPrompt();}
+    });
+  })();</script>
+  <section class="seo-section" aria-label="Scoring System">
+    <h2>How Scoring Works</h2>
+    <p>Your score is built from <strong>three layers</strong> that stack together. Points and coins earned are equal.</p>
+    <div class="seo-grid">
+      <div class="seo-panel">
+        <h3>Word Rarity</h3>
+        <p style="margin:0;font-size:0.8rem;color:#94a3b8;">Base points from word type</p>
+        <ul style="list-style:none;padding:0;margin:8px 0 0;font-size:0.8rem;color:#e2e8f0;">
+          <li>Common: <strong style="color:#7dd3fc">500</strong></li>
+          <li>Rare: <strong style="color:#7dd3fc">1,000</strong></li>
+          <li>Ultra Rare: <strong style="color:#7dd3fc">1,500</strong></li>
+          <li>3-Letter: <strong style="color:#7dd3fc">100</strong></li>
+        </ul>
+      </div>
+      <div class="seo-panel">
+        <h3>Letter Rarity</h3>
+        <p style="margin:0;font-size:0.8rem;color:#94a3b8;">Each letter adds a bonus</p>
+        <ul style="list-style:none;padding:0;margin:8px 0 0;font-size:0.8rem;color:#e2e8f0;">
+          <li><span style="color:#9ca3af">Common</span> (E,T,A...): <strong style="color:#7dd3fc">+0</strong></li>
+          <li><span style="color:#22c55e">Uncommon</span> (D,L): <strong style="color:#7dd3fc">+15</strong></li>
+          <li><span style="color:#3b82f6">Rare</span> (C,U,M,W,F): <strong style="color:#7dd3fc">+30</strong></li>
+          <li><span style="color:#a855f7">Epic</span> (G,Y,P): <strong style="color:#7dd3fc">+60</strong></li>
+          <li><span style="color:#f97316">Legendary</span> (B,V,K): <strong style="color:#7dd3fc">+105</strong></li>
+          <li><span style="color:#ef4444">Mythic</span> (J,X): <strong style="color:#7dd3fc">+180</strong></li>
+          <li><span style="color:#eab308">Unique</span> (Q,Z): <strong style="color:#7dd3fc">+300</strong></li>
+        </ul>
+      </div>
+    </div>
+    <div class="seo-panel" style="margin-top:10px;">
+      <h3>Word Length Bonus</h3>
+      <p style="margin:0;font-size:0.8rem;color:#94a3b8;">Longer words earn exponential bonus (3-letter exempt)</p>
+      <p style="margin:6px 0 0;font-size:0.8rem;color:#e2e8f0;">
+        4 letters: <strong style="color:#7dd3fc">+75</strong> &middot;
+        5: <strong style="color:#7dd3fc">+150</strong> &middot;
+        6: <strong style="color:#7dd3fc">+300</strong> &middot;
+        7: <strong style="color:#7dd3fc">+500</strong> &middot;
+        8: <strong style="color:#7dd3fc">+800</strong> &middot;
+        9: <strong style="color:#7dd3fc">+1,200</strong> &middot;
+        10+: <strong style="color:#7dd3fc">up to +3,500</strong>
+      </p>
+    </div>
+    <p style="margin:12px 0 0;font-size:0.8rem;color:#64748b;text-align:center;">Full breakdown at <a href="https://wordtycoon.live/portal" style="color:#0ea5e9;">wordtycoon.live/portal</a> &rarr; Library &rarr; Scoring</p>
+  </section>
+
+  <section class="seo-section" aria-label="About erecTangled">
+    <h2>erecTangled for Squaredle players</h2>
+    <p>erecTangled sits in the same broad lane as <strong>Squaredle</strong>, but its hook is the expanding-ring board. Instead of treating the grid as fully revealed from the start, the puzzle opens outward and changes the way you scan, revisit, and prioritize paths.</p>
+    <div class="seo-grid">
+      <div class="seo-panel">
+        <h3>What makes it different</h3>
+        <p>The expanding layout creates phases inside one board, so the puzzle keeps changing as new rings appear and old assumptions stop being enough.</p>
+      </div>
+      <div class="seo-panel">
+        <h3>Why that matters</h3>
+        <p>It gives word-search players a reason to keep adapting instead of only sweeping the same visible surface from the opening second.</p>
+      </div>
+    </div>
+    <ul class="seo-list">
+      <li><strong>Squaredle alternative with a twist:</strong> still a swipe-based letter-grid puzzle, but the expanding-ring mechanic changes the rhythm of the hunt.</li>
+      <li><strong>Live rounds and rarity tiers:</strong> erecTangled adds more visible momentum for multiplayer and stream play.</li>
+      <li><strong>Better for players who want novelty:</strong> if standard static grids feel solved too early, the growing board keeps pressure on.</li>
+    </ul>
+  </section>
+  <script src="/pwa-install.js?v=1"></script>
+</body>
+</html>

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Color500">
+<title>Color 500 — crack the code</title>
+<meta name="description" content="Classic Mastermind played with colors. Crack the secret code — on the web or from TikTok chat.">
+<link rel="canonical" href="https://color500.com/">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta property="og:site_name" content="Color 500">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://color500.com/">
+<meta property="og:title" content="Color 500 — crack the code">
+<meta property="og:description" content="Classic Mastermind played with colors. Crack the secret code — on the web or from TikTok chat.">
+<meta property="og:image" content="https://color500.com/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Color 500 — classic Mastermind played with colors">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Color 500 — crack the code">
+<meta name="twitter:description" content="Classic Mastermind played with colors. Crack the secret code.">
+<meta name="twitter:image" content="https://color500.com/og-image.png">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"VideoGame","name":"Color 500","url":"https://color500.com/","description":"Classic Mastermind played with colors. Crack the secret code on the web or from TikTok chat.","genre":["Puzzle","Logic"],"gamePlatform":["Web browser"],"applicationCategory":"Game","operatingSystem":"Any","playMode":["SinglePlayer","MultiPlayer"],"publisher":{"@type":"Organization","name":"Word Tycoon","url":"https://wordtycoon.live/"},"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<!-- Asset paths are RELATIVE, not root-relative. This page is served both at
+     color500.com/ and proxied under wordtycoon.live/game/colour500/ — a
+     leading slash resolves to the hub root there and 404s, leaving the page
+     with no CSS or JS. The socket.io tag keeps its absolute path on purpose:
+     the hub rewrites that one itself. -->
+<!-- ?v= is a cache-buster, and it is NOT optional. Under the hub proxy these
+     assets are served with Cache-Control: max-age=14400, so a returning
+     visitor keeps stale CSS/JS for four hours after a deploy. The HTML itself
+     is max-age=0, so bumping this number is what actually ships a change.
+     BUMP BOTH ON EVERY FRONTEND DEPLOY. (Word 5000 does the same.) -->
+<link rel="stylesheet" href="app.css?v=14">
+<!-- Shared login modal, served by Chat Relay. Optional: app.js falls back to
+     an SSO redirect if this fails to load. Same source word5000 uses. -->
+<script src="https://wordtycoon.live/login-prompt.js" defer></script>
+</head>
+<body>
+
+<header class="top-chrome">
+  <div class="top-left">
+    <div class="title">COLOR<span class="title-500">500</span><span class="title-tld">.com</span></div>
+  </div>
+  <!-- POT and last-winner used to live here. They ate most of the right-hand
+       chrome on a phone and neither drives a decision the player makes, so both
+       were dropped. The pot still shows where it pays off — the win card, and
+       overlay.html's win strip on stream. -->
+  <div class="top-right">
+    <span id="hint-btn-wrap" style="margin-right:8px"></span>
+    <a class="chrome-pill mode-link" id="solo-link" href="solo">Solo</a>
+    <button class="icon-pill" id="help-btn" type="button" aria-label="How to play" title="How to play">?</button>
+    <button class="user-pill" id="user-pill" type="button">
+      <img class="user-pill-avatar" id="user-pill-avatar" alt="" style="display:none">
+      <span class="user-pill-name" id="user-pill-name">Guest</span>
+    </button>
+  </div>
+</header>
+
+<!-- The guess stack. Newest committed rows sit just above the active row;
+     older rows fall off the top so the shell never scrolls. -->
+<div id="guesses" aria-live="polite"></div>
+
+<!-- Docked palette — this is where word5000 puts its keyboard. -->
+<div id="palette" role="group" aria-label="Color palette"></div>
+
+<!-- Win UI is the shared Word Tycoon WinCard (win-card.js below) — the old
+     #overlay dialog was removed. The stylesheet's #overlay rules stay for
+     solo.html's loss card. -->
+
+<!-- How-to-play / chat instructions -->
+<div id="help-overlay" role="dialog" aria-modal="true">
+  <div class="card help-card">
+    <button class="help-close" id="help-close" type="button" aria-label="Close">&times;</button>
+    <h2>How to play</h2>
+
+    <p>Crack the secret color code. Everyone plays the same code — the first
+       to get it takes the pot.</p>
+
+    <!-- The "guessing from TikTok chat" section lived here. Everyone reading
+         this modal is already ON the site, where guesses are tapped from the
+         palette — the chat syntax was teaching a keyboard nobody in this
+         audience is holding. Chat players still guess exactly as before;
+         nothing server-side changed. -->
+    <h3>Making a guess</h3>
+    <p>Tap colors from the palette at the bottom to fill the row, then press
+       enter. <span class="mono">⌫</span> takes the last one back. On a
+       keyboard, the color's first letter works too.</p>
+
+    <h3>Reading the triangle</h3>
+    <div class="help-tri" id="help-triangle"></div>
+    <ul class="tri-legend">
+      <li><i class="sw-correct"></i> right color, <strong>right</strong> slot</li>
+      <li><i class="sw-present"></i> right color, <strong>wrong</strong> slot</li>
+      <li><i class="sw-absent"></i> not in the code at all</li>
+    </ul>
+    <p class="muted">It never tells you <em>which</em> slot — that's the whole
+       game. Colors can repeat in the secret.</p>
+  </div>
+</div>
+
+<!-- Shown when the streamer whose private round you're watching switches to a
+     different game, or ends their session. Never auto-navigates. -->
+<div id="session-redirect" role="dialog" aria-modal="true">
+  <div class="card">
+    <h2 id="sr-title">The streamer moved on</h2>
+    <p class="detail" id="sr-body">They're now playing <strong id="sr-game">another game</strong>.</p>
+    <div class="overlay-actions">
+      <a class="btn-primary" id="sr-follow" href="#">Follow streamer</a>
+      <a class="btn-ghost" href="/">Play the public game</a>
+    </div>
+  </div>
+</div>
+
+<footer class="legal">
+  <a href="https://wordtycoon.live/privacy" target="_blank" rel="noopener">Privacy</a> ·
+  <a href="https://wordtycoon.live/terms" target="_blank" rel="noopener">Terms</a> ·
+  <a href="https://discord.gg/C8Nm2jEZFC" target="_blank" rel="noopener">Discord</a> ·
+  <a href="https://www.jorry.live" target="_blank" rel="noopener">jorry.live</a> ·
+  <span>&copy; 2026 Word Tycoon</span>
+</footer>
+
+<script src="/socket.io/socket.io.js"></script>
+  <link rel="stylesheet" href="https://wordtycoon.live/portal/assets/badges/perk-badges.css?b3">
+  <script src="https://wordtycoon.live/portal/assets/badges/perk-badges.js?b3"></script>
+<script src="https://wordtycoon.live/js/win-card.js"></script>
+<script src="https://wordtycoon.live/js/hints.js?v=1"></script>
+<script src="ui.js?v=16-hints"></script>
+<script src="app.js?v=durable-mp-20261003-1"></script>
+</body>
+</html>

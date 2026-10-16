@@ -1,0 +1,568 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fan Club Ad Mockups</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #080a10;
+      --panel: #101723;
+      --text: #f4f8ff;
+      --muted: #94a3b8;
+      --cyan: #33f3ff;
+      --pink: #ff3f7f;
+      --violet: #9a7cff;
+      --gold: #ffd166;
+      --lime: #79ffb4;
+      --ink: #020308;
+      --line: rgba(255,255,255,0.13);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background:
+        radial-gradient(circle at 10% 0%, rgba(51,243,255,0.16), transparent 32%),
+        radial-gradient(circle at 86% 8%, rgba(255,63,127,0.14), transparent 30%),
+        linear-gradient(180deg, #0a0d15 0%, var(--bg) 100%);
+      color: var(--text);
+    }
+
+    .page {
+      max-width: 1480px;
+      margin: 0 auto;
+      padding: 28px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 18px;
+      margin-bottom: 22px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(28px, 4vw, 54px);
+      line-height: 0.95;
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+
+    .sub {
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      max-width: 760px;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    button {
+      appearance: none;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255,255,255,0.06);
+      color: var(--text);
+      padding: 9px 12px;
+      font: 700 12px/1 system-ui, sans-serif;
+      cursor: pointer;
+    }
+
+    button:hover { background: rgba(255,255,255,0.1); }
+
+    body.paused * {
+      animation-play-state: paused !important;
+      transition: none !important;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .card {
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.075), rgba(255,255,255,0.025));
+      overflow: hidden;
+      box-shadow: 0 18px 50px rgba(0,0,0,0.32);
+    }
+
+    .card-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      padding: 12px 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      background: rgba(0,0,0,0.22);
+    }
+
+    .card-title {
+      font-weight: 850;
+      font-size: 13px;
+      letter-spacing: 0;
+    }
+
+    .pill {
+      color: var(--muted);
+      font-size: 11px;
+      white-space: nowrap;
+    }
+
+    .stage {
+      position: relative;
+      height: 310px;
+      overflow: hidden;
+      background:
+        linear-gradient(135deg, rgba(255,255,255,0.04), transparent 36%),
+        radial-gradient(circle at 16% 20%, rgba(51,243,255,0.12), transparent 22%),
+        radial-gradient(circle at 88% 72%, rgba(255,63,127,0.11), transparent 24%),
+        #07090f;
+    }
+
+    .ad {
+      position: absolute;
+      inset: 24px;
+      display: grid;
+      place-items: center;
+      isolation: isolate;
+    }
+
+    .ad svg { display: block; width: 100%; height: 100%; overflow: visible; }
+    .base-shadow { filter: drop-shadow(0 18px 18px rgba(0,0,0,0.45)); }
+    .paint-word {
+      font-family: Impact, "Arial Black", Haettenschweiler, sans-serif;
+      font-weight: 900;
+      font-size: 66px;
+      letter-spacing: 0;
+      paint-order: stroke fill;
+      stroke: #020308;
+      stroke-width: 12px;
+      stroke-linejoin: round;
+      text-transform: uppercase;
+    }
+    .club-word {
+      font-family: Impact, "Arial Black", Haettenschweiler, sans-serif;
+      font-weight: 900;
+      font-size: 38px;
+      letter-spacing: 0;
+      paint-order: stroke fill;
+      stroke: #020308;
+      stroke-width: 9px;
+      stroke-linejoin: round;
+      text-transform: uppercase;
+    }
+
+    .arrow-body { fill: #020308; stroke: #020308; stroke-width: 22; stroke-linejoin: round; }
+    .arrow-edge { fill: none; stroke-width: 12; stroke-linejoin: round; stroke-linecap: round; }
+    .banner-edge { fill: none; stroke-width: 9; stroke-linejoin: round; stroke-linecap: round; }
+
+    .spark, .dot, .drip, .slash {
+      position: absolute;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .spark {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: var(--cyan);
+      box-shadow: 0 0 14px var(--cyan);
+    }
+
+    .dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 999px;
+      background: var(--pink);
+      box-shadow: 0 0 12px var(--pink);
+    }
+
+    .drip {
+      width: 7px;
+      height: 38px;
+      border-radius: 999px;
+      background: linear-gradient(var(--pink), rgba(255,63,127,0));
+      filter: blur(0.2px);
+    }
+
+    .slash {
+      width: 84px;
+      height: 5px;
+      border-radius: 999px;
+      background: var(--cyan);
+      box-shadow: 0 0 16px var(--cyan);
+    }
+
+    .v1 .arrow-edge { stroke: url(#grad-neon); animation: dashFlow 2.7s linear infinite; stroke-dasharray: 120 34; }
+    .v1 .banner-edge { stroke: url(#grad-neon); animation: breathe 2.2s ease-in-out infinite; }
+    .v1 .paint-word, .v1 .club-word { fill: url(#text-neon); animation: neonText 1.8s ease-in-out infinite; }
+    .v1 .ad { animation: floatSoft 4s ease-in-out infinite; }
+
+    .v2 .ad { transform: rotate(-2deg); animation: stickerPop 2.6s cubic-bezier(.2,1.4,.25,1) infinite; }
+    .v2 .arrow-edge, .v2 .banner-edge { stroke: url(#grad-spray); }
+    .v2 .paint-word { font-size: 104px; fill: url(#text-spray); transform: rotate(-5deg); transform-origin: center; }
+    .v2 .club-word { fill: url(#text-spray); }
+    .v2 .drip { animation: dripDrop 2.8s ease-in infinite; }
+
+    .v3 .stage {
+      background:
+        linear-gradient(rgba(51,243,255,0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(51,243,255,0.05) 1px, transparent 1px),
+        #04080d;
+      background-size: 34px 34px;
+    }
+    .v3 .ad { filter: drop-shadow(0 0 18px rgba(51,243,255,0.35)); }
+    .v3 .arrow-body { fill: rgba(2,3,8,0.82); stroke: rgba(51,243,255,0.25); }
+    .v3 .arrow-edge, .v3 .banner-edge { stroke: rgba(51,243,255,0.78); }
+    .v3 .paint-word, .v3 .club-word { fill: rgba(191,253,255,0.94); animation: holoFlicker 3s steps(2,end) infinite; }
+    .v3 .scan { animation: scanDown 2.8s linear infinite; }
+
+    .v4 .stage { background: radial-gradient(circle at 50% 50%, rgba(154,124,255,0.14), transparent 38%), #050509; }
+    .v4 .arrow-edge, .v4 .banner-edge { stroke: url(#grad-electric); filter: url(#glow); animation: electricPulse 1.3s steps(2,end) infinite; }
+    .v4 .paint-word, .v4 .club-word { fill: url(#text-electric); }
+    .v4 .bolt { animation: boltFlash 1.1s steps(1,end) infinite; opacity: 0; }
+
+    .v5 .ad { animation: bounceIn 3.4s ease-in-out infinite; }
+    .v5 .arrow-body { fill: #f7fbff; stroke: #05070d; stroke-width: 16; }
+    .v5 .arrow-edge, .v5 .banner-edge { stroke: #05070d; }
+    .v5 .paint-word, .v5 .club-word { fill: url(#text-sticker); stroke: #05070d; }
+    .v5 .sticker-shadow { animation: shadowPulse 3.4s ease-in-out infinite; }
+
+    .v6 .stage { background: radial-gradient(circle at center, rgba(255,209,102,0.16), transparent 42%), #090806; }
+    .v6 .ring { animation: orbitSpin 4s linear infinite; transform-origin: 390px 150px; }
+    .v6 .arrow-edge, .v6 .banner-edge { stroke: url(#grad-gold); }
+    .v6 .paint-word { fill: url(#text-gold); animation: countPulse 1.5s ease-in-out infinite; }
+    .v6 .club-word { fill: #fff6cf; }
+
+    .v7 .spray { animation: spraySweep 2.8s ease-in-out infinite; opacity: 0.45; }
+    .v7 .arrow-edge, .v7 .banner-edge { stroke: url(#grad-spray2); animation: dashFlow 3.2s linear infinite; stroke-dasharray: 70 42; }
+    .v7 .paint-word, .v7 .club-word { fill: url(#text-spray2); }
+    .v7 .dot { animation: driftDot 4s ease-in-out infinite; }
+
+    .v8 .ad { animation: glitchMove 1.8s steps(2,end) infinite; }
+    .v8 .arrow-edge, .v8 .banner-edge { stroke: url(#grad-glitch); }
+    .v8 .paint-word, .v8 .club-word { fill: #fff; }
+    .v8 .ghost-cyan, .v8 .ghost-pink { mix-blend-mode: screen; opacity: 0.7; animation: glitchText 1s steps(2,end) infinite; }
+    .v8 .ghost-pink { animation-delay: .08s; }
+
+    .v9 .stage { background: radial-gradient(circle at 18% 22%, rgba(121,255,180,0.12), transparent 24%), #040809; }
+    .v9 .arrow-edge, .v9 .banner-edge { stroke: url(#grad-liquid); filter: url(#gooGlow); }
+    .v9 .paint-word, .v9 .club-word { fill: url(#text-liquid); animation: chromeShift 2.4s ease-in-out infinite; }
+    .v9 .bubble { animation: bubbleRise 4s ease-in-out infinite; }
+
+    .v10 .ad { inset: 74px 34px 58px; }
+    .v10 .stage { background: linear-gradient(180deg, #05070d, #0a101b); }
+    .v10 .arrow-edge, .v10 .banner-edge { stroke: url(#grad-lower); }
+    .v10 .paint-word { font-size: 62px; fill: url(#text-lower); }
+    .v10 .club-word { font-size: 30px; fill: #ebf8ff; }
+    .v10 .ticker { animation: tickerGlow 2.5s ease-in-out infinite; }
+    .v10 .chev { animation: chevronRun 1.2s ease-in-out infinite; }
+
+    @keyframes dashFlow { to { stroke-dashoffset: -154; } }
+    @keyframes breathe { 50% { filter: drop-shadow(0 0 18px rgba(51,243,255,0.95)); } }
+    @keyframes neonText { 50% { filter: drop-shadow(0 0 16px rgba(255,63,127,0.8)); } }
+    @keyframes floatSoft { 50% { transform: translateY(-7px); } }
+    @keyframes stickerPop { 0%,100% { transform: rotate(-2deg) scale(1); } 50% { transform: rotate(1deg) scale(1.035); } }
+    @keyframes dripDrop { 0% { transform: translateY(-8px); opacity: 0; } 30%,70% { opacity: 1; } 100% { transform: translateY(20px); opacity: 0; } }
+    @keyframes scanDown { from { transform: translateY(-130%); } to { transform: translateY(130%); } }
+    @keyframes holoFlicker { 0%,100% { opacity: 1; } 45% { opacity: .72; } 48% { opacity: 1; } }
+    @keyframes electricPulse { 50% { stroke-width: 16; } }
+    @keyframes boltFlash { 0%,35%,100% { opacity: 0; } 36%,42% { opacity: 1; } }
+    @keyframes bounceIn { 0%,100% { transform: translateY(0) scale(1); } 45% { transform: translateY(-10px) scale(1.025); } 55% { transform: translateY(2px) scale(0.99); } }
+    @keyframes shadowPulse { 50% { opacity: .72; transform: scale(1.02); } }
+    @keyframes orbitSpin { to { transform: rotate(360deg); } }
+    @keyframes countPulse { 50% { transform: scale(1.035); } }
+    @keyframes spraySweep { 0% { transform: translateX(-35%); opacity: .05; } 40%,65% { opacity: .5; } 100% { transform: translateX(35%); opacity: .05; } }
+    @keyframes driftDot { 50% { transform: translate(14px, -12px) scale(1.5); } }
+    @keyframes glitchMove { 45% { transform: translate(0,0); } 46% { transform: translate(-5px,2px); } 47% { transform: translate(5px,-1px); } 48% { transform: translate(0,0); } }
+    @keyframes glitchText { 0%,100% { transform: translate(0,0); } 30% { transform: translate(6px,-2px); } 60% { transform: translate(-5px,1px); } }
+    @keyframes chromeShift { 50% { filter: hue-rotate(28deg) brightness(1.2); } }
+    @keyframes bubbleRise { 0% { transform: translateY(40px) scale(.6); opacity: 0; } 35%,70% { opacity: .8; } 100% { transform: translateY(-40px) scale(1.15); opacity: 0; } }
+    @keyframes tickerGlow { 50% { filter: drop-shadow(0 0 22px rgba(51,243,255,.75)); } }
+    @keyframes chevronRun { 50% { transform: translateX(8px); opacity: .55; } }
+
+    @media (max-width: 980px) {
+      .grid { grid-template-columns: 1fr; }
+      header { align-items: flex-start; flex-direction: column; }
+      .toolbar { justify-content: flex-start; }
+      .stage { height: 270px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <div>
+        <h1>Fan Club Ad Mockups</h1>
+        <p class="sub">Ten animated directions for the streamer widget. These are style prototypes, not the final production widget yet.</p>
+      </div>
+      <div class="toolbar">
+        <button type="button" id="pause-btn">Pause Animations</button>
+      </div>
+    </header>
+
+    <svg width="0" height="0" aria-hidden="true" focusable="false">
+      <defs>
+        <linearGradient id="grad-neon" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#ff3f7f"/>
+          <stop offset="48%" stop-color="#33f3ff"/>
+          <stop offset="100%" stop-color="#9a7cff"/>
+        </linearGradient>
+        <linearGradient id="text-neon" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#48fbff"/>
+          <stop offset="55%" stop-color="#c9b6ff"/>
+          <stop offset="100%" stop-color="#ff3f7f"/>
+        </linearGradient>
+        <linearGradient id="grad-spray" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#32f2ff"/>
+          <stop offset="100%" stop-color="#ff3f7f"/>
+        </linearGradient>
+        <linearGradient id="text-spray" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#55fbff"/>
+          <stop offset="100%" stop-color="#ff2f73"/>
+        </linearGradient>
+        <linearGradient id="grad-electric" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#33f3ff"/>
+          <stop offset="45%" stop-color="#ffffff"/>
+          <stop offset="100%" stop-color="#9a7cff"/>
+        </linearGradient>
+        <linearGradient id="text-electric" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#e9fbff"/>
+          <stop offset="100%" stop-color="#8b6cff"/>
+        </linearGradient>
+        <linearGradient id="text-sticker" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#33f3ff"/>
+          <stop offset="100%" stop-color="#ff3f7f"/>
+        </linearGradient>
+        <linearGradient id="grad-gold" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#ffd166"/>
+          <stop offset="50%" stop-color="#fff6c7"/>
+          <stop offset="100%" stop-color="#ff3f7f"/>
+        </linearGradient>
+        <linearGradient id="text-gold" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#fff6c7"/>
+          <stop offset="100%" stop-color="#ffd166"/>
+        </linearGradient>
+        <linearGradient id="grad-spray2" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#79ffb4"/>
+          <stop offset="52%" stop-color="#33f3ff"/>
+          <stop offset="100%" stop-color="#ff3f7f"/>
+        </linearGradient>
+        <linearGradient id="text-spray2" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#79ffb4"/>
+          <stop offset="100%" stop-color="#33f3ff"/>
+        </linearGradient>
+        <linearGradient id="grad-glitch" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#ff3f7f"/>
+          <stop offset="50%" stop-color="#ffffff"/>
+          <stop offset="100%" stop-color="#33f3ff"/>
+        </linearGradient>
+        <linearGradient id="grad-liquid" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#79ffb4"/>
+          <stop offset="50%" stop-color="#33f3ff"/>
+          <stop offset="100%" stop-color="#9a7cff"/>
+        </linearGradient>
+        <linearGradient id="text-liquid" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#ecfff6"/>
+          <stop offset="40%" stop-color="#79ffb4"/>
+          <stop offset="100%" stop-color="#33f3ff"/>
+        </linearGradient>
+        <linearGradient id="grad-lower" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#33f3ff"/>
+          <stop offset="100%" stop-color="#ff3f7f"/>
+        </linearGradient>
+        <linearGradient id="text-lower" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#ffffff"/>
+          <stop offset="100%" stop-color="#33f3ff"/>
+        </linearGradient>
+        <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+          <feGaussianBlur stdDeviation="4" result="blur"/>
+          <feMerge>
+            <feMergeNode in="blur"/>
+            <feMergeNode in="SourceGraphic"/>
+          </feMerge>
+        </filter>
+        <filter id="gooGlow" x="-40%" y="-40%" width="180%" height="180%">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur"/>
+          <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7" result="goo"/>
+          <feMerge>
+            <feMergeNode in="goo"/>
+            <feMergeNode in="SourceGraphic"/>
+          </feMerge>
+        </filter>
+      </defs>
+    </svg>
+
+    <main class="grid">
+      <section class="card v1">
+        <div class="card-head"><span class="card-title">1. Neon Arrow Lower Third</span><span class="pill">pulse + edge chase</span></div>
+        <div class="stage"><div class="ad">
+          <svg viewBox="0 0 780 300" role="img" aria-label="Join the fan club neon arrow mockup">
+            <path class="arrow-body base-shadow" d="M72 250V126H35L148 30l113 96h-38v62h488q26 0 26 26v36q0 26-26 26H98q-26 0-26-26Z"/>
+            <path class="arrow-edge" d="M72 250V126H35L148 30l113 96h-38v62h488q26 0 26 26v36q0 26-26 26H98q-26 0-26-26Z"/>
+            <path class="banner-edge" d="M224 188h487q26 0 26 26v36q0 26-26 26H98q-26 0-26-26v-4"/>
+            <text class="club-word" x="420" y="245" text-anchor="middle">Join The Fan Club</text>
+          </svg>
+        </div></div>
+      </section>
+
+      <section class="card v2">
+        <div class="card-head"><span class="card-title">2. Graffiti Pop Join</span><span class="pill">paint drips + bounce</span></div>
+        <div class="stage">
+          <span class="drip" style="left:18%;bottom:24px"></span><span class="drip" style="left:73%;bottom:22px;animation-delay:.6s"></span>
+          <div class="ad">
+            <svg viewBox="0 0 780 300" role="img" aria-label="Graffiti join fan club mockup">
+              <path class="arrow-body base-shadow" d="M76 254V126H36L152 28l116 98h-40v62h480q28 0 28 28v38q0 28-28 28H104q-28 0-28-28Z"/>
+              <path class="arrow-edge" d="M76 254V126H36L152 28l116 98h-40v62h480q28 0 28 28v38q0 28-28 28H104q-28 0-28-28Z"/>
+              <text class="paint-word" x="360" y="167" text-anchor="middle">Join</text>
+              <text class="club-word" x="430" y="246" text-anchor="middle">Join The Fan Club</text>
+            </svg>
+          </div>
+        </div>
+      </section>
+
+      <section class="card v3">
+        <div class="card-head"><span class="card-title">3. Hologram Sign</span><span class="pill">scanline + flicker</span></div>
+        <div class="stage">
+          <div class="scan" style="position:absolute;left:0;right:0;top:0;height:90px;background:linear-gradient(180deg,transparent,rgba(51,243,255,.25),transparent);"></div>
+          <div class="ad">
+            <svg viewBox="0 0 780 300" role="img" aria-label="Hologram fan club ad mockup">
+              <path class="arrow-body base-shadow" d="M72 250V126H35L148 30l113 96h-38v62h488q26 0 26 26v36q0 26-26 26H98q-26 0-26-26Z"/>
+              <path class="arrow-edge" d="M72 250V126H35L148 30l113 96h-38v62h488q26 0 26 26v36q0 26-26 26H98q-26 0-26-26Z"/>
+              <text class="paint-word" x="420" y="175" text-anchor="middle">Join</text>
+              <text class="club-word" x="420" y="246" text-anchor="middle">The Fan Club</text>
+            </svg>
+          </div>
+        </div>
+      </section>
+
+      <section class="card v4">
+        <div class="card-head"><span class="card-title">4. Electric Club</span><span class="pill">lightning flashes</span></div>
+        <div class="stage"><div class="ad">
+          <svg viewBox="0 0 780 300" role="img" aria-label="Electric fan club ad mockup">
+            <path class="arrow-body base-shadow" d="M72 250V126H35L148 30l113 96h-38v62h488q26 0 26 26v36q0 26-26 26H98q-26 0-26-26Z"/>
+            <path class="arrow-edge" d="M72 250V126H35L148 30l113 96h-38v62h488q26 0 26 26v36q0 26-26 26H98q-26 0-26-26Z"/>
+            <path class="bolt" d="M94 105 135 63 122 118 169 101 119 162 134 118Z" fill="#fff"/>
+            <path class="bolt" d="M618 184 646 151 641 190 685 178 633 233 649 194Z" fill="#33f3ff" style="animation-delay:.34s"/>
+            <text class="paint-word" x="405" y="172" text-anchor="middle">Join</text>
+            <text class="club-word" x="420" y="246" text-anchor="middle">The Fan Club</text>
+          </svg>
+        </div></div>
+      </section>
+
+      <section class="card v5">
+        <div class="card-head"><span class="card-title">5. Sticker Slap</span><span class="pill">pop-in sticker</span></div>
+        <div class="stage"><div class="ad">
+          <svg viewBox="0 0 780 300" role="img" aria-label="Sticker fan club ad mockup">
+            <ellipse class="sticker-shadow" cx="390" cy="266" rx="306" ry="26" fill="rgba(0,0,0,.42)"/>
+            <path class="arrow-body base-shadow" d="M76 254V126H36L152 28l116 98h-40v62h480q28 0 28 28v38q0 28-28 28H104q-28 0-28-28Z"/>
+            <path class="arrow-edge" d="M76 254V126H36L152 28l116 98h-40v62h480q28 0 28 28v38q0 28-28 28H104q-28 0-28-28Z"/>
+            <text class="paint-word" x="410" y="172" text-anchor="middle">Join</text>
+            <text class="club-word" x="420" y="246" text-anchor="middle">The Fan Club</text>
+          </svg>
+        </div></div>
+      </section>
+
+      <section class="card v6">
+        <div class="card-head"><span class="card-title">6. VIP Halo</span><span class="pill">gold orbit + pulse</span></div>
+        <div class="stage"><div class="ad">
+          <svg viewBox="0 0 780 300" role="img" aria-label="VIP halo fan club ad mockup">
+            <g class="ring" opacity=".55">
+              <ellipse cx="390" cy="150" rx="316" ry="98" fill="none" stroke="#ffd166" stroke-width="3" stroke-dasharray="20 18"/>
+              <ellipse cx="390" cy="150" rx="275" ry="74" fill="none" stroke="#ff3f7f" stroke-width="2" stroke-dasharray="8 20"/>
+            </g>
+            <path class="arrow-body base-shadow" d="M72 250V126H35L148 30l113 96h-38v62h488q26 0 26 26v36q0 26-26 26H98q-26 0-26-26Z"/>
+            <path class="arrow-edge" d="M72 250V126H35L148 30l113 96h-38v62h488q26 0 26 26v36q0 26-26 26H98q-26 0-26-26Z"/>
+            <text class="paint-word" x="400" y="172" text-anchor="middle">VIP</text>
+            <text class="club-word" x="420" y="246" text-anchor="middle">Join The Fan Club</text>
+          </svg>
+        </div></div>
+      </section>
+
+      <section class="card v7">
+        <div class="card-head"><span class="card-title">7. Spray Sweep</span><span class="pill">paint cloud reveal</span></div>
+        <div class="stage">
+          <div class="spray" style="position:absolute;inset:20px;background:radial-gradient(circle at 30% 50%,rgba(51,243,255,.5),transparent 20%),radial-gradient(circle at 60% 48%,rgba(255,63,127,.45),transparent 22%);filter:blur(18px);"></div>
+          <span class="dot" style="left:20%;top:30%"></span><span class="dot" style="left:66%;top:68%;animation-delay:.5s"></span>
+          <div class="ad">
+            <svg viewBox="0 0 780 300" role="img" aria-label="Spray sweep fan club ad mockup">
+              <path class="arrow-body base-shadow" d="M72 250V126H35L148 30l113 96h-38v62h488q26 0 26 26v36q0 26-26 26H98q-26 0-26-26Z"/>
+              <path class="arrow-edge" d="M72 250V126H35L148 30l113 96h-38v62h488q26 0 26 26v36q0 26-26 26H98q-26 0-26-26Z"/>
+              <text class="paint-word" x="420" y="172" text-anchor="middle">Join</text>
+              <text class="club-word" x="420" y="246" text-anchor="middle">The Fan Club</text>
+            </svg>
+          </div>
+        </div>
+      </section>
+
+      <section class="card v8">
+        <div class="card-head"><span class="card-title">8. RGB Glitch</span><span class="pill">chromatic split</span></div>
+        <div class="stage"><div class="ad">
+          <svg viewBox="0 0 780 300" role="img" aria-label="Glitch fan club ad mockup">
+            <path class="arrow-body base-shadow" d="M72 250V126H35L148 30l113 96h-38v62h488q26 0 26 26v36q0 26-26 26H98q-26 0-26-26Z"/>
+            <path class="arrow-edge" d="M72 250V126H35L148 30l113 96h-38v62h488q26 0 26 26v36q0 26-26 26H98q-26 0-26-26Z"/>
+            <text class="paint-word ghost-cyan" x="414" y="172" text-anchor="middle" fill="#33f3ff">Join</text>
+            <text class="paint-word ghost-pink" x="426" y="172" text-anchor="middle" fill="#ff3f7f">Join</text>
+            <text class="paint-word" x="420" y="172" text-anchor="middle">Join</text>
+            <text class="club-word" x="420" y="246" text-anchor="middle">The Fan Club</text>
+          </svg>
+        </div></div>
+      </section>
+
+      <section class="card v9">
+        <div class="card-head"><span class="card-title">9. Liquid Chrome</span><span class="pill">bubbles + glossy hue</span></div>
+        <div class="stage">
+          <span class="spark bubble" style="left:18%;bottom:36px"></span><span class="spark bubble" style="left:84%;bottom:58px;animation-delay:.8s"></span>
+          <div class="ad">
+            <svg viewBox="0 0 780 300" role="img" aria-label="Liquid chrome fan club ad mockup">
+              <path class="arrow-body base-shadow" d="M72 250V126H35L148 30l113 96h-38v62h488q26 0 26 26v36q0 26-26 26H98q-26 0-26-26Z"/>
+              <path class="arrow-edge" d="M72 250V126H35L148 30l113 96h-38v62h488q26 0 26 26v36q0 26-26 26H98q-26 0-26-26Z"/>
+              <text class="paint-word" x="420" y="172" text-anchor="middle">Join</text>
+              <text class="club-word" x="420" y="246" text-anchor="middle">The Fan Club</text>
+            </svg>
+          </div>
+        </div>
+      </section>
+
+      <section class="card v10">
+        <div class="card-head"><span class="card-title">10. Compact Stream Bar</span><span class="pill">lower-third ticker</span></div>
+        <div class="stage"><div class="ad ticker">
+          <svg viewBox="0 0 780 220" role="img" aria-label="Compact fan club lower third mockup">
+            <path class="arrow-body base-shadow" d="M78 170V88H48L132 24l84 64h-31v40h512q22 0 22 22v30q0 22-22 22H100q-22 0-22-22Z"/>
+            <path class="arrow-edge" d="M78 170V88H48L132 24l84 64h-31v40h512q22 0 22 22v30q0 22-22 22H100q-22 0-22-22Z"/>
+            <text class="paint-word" x="375" y="157" text-anchor="middle">Join The Fan Club</text>
+            <g class="chev" fill="#33f3ff">
+              <path d="M650 144h18l20 18-20 18h-18l20-18Z"/>
+              <path d="M690 144h18l20 18-20 18h-18l20-18Z"/>
+            </g>
+          </svg>
+        </div></div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const pauseBtn = document.getElementById('pause-btn');
+    pauseBtn.addEventListener('click', () => {
+      document.body.classList.toggle('paused');
+      pauseBtn.textContent = document.body.classList.contains('paused') ? 'Resume Animations' : 'Pause Animations';
+    });
+  </script>
+</body>
+</html>

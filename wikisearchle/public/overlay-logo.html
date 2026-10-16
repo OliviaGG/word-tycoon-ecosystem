@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en" data-brand="wikicontexto">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WikiContexto — Logo Overlay</title>
+
+<script>
+</script>
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* Adaptive size — body shrinks to fit the logo bubble. OBS browser source
+   should be set to "Custom CSS" off and "Use custom frame rate" off; size
+   the source to whatever you want — the logo sits top-left and transparent
+   space fills the rest. */
+html, body {
+  background: transparent;
+  width: max-content;
+  height: max-content;
+  overflow: hidden;
+  font-family: 'Orbitron', system-ui, sans-serif;
+}
+
+.brand-bubble {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: baseline;
+  justify-content: center;
+  gap: 6px;
+  background: linear-gradient(to bottom, rgba(15,17,23,0.5) 0%, rgba(15,17,23,1) 100%);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-bottom: none;
+  border-radius: 16px 16px 0 0;
+  padding: 5px 18px 0;
+}
+
+.brand-img {
+  display: block;
+  max-height: 58px;
+  width: auto;
+}
+
+/* Fallback text-only brand if image fails. */
+.brand {
+  font-weight: 700;
+  font-size: 32px;
+  color: #ff6600;
+  letter-spacing: 1px;
+  padding: 6px 4px 4px;
+}
+.brand span {
+  color: #e2e8f0;
+  opacity: 0.55;
+}
+</style>
+</head>
+<body>
+  <div class="brand-bubble">
+    <img src="/wikicontexto-brand-web.png" alt="WikiContexto" class="brand-img"
+         onerror="this.outerHTML='&lt;div class=&quot;brand&quot;&gt;Wiki&lt;span&gt;Contexto&lt;/span&gt;&lt;/div&gt;';">
+  </div>
+</body>
+</html>

@@ -1,0 +1,1070 @@
+{
+  "wc_crimson": {
+    "name": "Crimson",
+    "category": "word_color",
+    "rarity": "common",
+    "preview": "previews/wc_crimson.png"
+  },
+  "wc_ocean": {
+    "name": "Ocean Blue",
+    "category": "word_color",
+    "rarity": "common",
+    "preview": "previews/wc_ocean.png"
+  },
+  "wc_forest": {
+    "name": "Forest Green",
+    "category": "word_color",
+    "rarity": "common",
+    "preview": "previews/wc_forest.png"
+  },
+  "wc_snow": {
+    "name": "Snow White",
+    "category": "word_color",
+    "rarity": "common",
+    "preview": "previews/wc_snow.png"
+  },
+  "wc_amber": {
+    "name": "Amber",
+    "category": "word_color",
+    "rarity": "uncommon",
+    "preview": "previews/wc_amber.png"
+  },
+  "wc_violet": {
+    "name": "Violet",
+    "category": "word_color",
+    "rarity": "uncommon",
+    "preview": "previews/wc_violet.png"
+  },
+  "wc_coral": {
+    "name": "Coral Pink",
+    "category": "word_color",
+    "rarity": "uncommon",
+    "preview": "previews/wc_coral.png"
+  },
+  "wc_teal": {
+    "name": "Teal",
+    "category": "word_color",
+    "rarity": "uncommon",
+    "preview": "previews/wc_teal.png"
+  },
+  "wc_blood": {
+    "name": "Blood Red",
+    "category": "word_color",
+    "rarity": "rare",
+    "preview": "previews/wc_blood.png"
+  },
+  "wc_ice": {
+    "name": "Frozen Ice",
+    "category": "word_color",
+    "rarity": "rare",
+    "preview": "previews/wc_ice.png"
+  },
+  "wc_electric": {
+    "name": "Electric",
+    "category": "word_color",
+    "rarity": "rare",
+    "preview": "previews/wc_electric.png"
+  },
+  "wc_neon_green": {
+    "name": "Neon Green",
+    "category": "word_color",
+    "rarity": "epic",
+    "preview": "previews/wc_neon_green.png"
+  },
+  "wc_flame": {
+    "name": "Living Flame",
+    "category": "word_color",
+    "rarity": "epic",
+    "preview": "previews/wc_flame.png"
+  },
+  "wc_white_hot": {
+    "name": "White Hot",
+    "category": "word_color",
+    "rarity": "epic",
+    "preview": "previews/wc_white_hot.png"
+  },
+  "wc_shadow": {
+    "name": "Shadow",
+    "category": "word_color",
+    "rarity": "legendary",
+    "preview": "previews/wc_shadow.png"
+  },
+  "wc_prismatic": {
+    "name": "Prismatic",
+    "category": "word_color",
+    "rarity": "legendary",
+    "preview": "previews/wc_prismatic.png"
+  },
+  "wc_glitch": {
+    "name": "Glitch",
+    "category": "word_color",
+    "rarity": "ultra",
+    "preview": "previews/wc_glitch.png"
+  },
+  "wc_void": {
+    "name": "Void Black",
+    "category": "word_color",
+    "rarity": "ultra",
+    "preview": "previews/wc_void.png"
+  },
+  "wg_soft": {
+    "name": "Soft Glow",
+    "category": "word_glow",
+    "rarity": "common",
+    "preview": "previews/wg_soft.png"
+  },
+  "wg_warm": {
+    "name": "Warm Glow",
+    "category": "word_glow",
+    "rarity": "common",
+    "preview": "previews/wg_warm.png"
+  },
+  "wg_electric": {
+    "name": "Electric Blue",
+    "category": "word_glow",
+    "rarity": "uncommon",
+    "preview": "previews/wg_electric.png"
+  },
+  "wg_toxic": {
+    "name": "Toxic Green",
+    "category": "word_glow",
+    "rarity": "uncommon",
+    "preview": "previews/wg_toxic.png"
+  },
+  "wg_frost": {
+    "name": "Frostbite",
+    "category": "word_glow",
+    "rarity": "rare",
+    "preview": "previews/wg_frost.png"
+  },
+  "wg_fire": {
+    "name": "Firestorm",
+    "category": "word_glow",
+    "rarity": "rare",
+    "preview": "previews/wg_fire.png"
+  },
+  "wg_bloodmoon": {
+    "name": "Blood Moon",
+    "category": "word_glow",
+    "rarity": "epic",
+    "preview": "previews/wg_bloodmoon.png"
+  },
+  "wg_galaxy": {
+    "name": "Galaxy",
+    "category": "word_glow",
+    "rarity": "epic",
+    "preview": "previews/wg_galaxy.png"
+  },
+  "wg_aurora": {
+    "name": "Aurora",
+    "category": "word_glow",
+    "rarity": "legendary",
+    "preview": "previews/wg_aurora.png"
+  },
+  "wg_golden": {
+    "name": "Golden Radiance",
+    "category": "word_glow",
+    "rarity": "legendary",
+    "preview": "previews/wg_golden.png"
+  },
+  "wg_void": {
+    "name": "Void Pulse",
+    "category": "word_glow",
+    "rarity": "ultra",
+    "preview": "previews/wg_void.png"
+  },
+  "wg_divine": {
+    "name": "Divine Light",
+    "category": "word_glow",
+    "rarity": "ultra",
+    "preview": "previews/wg_divine.png"
+  },
+  "pb_bronze": {
+    "name": "Bronze Ring",
+    "category": "profile_border",
+    "rarity": "common",
+    "preview": "previews/pb_bronze.png"
+  },
+  "pb_silver": {
+    "name": "Silver Ring",
+    "category": "profile_border",
+    "rarity": "common",
+    "preview": "previews/pb_silver.png"
+  },
+  "pb_gold": {
+    "name": "Gold Ring",
+    "category": "profile_border",
+    "rarity": "uncommon",
+    "preview": "previews/pb_gold.png"
+  },
+  "pb_rose_gold": {
+    "name": "Rose Gold",
+    "category": "profile_border",
+    "rarity": "uncommon",
+    "preview": "previews/pb_rose_gold.png"
+  },
+  "pb_emerald": {
+    "name": "Emerald Ring",
+    "category": "profile_border",
+    "rarity": "rare",
+    "preview": "previews/pb_emerald.png"
+  },
+  "pb_sapphire": {
+    "name": "Sapphire Ring",
+    "category": "profile_border",
+    "rarity": "rare",
+    "preview": "previews/pb_sapphire.png"
+  },
+  "pb_ruby": {
+    "name": "Ruby Ring",
+    "category": "profile_border",
+    "rarity": "rare",
+    "preview": "previews/pb_ruby.png"
+  },
+  "pb_diamond": {
+    "name": "Diamond Ring",
+    "category": "profile_border",
+    "rarity": "epic",
+    "preview": "previews/pb_diamond.png"
+  },
+  "pb_neon_pink": {
+    "name": "Neon Pink",
+    "category": "profile_border",
+    "rarity": "epic",
+    "preview": "previews/pb_neon_pink.png"
+  },
+  "pb_plasma": {
+    "name": "Plasma",
+    "category": "profile_border",
+    "rarity": "epic",
+    "preview": "previews/pb_plasma.png"
+  },
+  "pb_rainbow": {
+    "name": "Rainbow",
+    "category": "profile_border",
+    "rarity": "legendary",
+    "preview": "previews/pb_rainbow.png"
+  },
+  "pb_void_ring": {
+    "name": "Void Ring",
+    "category": "profile_border",
+    "rarity": "legendary",
+    "preview": "previews/pb_void_ring.png"
+  },
+  "pb_inferno": {
+    "name": "Inferno",
+    "category": "profile_border",
+    "rarity": "ultra",
+    "preview": "previews/pb_inferno.png"
+  },
+  "pb_celestial": {
+    "name": "Celestial",
+    "category": "profile_border",
+    "rarity": "ultra",
+    "preview": "previews/pb_celestial.png"
+  },
+  "pg_soft_white": {
+    "name": "Soft White",
+    "category": "profile_glow",
+    "rarity": "common",
+    "preview": "previews/pg_soft_white.png"
+  },
+  "pg_blue_aura": {
+    "name": "Blue Aura",
+    "category": "profile_glow",
+    "rarity": "uncommon",
+    "preview": "previews/pg_blue_aura.png"
+  },
+  "pg_green_aura": {
+    "name": "Green Aura",
+    "category": "profile_glow",
+    "rarity": "uncommon",
+    "preview": "previews/pg_green_aura.png"
+  },
+  "pg_red_aura": {
+    "name": "Red Aura",
+    "category": "profile_glow",
+    "rarity": "uncommon",
+    "preview": "previews/pg_red_aura.png"
+  },
+  "pg_pink_aura": {
+    "name": "Pink Aura",
+    "category": "profile_glow",
+    "rarity": "rare",
+    "preview": "previews/pg_pink_aura.png"
+  },
+  "pg_purple_aura": {
+    "name": "Purple Aura",
+    "category": "profile_glow",
+    "rarity": "rare",
+    "preview": "previews/pg_purple_aura.png"
+  },
+  "pg_golden_aura": {
+    "name": "Golden Aura",
+    "category": "profile_glow",
+    "rarity": "epic",
+    "preview": "previews/pg_golden_aura.png"
+  },
+  "pg_electric": {
+    "name": "Electric Aura",
+    "category": "profile_glow",
+    "rarity": "epic",
+    "preview": "previews/pg_electric.png"
+  },
+  "pg_void_aura": {
+    "name": "Void Aura",
+    "category": "profile_glow",
+    "rarity": "legendary",
+    "preview": "previews/pg_void_aura.png"
+  },
+  "pg_supernova": {
+    "name": "Supernova",
+    "category": "profile_glow",
+    "rarity": "legendary",
+    "preview": "previews/pg_supernova.png"
+  },
+  "pg_cosmic": {
+    "name": "Cosmic",
+    "category": "profile_glow",
+    "rarity": "ultra",
+    "preview": "previews/pg_cosmic.png"
+  },
+  "ng_soft": {
+    "name": "Soft Glow",
+    "category": "name_glow",
+    "rarity": "common",
+    "preview": "previews/ng_soft.png"
+  },
+  "ng_warm": {
+    "name": "Warm Glow",
+    "category": "name_glow",
+    "rarity": "common",
+    "preview": "previews/ng_warm.png"
+  },
+  "ng_electric": {
+    "name": "Electric Blue",
+    "category": "name_glow",
+    "rarity": "uncommon",
+    "preview": "previews/ng_electric.png"
+  },
+  "ng_toxic": {
+    "name": "Toxic Green",
+    "category": "name_glow",
+    "rarity": "uncommon",
+    "preview": "previews/ng_toxic.png"
+  },
+  "ng_ice": {
+    "name": "Frozen",
+    "category": "name_glow",
+    "rarity": "rare",
+    "preview": "previews/ng_ice.png"
+  },
+  "ng_fire": {
+    "name": "Firestorm",
+    "category": "name_glow",
+    "rarity": "rare",
+    "preview": "previews/ng_fire.png"
+  },
+  "ng_blood": {
+    "name": "Blood Moon",
+    "category": "name_glow",
+    "rarity": "epic",
+    "preview": "previews/ng_blood.png"
+  },
+  "ng_galaxy": {
+    "name": "Galaxy",
+    "category": "name_glow",
+    "rarity": "epic",
+    "preview": "previews/ng_galaxy.png"
+  },
+  "ng_legendary": {
+    "name": "Legendary Glow",
+    "category": "name_glow",
+    "rarity": "legendary",
+    "preview": "previews/ng_legendary.png"
+  },
+  "ng_divine": {
+    "name": "Divine",
+    "category": "name_glow",
+    "rarity": "ultra",
+    "preview": "previews/ng_divine.png"
+  },
+  "nc_rose": {
+    "name": "Rose",
+    "category": "name_color",
+    "rarity": "common",
+    "preview": "previews/nc_rose.png"
+  },
+  "nc_mint": {
+    "name": "Mint",
+    "category": "name_color",
+    "rarity": "common",
+    "preview": "previews/nc_mint.png"
+  },
+  "nc_sky": {
+    "name": "Sky Blue",
+    "category": "name_color",
+    "rarity": "common",
+    "preview": "previews/nc_sky.png"
+  },
+  "nc_peach": {
+    "name": "Peach",
+    "category": "name_color",
+    "rarity": "common",
+    "preview": "previews/nc_peach.png"
+  },
+  "nc_coral": {
+    "name": "Coral",
+    "category": "name_color",
+    "rarity": "uncommon",
+    "preview": "previews/nc_coral.png"
+  },
+  "nc_sunset": {
+    "name": "Sunset",
+    "category": "name_color",
+    "rarity": "uncommon",
+    "preview": "previews/nc_sunset.png"
+  },
+  "nc_teal": {
+    "name": "Teal",
+    "category": "name_color",
+    "rarity": "rare",
+    "preview": "previews/nc_teal.png"
+  },
+  "nc_royal": {
+    "name": "Royal Purple",
+    "category": "name_color",
+    "rarity": "rare",
+    "preview": "previews/nc_royal.png"
+  },
+  "nc_gold": {
+    "name": "Gold",
+    "category": "name_color",
+    "rarity": "epic",
+    "preview": "previews/nc_gold.png"
+  },
+  "nc_neon": {
+    "name": "Neon",
+    "category": "name_color",
+    "rarity": "epic",
+    "preview": "previews/nc_neon.png"
+  },
+  "nc_chromatic": {
+    "name": "Chromatic",
+    "category": "name_color",
+    "rarity": "legendary",
+    "preview": "previews/nc_chromatic.png"
+  },
+  "nc_glitch": {
+    "name": "Glitch",
+    "category": "name_color",
+    "rarity": "ultra",
+    "preview": "previews/nc_glitch.png"
+  },
+  "tt_rookie": {
+    "name": "Rookie",
+    "category": "title",
+    "rarity": "common",
+    "preview": "previews/tt_rookie.png"
+  },
+  "tt_wordsmith": {
+    "name": "Wordsmith",
+    "category": "title",
+    "rarity": "uncommon",
+    "preview": "previews/tt_wordsmith.png"
+  },
+  "tt_scholar": {
+    "name": "Scholar",
+    "category": "title",
+    "rarity": "uncommon",
+    "preview": "previews/tt_scholar.png"
+  },
+  "tt_strategist": {
+    "name": "Strategist",
+    "category": "title",
+    "rarity": "uncommon",
+    "preview": "previews/tt_strategist.png"
+  },
+  "tt_champion": {
+    "name": "Champion",
+    "category": "title",
+    "rarity": "rare",
+    "preview": "previews/tt_champion.png"
+  },
+  "tt_veteran": {
+    "name": "Veteran",
+    "category": "title",
+    "rarity": "rare",
+    "preview": "previews/tt_veteran.png"
+  },
+  "tt_genius": {
+    "name": "Genius",
+    "category": "title",
+    "rarity": "rare",
+    "preview": "previews/tt_genius.png"
+  },
+  "tt_word_wizard": {
+    "name": "Word Wizard",
+    "category": "title",
+    "rarity": "rare",
+    "preview": "previews/tt_word_wizard.png"
+  },
+  "tt_overlord": {
+    "name": "Word Overlord",
+    "category": "title",
+    "rarity": "epic",
+    "preview": "previews/tt_overlord.png"
+  },
+  "tt_legend": {
+    "name": "The Legend",
+    "category": "title",
+    "rarity": "epic",
+    "preview": "previews/tt_legend.png"
+  },
+  "tt_tycoon": {
+    "name": "Empire Tycoon",
+    "category": "title",
+    "rarity": "epic",
+    "preview": "previews/tt_tycoon.png"
+  },
+  "tt_destroyer": {
+    "name": "Word Destroyer",
+    "category": "title",
+    "rarity": "epic",
+    "preview": "previews/tt_destroyer.png"
+  },
+  "tt_ancient": {
+    "name": "Ancient One",
+    "category": "title",
+    "rarity": "legendary",
+    "preview": "previews/tt_ancient.png"
+  },
+  "tt_mythic": {
+    "name": "Mythic Legend",
+    "category": "title",
+    "rarity": "legendary",
+    "preview": "previews/tt_mythic.png"
+  },
+  "tt_immortal": {
+    "name": "Immortal",
+    "category": "title",
+    "rarity": "legendary",
+    "preview": "previews/tt_immortal.png"
+  },
+  "tt_god": {
+    "name": "Word God",
+    "category": "title",
+    "rarity": "ultra",
+    "preview": "previews/tt_god.png"
+  },
+  "tt_supreme": {
+    "name": "Supreme Being",
+    "category": "title",
+    "rarity": "ultra",
+    "preview": "previews/tt_supreme.png"
+  },
+  "we_confetti": {
+    "name": "Confetti",
+    "category": "win_effect",
+    "rarity": "common",
+    "preview": "previews/we_confetti.png"
+  },
+  "we_sparkles": {
+    "name": "Sparkle Burst",
+    "category": "win_effect",
+    "rarity": "common",
+    "preview": "previews/we_sparkles.png"
+  },
+  "we_hearts": {
+    "name": "Heart Shower",
+    "category": "win_effect",
+    "rarity": "uncommon",
+    "preview": "previews/we_hearts.png"
+  },
+  "we_fireworks": {
+    "name": "Fireworks",
+    "category": "win_effect",
+    "rarity": "uncommon",
+    "preview": "previews/we_fireworks.png"
+  },
+  "we_snowfall": {
+    "name": "Snowfall",
+    "category": "win_effect",
+    "rarity": "rare",
+    "preview": "previews/we_snowfall.png"
+  },
+  "we_lightning": {
+    "name": "Lightning",
+    "category": "win_effect",
+    "rarity": "rare",
+    "preview": "previews/we_lightning.png"
+  },
+  "we_meteors": {
+    "name": "Meteor Shower",
+    "category": "win_effect",
+    "rarity": "rare",
+    "preview": "previews/we_meteors.png"
+  },
+  "we_cherry_blossom": {
+    "name": "Cherry Blossom",
+    "category": "win_effect",
+    "rarity": "epic",
+    "preview": "previews/we_cherry_blossom.png"
+  },
+  "we_aurora": {
+    "name": "Aurora Borealis",
+    "category": "win_effect",
+    "rarity": "epic",
+    "preview": "previews/we_aurora.png"
+  },
+  "we_galaxy_burst": {
+    "name": "Galaxy Burst",
+    "category": "win_effect",
+    "rarity": "legendary",
+    "preview": "previews/we_galaxy_burst.png"
+  },
+  "we_phoenix": {
+    "name": "Phoenix Rise",
+    "category": "win_effect",
+    "rarity": "legendary",
+    "preview": "previews/we_phoenix.png"
+  },
+  "we_nuclear": {
+    "name": "Nuclear Blast",
+    "category": "win_effect",
+    "rarity": "ultra",
+    "preview": "previews/we_nuclear.png"
+  },
+  "aux_wc_frequency": {
+    "name": "Frequency",
+    "category": "word_color",
+    "rarity": "aux",
+    "preview": "previews/aux_wc_frequency.png"
+  },
+  "aux_wg_bassdrop": {
+    "name": "Bass Drop",
+    "category": "word_glow",
+    "rarity": "aux",
+    "preview": "previews/aux_wg_bassdrop.png"
+  },
+  "aux_pb_equalizer": {
+    "name": "Equalizer",
+    "category": "profile_border",
+    "rarity": "aux",
+    "preview": "previews/aux_pb_equalizer.png"
+  },
+  "aux_pg_subwoofer": {
+    "name": "Subwoofer",
+    "category": "profile_glow",
+    "rarity": "aux",
+    "preview": "previews/aux_pg_subwoofer.png"
+  },
+  "aux_ng_reverb": {
+    "name": "Reverb",
+    "category": "name_glow",
+    "rarity": "aux",
+    "preview": "previews/aux_ng_reverb.png"
+  },
+  "aux_nc_synthwave": {
+    "name": "Synthwave",
+    "category": "name_color",
+    "rarity": "aux",
+    "preview": "previews/aux_nc_synthwave.png"
+  },
+  "aux_tt_dj": {
+    "name": "DJ",
+    "category": "title",
+    "rarity": "aux",
+    "preview": "previews/aux_tt_dj.png"
+  },
+  "aux_we_sonicboom": {
+    "name": "Sonic Boom",
+    "category": "win_effect",
+    "rarity": "aux",
+    "preview": "previews/aux_we_sonicboom.png"
+  },
+  "set_pixel_wc": {
+    "name": "Pixel Pulse",
+    "category": "word_color",
+    "rarity": "common",
+    "preview": "previews/set_pixel_wc.png"
+  },
+  "set_pixel_wg": {
+    "name": "Pixel Glow",
+    "category": "word_glow",
+    "rarity": "common",
+    "preview": "previews/set_pixel_wg.png"
+  },
+  "set_pixel_pb": {
+    "name": "Pixel Frame",
+    "category": "profile_border",
+    "rarity": "common",
+    "preview": "previews/set_pixel_pb.png"
+  },
+  "set_pixel_pg": {
+    "name": "Pixel Aura",
+    "category": "profile_glow",
+    "rarity": "common",
+    "preview": "previews/set_pixel_pg.png"
+  },
+  "set_pixel_ng": {
+    "name": "Pixel Shine",
+    "category": "name_glow",
+    "rarity": "common",
+    "preview": "previews/set_pixel_ng.png"
+  },
+  "set_pixel_nc": {
+    "name": "Pixel Green",
+    "category": "name_color",
+    "rarity": "common",
+    "preview": "previews/set_pixel_nc.png"
+  },
+  "set_pixel_tt": {
+    "name": "Retro Gamer",
+    "category": "title",
+    "rarity": "common",
+    "preview": "previews/set_pixel_tt.png"
+  },
+  "set_pixel_we": {
+    "name": "Pixel Burst",
+    "category": "win_effect",
+    "rarity": "common",
+    "preview": "previews/set_pixel_we.png"
+  },
+  "set_steam_wc": {
+    "name": "Brass Ink",
+    "category": "word_color",
+    "rarity": "uncommon",
+    "preview": "previews/set_steam_wc.png"
+  },
+  "set_steam_wg": {
+    "name": "Cog Glow",
+    "category": "word_glow",
+    "rarity": "uncommon",
+    "preview": "previews/set_steam_wg.png"
+  },
+  "set_steam_pb": {
+    "name": "Gear Ring",
+    "category": "profile_border",
+    "rarity": "uncommon",
+    "preview": "previews/set_steam_pb.png"
+  },
+  "set_steam_pg": {
+    "name": "Steam Aura",
+    "category": "profile_glow",
+    "rarity": "uncommon",
+    "preview": "previews/set_steam_pg.png"
+  },
+  "set_steam_ng": {
+    "name": "Brass Shine",
+    "category": "name_glow",
+    "rarity": "uncommon",
+    "preview": "previews/set_steam_ng.png"
+  },
+  "set_steam_nc": {
+    "name": "Copper Tone",
+    "category": "name_color",
+    "rarity": "uncommon",
+    "preview": "previews/set_steam_nc.png"
+  },
+  "set_steam_tt": {
+    "name": "Artificer",
+    "category": "title",
+    "rarity": "uncommon",
+    "preview": "previews/set_steam_tt.png"
+  },
+  "set_steam_we": {
+    "name": "Gear Burst",
+    "category": "win_effect",
+    "rarity": "uncommon",
+    "preview": "previews/set_steam_we.png"
+  },
+  "set_sakura_wc": {
+    "name": "Blossom Pink",
+    "category": "word_color",
+    "rarity": "rare",
+    "preview": "previews/set_sakura_wc.png"
+  },
+  "set_sakura_wg": {
+    "name": "Petal Glow",
+    "category": "word_glow",
+    "rarity": "rare",
+    "preview": "previews/set_sakura_wg.png"
+  },
+  "set_sakura_pb": {
+    "name": "Blossom Ring",
+    "category": "profile_border",
+    "rarity": "rare",
+    "preview": "previews/set_sakura_pb.png"
+  },
+  "set_sakura_pg": {
+    "name": "Petal Aura",
+    "category": "profile_glow",
+    "rarity": "rare",
+    "preview": "previews/set_sakura_pg.png"
+  },
+  "set_sakura_ng": {
+    "name": "Blossom Shine",
+    "category": "name_glow",
+    "rarity": "rare",
+    "preview": "previews/set_sakura_ng.png"
+  },
+  "set_sakura_nc": {
+    "name": "Sakura Rose",
+    "category": "name_color",
+    "rarity": "rare",
+    "preview": "previews/set_sakura_nc.png"
+  },
+  "set_sakura_tt": {
+    "name": "Hanami",
+    "category": "title",
+    "rarity": "rare",
+    "preview": "previews/set_sakura_tt.png"
+  },
+  "set_sakura_we": {
+    "name": "Petal Storm",
+    "category": "win_effect",
+    "rarity": "rare",
+    "preview": "previews/set_sakura_we.png"
+  },
+  "set_storm_wc": {
+    "name": "Thunder Bolt",
+    "category": "word_color",
+    "rarity": "epic",
+    "preview": "previews/set_storm_wc.png"
+  },
+  "set_storm_wg": {
+    "name": "Lightning Glow",
+    "category": "word_glow",
+    "rarity": "epic",
+    "preview": "previews/set_storm_wg.png"
+  },
+  "set_storm_pb": {
+    "name": "Storm Ring",
+    "category": "profile_border",
+    "rarity": "epic",
+    "preview": "previews/set_storm_pb.png"
+  },
+  "set_storm_pg": {
+    "name": "Thunder Aura",
+    "category": "profile_glow",
+    "rarity": "epic",
+    "preview": "previews/set_storm_pg.png"
+  },
+  "set_storm_ng": {
+    "name": "Lightning Shine",
+    "category": "name_glow",
+    "rarity": "epic",
+    "preview": "previews/set_storm_ng.png"
+  },
+  "set_storm_nc": {
+    "name": "Storm Blue",
+    "category": "name_color",
+    "rarity": "epic",
+    "preview": "previews/set_storm_nc.png"
+  },
+  "set_storm_tt": {
+    "name": "Stormcaller",
+    "category": "title",
+    "rarity": "epic",
+    "preview": "previews/set_storm_tt.png"
+  },
+  "set_storm_we": {
+    "name": "Lightning Strike",
+    "category": "win_effect",
+    "rarity": "epic",
+    "preview": "previews/set_storm_we.png"
+  },
+  "set_dragon_wc": {
+    "name": "Dragon Fire",
+    "category": "word_color",
+    "rarity": "legendary",
+    "preview": "previews/set_dragon_wc.png"
+  },
+  "set_dragon_wg": {
+    "name": "Flame Glow",
+    "category": "word_glow",
+    "rarity": "legendary",
+    "preview": "previews/set_dragon_wg.png"
+  },
+  "set_dragon_pb": {
+    "name": "Scale Ring",
+    "category": "profile_border",
+    "rarity": "legendary",
+    "preview": "previews/set_dragon_pb.png"
+  },
+  "set_dragon_pg": {
+    "name": "Dragon Aura",
+    "category": "profile_glow",
+    "rarity": "legendary",
+    "preview": "previews/set_dragon_pg.png"
+  },
+  "set_dragon_ng": {
+    "name": "Flame Shine",
+    "category": "name_glow",
+    "rarity": "legendary",
+    "preview": "previews/set_dragon_ng.png"
+  },
+  "set_dragon_nc": {
+    "name": "Dragon Gold",
+    "category": "name_color",
+    "rarity": "legendary",
+    "preview": "previews/set_dragon_nc.png"
+  },
+  "set_dragon_tt": {
+    "name": "Dragonlord",
+    "category": "title",
+    "rarity": "legendary",
+    "preview": "previews/set_dragon_tt.png"
+  },
+  "set_dragon_we": {
+    "name": "Dragon Breath",
+    "category": "win_effect",
+    "rarity": "legendary",
+    "preview": "previews/set_dragon_we.png"
+  },
+  "set_quantum_wc": {
+    "name": "Qubit Shift",
+    "category": "word_color",
+    "rarity": "ultra",
+    "preview": "previews/set_quantum_wc.png"
+  },
+  "set_quantum_wg": {
+    "name": "Entangled Glow",
+    "category": "word_glow",
+    "rarity": "ultra",
+    "preview": "previews/set_quantum_wg.png"
+  },
+  "set_quantum_pb": {
+    "name": "Quantum Ring",
+    "category": "profile_border",
+    "rarity": "ultra",
+    "preview": "previews/set_quantum_pb.png"
+  },
+  "set_quantum_pg": {
+    "name": "Probability Aura",
+    "category": "profile_glow",
+    "rarity": "ultra",
+    "preview": "previews/set_quantum_pg.png"
+  },
+  "set_quantum_ng": {
+    "name": "Entangled Shine",
+    "category": "name_glow",
+    "rarity": "ultra",
+    "preview": "previews/set_quantum_ng.png"
+  },
+  "set_quantum_nc": {
+    "name": "Quantum Violet",
+    "category": "name_color",
+    "rarity": "ultra",
+    "preview": "previews/set_quantum_nc.png"
+  },
+  "set_quantum_tt": {
+    "name": "Observer",
+    "category": "title",
+    "rarity": "ultra",
+    "preview": "previews/set_quantum_tt.png"
+  },
+  "set_quantum_we": {
+    "name": "Wave Collapse",
+    "category": "win_effect",
+    "rarity": "ultra",
+    "preview": "previews/set_quantum_we.png"
+  },
+  "set_usa_wc": {
+    "name": "Liberty Red",
+    "category": "word_color",
+    "rarity": "rare",
+    "preview": "previews/set_usa_wc.png"
+  },
+  "set_usa_wg": {
+    "name": "Star Glow",
+    "category": "word_glow",
+    "rarity": "rare",
+    "preview": "previews/set_usa_wg.png"
+  },
+  "set_usa_pb": {
+    "name": "Star Ring",
+    "category": "profile_border",
+    "rarity": "rare",
+    "preview": "previews/set_usa_pb.png"
+  },
+  "set_usa_pg": {
+    "name": "Liberty Aura",
+    "category": "profile_glow",
+    "rarity": "rare",
+    "preview": "previews/set_usa_pg.png"
+  },
+  "set_usa_ng": {
+    "name": "Star Shine",
+    "category": "name_glow",
+    "rarity": "rare",
+    "preview": "previews/set_usa_ng.png"
+  },
+  "set_usa_nc": {
+    "name": "Patriot Blue",
+    "category": "name_color",
+    "rarity": "rare",
+    "preview": "previews/set_usa_nc.png"
+  },
+  "set_usa_tt": {
+    "name": "Patriot",
+    "category": "title",
+    "rarity": "rare",
+    "preview": "previews/set_usa_tt.png"
+  },
+  "set_usa_we": {
+    "name": "Firework Salute",
+    "category": "win_effect",
+    "rarity": "rare",
+    "preview": "previews/set_usa_we.png"
+  },
+  "set_can_wc": {
+    "name": "Maple Red",
+    "category": "word_color",
+    "rarity": "rare",
+    "preview": "previews/set_can_wc.png"
+  },
+  "set_can_wg": {
+    "name": "Northern Glow",
+    "category": "word_glow",
+    "rarity": "rare",
+    "preview": "previews/set_can_wg.png"
+  },
+  "set_can_pb": {
+    "name": "Maple Ring",
+    "category": "profile_border",
+    "rarity": "rare",
+    "preview": "previews/set_can_pb.png"
+  },
+  "set_can_pg": {
+    "name": "Aurora Aura",
+    "category": "profile_glow",
+    "rarity": "rare",
+    "preview": "previews/set_can_pg.png"
+  },
+  "set_can_ng": {
+    "name": "Northern Shine",
+    "category": "name_glow",
+    "rarity": "rare",
+    "preview": "previews/set_can_ng.png"
+  },
+  "set_can_nc": {
+    "name": "Maple White",
+    "category": "name_color",
+    "rarity": "rare",
+    "preview": "previews/set_can_nc.png"
+  },
+  "set_can_tt": {
+    "name": "Voyageur",
+    "category": "title",
+    "rarity": "rare",
+    "preview": "previews/set_can_tt.png"
+  },
+  "set_can_we": {
+    "name": "Maple Storm",
+    "category": "win_effect",
+    "rarity": "rare",
+    "preview": "previews/set_can_we.png"
+  }
+}

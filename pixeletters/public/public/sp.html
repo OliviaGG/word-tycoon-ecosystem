@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <meta name="theme-color" content="#151a2d"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="PixeLetters"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="description" content="Install PixeLetters for solo daily and practice pixel-word puzzles."/>
+  <title>PixeLetters</title>
+  <link rel="manifest" href="manifest.webmanifest"/>
+  <link rel="icon" type="image/svg+xml" href="app-icon.svg"/>
+  <link rel="apple-touch-icon" href="app-icon.svg"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="pixeletters-play.css?v=1"/>
+</head>
+<body>
+  <div id="app">
+    <!-- Header -->
+    <header id="header">
+      <a href="https://wordtycoon.live" class="hub-btn" title="Word Tycoon Hub">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      </a>
+      <span class="title"><span class="p">P</span><span class="i">I</span><span class="x">X</span><span class="e">E</span>LETTERS</span>
+      <span class="guess-counter" id="guess-counter">0/5</span>
+      <div class="header-actions">
+        <button class="stats-toggle-btn" id="stats-toggle" title="Stats">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="12" width="4" height="9"/><rect x="10" y="7" width="4" height="14"/><rect x="17" y="3" width="4" height="18"/></svg>
+        </button>
+        <div class="word-size-toggle" id="word-size-toggle"></div>
+      </div>
+    </header>
+
+    <!-- Login Banner -->
+    <div class="login-banner hidden" id="login-banner">
+      <span>&#x1f512; <a href="https://wordtycoon.live/api/auth/sso-check?returnTo=https%3A%2F%2Fwordtycoon.live%2Fpixeletters%2F">Login with Discord</a> to save your stats across devices</span>
+      <button class="banner-close" id="banner-close">&times;</button>
+    </div>
+
+    <!-- Stats Dropdown -->
+    <div class="stats-dropdown hidden" id="stats-dropdown">
+      <div class="stats-dropdown-header">
+        <span>Your Stats</span>
+        <button class="stats-close" id="stats-close">&times;</button>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-item">
+          <div class="stat-val" id="stat-wins">0</div>
+          <div class="stat-lbl">Wins</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-val" id="stat-games">0</div>
+          <div class="stat-lbl">Played</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-val" id="stat-avg">-</div>
+          <div class="stat-lbl">Avg Guesses</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-val" id="stat-streak">0</div>
+          <div class="stat-lbl">Win Streak</div>
+        </div>
+      </div>
+      <div class="stats-history" id="stats-history"></div>
+      <a href="https://wordtycoon.live/me" class="stats-portal-link" target="_blank">View full stats on Word Tycoon &#8594;</a>
+    </div>
+
+    <!-- Mode Selector -->
+    <div class="mode-selector" id="mode-selector">
+      <button class="mode-btn active" data-mode="standard">Standard</button>
+      <button class="mode-btn" data-mode="plus">Plus</button>
+      <button class="mode-btn" data-mode="pro">Pro</button>
+    </div>
+
+    <!-- Game Area -->
+    <main id="game-area">
+      <div class="pixel-grid" id="pixel-grid"></div>
+    </main>
+
+    <!-- QWERTY Keyboard -->
+    <div class="keyboard" id="keyboard"></div>
+
+    <!-- Error toast -->
+    <div class="error-toast hidden" id="error-toast"></div>
+
+    <!-- Win/Loss overlay -->
+    <div class="win-overlay hidden" id="win-overlay">
+      <div class="win-modal" id="win-modal">
+        <div class="win-pic" id="win-pic"></div>
+        <div class="win-name" id="win-name"></div>
+        <div class="win-word" id="win-word"></div>
+        <div class="win-info" id="win-info">Found in <strong id="win-count"></strong> guesses</div>
+        <div class="win-countdown" id="win-countdown"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="sp-engine.js?v=3"></script>
+  <script src="pwa-install.js"></script>
+</body>
+</html>

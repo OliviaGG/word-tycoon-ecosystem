@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Searchle 3.0 — Semantic Orbit</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: transparent;
+      font-family: 'Inter', 'Segoe UI', sans-serif;
+      color: #f1f5f9;
+      overflow: hidden;
+      height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    #orbit-svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Orbit rings */
+    .orbit-ring {
+      fill: none;
+      stroke: rgba(148, 163, 184, 0.06);
+      stroke-width: 1;
+      stroke-dasharray: 4 4;
+    }
+
+    /* Center target marker */
+    .target-marker {
+      fill: rgba(251, 191, 36, 0.15);
+      stroke: #fbbf24;
+      stroke-width: 2;
+    }
+    .target-pulse {
+      fill: none;
+      stroke: rgba(251, 191, 36, 0.3);
+      stroke-width: 1;
+    }
+    .target-label {
+      font-size: 11px;
+      font-weight: 700;
+      fill: rgba(251, 191, 36, 0.6);
+      text-anchor: middle;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    /* Word nodes */
+    .word-node text {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      text-anchor: middle;
+      pointer-events: none;
+    }
+    .word-node circle {
+      stroke-width: 1.5;
+    }
+
+    /* Connection lines */
+    .connect-line {
+      stroke: rgba(148, 163, 184, 0.08);
+      stroke-width: 0.5;
+    }
+
+    /* Ring labels */
+    .ring-label {
+      font-size: 9px;
+      font-weight: 600;
+      fill: rgba(148, 163, 184, 0.3);
+      text-anchor: middle;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* Stats overlay */
+    #stats-overlay {
+      position: fixed;
+      top: 12px;
+      right: 12px;
+      text-align: right;
+    }
+    .stats-value {
+      font-size: 20px;
+      font-weight: 800;
+      color: #22d3ee;
+      font-variant-numeric: tabular-nums;
+    }
+    .stats-label {
+      font-size: 9px;
+      font-weight: 600;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+    }
+
+    /* Library word toast — OBS overlay (all users, larger) */
+    .library-toast {
+      position: fixed;
+      top: 60px;
+      right: 20px;
+      background: linear-gradient(135deg, #1a0f00, #2d1f0a);
+      border: 2px solid #8b6914;
+      border-radius: 16px;
+      padding: 24px 40px;
+      color: #f5deb3;
+      font-size: 28px;
+      font-weight: 700;
+      z-index: 10000;
+      opacity: 0;
+      transform: translateX(60px);
+      transition: opacity 0.4s, transform 0.4s;
+      pointer-events: none;
+      box-shadow: 0 6px 30px rgba(139, 105, 20, 0.4);
+      max-width: 500px;
+    }
+    .library-toast.show { opacity: 1; transform: translateX(0); }
+    .library-toast strong { color: #ffd700; letter-spacing: 1px; }
+    .library-toast .toast-player { font-size: 18px; color: #c0a050; margin-top: 4px; }
+  </style>
+</head>
+<body>
+  <svg id="orbit-svg"></svg>
+  <div id="stats-overlay">
+    <div class="stats-value" id="guess-count">0</div>
+    <div class="stats-label">Guesses</div>
+    <div class="stats-value" id="game-timer" style="margin-top:8px">0:00</div>
+    <div class="stats-label">Time</div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script>
+  (function () {
+    var socket = io({ reconnection: true, reconnectionDelay: 2000, reconnectionDelayMax: 10000, reconnectionAttempts: Infinity, transports: ['polling', 'websocket'] });
+
+    var W = window.innerWidth;
+    var H = window.innerHeight;
+    var CX = W / 2;
+    var CY = H / 2;
+    var MAX_R = Math.min(W, H) / 2 - 30;
+
+    // State
+    var guesses = [];
+    var totalRankedWords = 100000;
+    var startTime = null;
+    var isWon = false;
+    var nodeData = [];
+
+    // SVG
+    var svg = d3.select('#orbit-svg')
+      .attr('width', W).attr('height', H);
+
+    // Defs for gradients
+    var defs = svg.append('defs');
+
+    // Radial gradient for center glow
+    var radGrad = defs.append('radialGradient').attr('id', 'target-glow');
+    radGrad.append('stop').attr('offset', '0%').attr('stop-color', '#fbbf24').attr('stop-opacity', 0.3);
+    radGrad.append('stop').attr('offset', '100%').attr('stop-color', '#fbbf24').attr('stop-opacity', 0);
+
+    var mainG = svg.append('g');
+
+    // Orbit ring zones
+    var zones = [
+      { label: 'HOT', r: 0.1, color: 'rgba(52, 211, 153, 0.12)' },
+      { label: 'WARM', r: 0.3, color: 'rgba(251, 191, 36, 0.08)' },
+      { label: 'COOL', r: 0.6, color: 'rgba(34, 211, 238, 0.06)' },
+      { label: 'COLD', r: 1.0, color: 'rgba(244, 63, 94, 0.04)' }
+    ];
+
+    var ringsG = mainG.append('g');
+    zones.forEach(function (z) {
+      var r = z.r * MAX_R;
+      ringsG.append('circle')
+        .attr('cx', CX).attr('cy', CY).attr('r', r)
+        .attr('class', 'orbit-ring')
+        .style('stroke', z.color.replace(/[\d.]+\)$/, '0.15)'));
+
+      ringsG.append('text')
+        .attr('class', 'ring-label')
+        .attr('x', CX).attr('y', CY - r - 4)
+        .text(z.label);
+    });
+
+    // Center target
+    var targetG = mainG.append('g');
+    targetG.append('circle')
+      .attr('cx', CX).attr('cy', CY).attr('r', 30)
+      .style('fill', 'url(#target-glow)');
+    targetG.append('circle')
+      .attr('cx', CX).attr('cy', CY).attr('r', 12)
+      .attr('class', 'target-marker');
+
+    // Animated pulse ring
+    var pulseRing = targetG.append('circle')
+      .attr('cx', CX).attr('cy', CY).attr('r', 12)
+      .attr('class', 'target-pulse');
+
+    function animatePulse() {
+      pulseRing
+        .attr('r', 12).style('opacity', 0.5)
+        .transition().duration(2000).ease(d3.easeCubicOut)
+        .attr('r', 40).style('opacity', 0)
+        .on('end', animatePulse);
+    }
+    animatePulse();
+
+    targetG.append('text')
+      .attr('class', 'target-label')
+      .attr('x', CX).attr('y', CY + 28)
+      .text('?');
+
+    // Connection lines group
+    var linesG = mainG.append('g');
+    // Nodes group
+    var nodesG = mainG.append('g');
+
+    // Rank to radius: log-scaled
+    function rankToRadius(rank) {
+      var logRank = Math.log(Math.max(1, rank));
+      var logTotal = Math.log(totalRankedWords);
+      var ratio = Math.min(logRank / logTotal, 1);
+      return 20 + ratio * (MAX_R - 20);
+    }
+
+    // Rank to color
+    function rankToColor(rank) {
+      var logRank = Math.log(rank);
+      var logTotal = Math.log(totalRankedWords);
+      var ratio = Math.min(logRank / logTotal, 1);
+      // Green → Yellow → Red
+      var hue = 120 * (1 - ratio);
+      return d3.hsl(hue, 0.8, 0.55).formatHex();
+    }
+
+    // Build node data from guesses
+    function buildNodeData() {
+      nodeData = guesses.map(function (g, i) {
+        var r = rankToRadius(g.rank);
+        // Distribute around circle — angle based on word hash for stability
+        var hash = 0;
+        for (var c = 0; c < g.word.length; c++) hash = ((hash << 5) - hash + g.word.charCodeAt(c)) | 0;
+        var angle = (Math.abs(hash) % 3600) / 3600 * Math.PI * 2;
+
+        return {
+          word: g.word,
+          rank: g.rank,
+          user: g.user,
+          x: CX + Math.cos(angle) * r,
+          y: CY + Math.sin(angle) * r,
+          r: r,
+          angle: angle,
+          color: rankToColor(g.rank),
+          nodeR: Math.max(4, 8 - Math.log(g.rank) * 0.5)
+        };
+      });
+    }
+
+    // Render with D3
+    function render() {
+      buildNodeData();
+
+      // Connection lines from center to each node
+      var lines = linesG.selectAll('.connect-line')
+        .data(nodeData, function (d) { return d.word; });
+
+      lines.exit().transition().duration(200).style('opacity', 0).remove();
+
+      lines.enter()
+        .append('line')
+        .attr('class', 'connect-line')
+        .attr('x1', CX).attr('y1', CY)
+        .attr('x2', CX).attr('y2', CY)
+        .style('opacity', 0)
+        .merge(lines)
+        .transition().duration(400).ease(d3.easeCubicInOut)
+        .attr('x2', function (d) { return d.x; })
+        .attr('y2', function (d) { return d.y; })
+        .style('opacity', 1);
+
+      // Word nodes
+      var nodes = nodesG.selectAll('.word-node')
+        .data(nodeData, function (d) { return d.word; });
+
+      nodes.exit()
+        .transition().duration(200)
+        .style('opacity', 0)
+        .attr('transform', function (d) { return 'translate(' + CX + ',' + CY + ')'; })
+        .remove();
+
+      var enterNodes = nodes.enter()
+        .append('g')
+        .attr('class', 'word-node')
+        .attr('transform', 'translate(' + CX + ',' + CY + ')')
+        .style('opacity', 0);
+
+      enterNodes.append('circle')
+        .attr('r', 0)
+        .style('fill', function (d) { return d.color; })
+        .style('fill-opacity', 0.3)
+        .style('stroke', function (d) { return d.color; });
+
+      enterNodes.append('text')
+        .attr('y', function (d) { return -d.nodeR - 4; })
+        .style('fill', function (d) { return d.color; })
+        .style('font-size', function (d) {
+          return Math.max(9, 14 - Math.log(d.rank) * 0.8) + 'px';
+        })
+        .text(function (d) { return d.word; });
+
+      // Merge enter + update
+      var merged = enterNodes.merge(nodes);
+
+      merged.transition().duration(600).ease(d3.easeBackOut)
+        .attr('transform', function (d) { return 'translate(' + d.x + ',' + d.y + ')'; })
+        .style('opacity', 1);
+
+      merged.select('circle')
+        .transition().duration(400)
+        .attr('r', function (d) { return d.nodeR; })
+        .style('fill', function (d) { return d.color; })
+        .style('stroke', function (d) { return d.color; });
+
+      merged.select('text')
+        .style('fill', function (d) { return d.color; })
+        .text(function (d) { return d.word; });
+    }
+
+    // Timer
+    function updateTimer() {
+      if (!startTime || isWon) return;
+      var elapsed = Math.floor((Date.now() - new Date(startTime).getTime()) / 1000);
+      var mins = Math.floor(elapsed / 60);
+      var secs = elapsed % 60;
+      document.getElementById('game-timer').textContent = mins + ':' + secs.toString().padStart(2, '0');
+    }
+
+    // Socket events
+    socket.on('game-state', function (state) {
+      guesses = state.guesses || [];
+      totalRankedWords = state.totalRankedWords || 100000;
+      startTime = state.startTime;
+      isWon = state.isWon;
+      document.getElementById('guess-count').textContent = guesses.length;
+      render();
+    });
+
+    socket.on('new-guess', function (guess) {
+      guesses.push(guess);
+      if (guess.totalRankedWords) totalRankedWords = guess.totalRankedWords;
+      document.getElementById('guess-count').textContent = guesses.length;
+      render();
+    });
+
+    socket.on('bump-guess', function (data) {
+      // No visual change needed for orbit (positions are rank-based)
+    });
+
+    socket.on('game-won', function (data) {
+      isWon = true;
+      // Reveal target word at center
+      targetG.select('.target-label').text(data.targetWord.toUpperCase())
+        .transition().duration(500)
+        .style('fill', '#fbbf24')
+        .style('font-size', '16px');
+
+      // Flash all nodes gold
+      nodesG.selectAll('.word-node circle')
+        .transition().duration(300)
+        .style('fill', '#fbbf24')
+        .style('stroke', '#fbbf24')
+        .transition().duration(1000)
+        .style('fill', function (d) { return d.color; })
+        .style('stroke', function (d) { return d.color; });
+    });
+
+    socket.on('new-game', function (data) {
+      guesses = [];
+      totalRankedWords = data.totalRankedWords || totalRankedWords;
+      startTime = data.startTime;
+      isWon = false;
+      document.getElementById('guess-count').textContent = '0';
+      document.getElementById('game-timer').textContent = '0:00';
+      targetG.select('.target-label').text('?')
+        .style('fill', 'rgba(251, 191, 36, 0.6)')
+        .style('font-size', '11px');
+      render();
+    });
+
+    // ─── Library Word Toast (all users) ───
+    socket.on('library-word-new', function(data) {
+      if (!data || !data.word) return;
+      var t = document.createElement('div');
+      t.className = 'library-toast';
+      var html = '\uD83D\uDCDA Word Found! <strong>' + data.word.toUpperCase() + '</strong>';
+      if (data.displayName) html += '<div class="toast-player">' + data.displayName + '</div>';
+      t.innerHTML = html;
+      document.body.appendChild(t);
+      setTimeout(function() { t.classList.add('show'); }, 10);
+      setTimeout(function() {
+        t.classList.remove('show');
+        setTimeout(function() { t.remove(); }, 400);
+      }, 4000);
+    });
+
+    setInterval(updateTimer, 1000);
+  })();
+  </script>
+</body>
+</html>

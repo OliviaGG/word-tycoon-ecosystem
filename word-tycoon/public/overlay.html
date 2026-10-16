@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Word Tycoon Overlay</title>
+  <link rel="stylesheet" href="css/overlay.css?v=3">
+</head>
+<body>
+  <!-- Player Empires Panel -->
+  <div id="empires-panel">
+    <div id="empires-title">PLAYER EMPIRES</div>
+    <div id="empires-list"></div>
+  </div>
+
+  <!-- Shop Panel -->
+  <div id="shop-panel">
+    <div id="shop-title">BUY BUSINESSES</div>
+    <div id="shop-command">Type <span class="cmd">!play</span> to start | <span class="cmd">!buy [name]</span> to expand | <span class="cmd">!buybest</span> auto-buy</div>
+    <div id="shop-list"></div>
+  </div>
+
+  <!-- Leaderboard Panel -->
+  <div id="leaderboard-panel">
+    <div id="leaderboard-title">TOP TAPPERS</div>
+    <div id="leaderboard-list"></div>
+  </div>
+
+  <!-- Tap Upgrades Panel -->
+  <div id="upgrades-panel">
+    <div id="upgrades-title">TAP UPGRADES</div>
+    <div id="upgrades-command">Type <span class="cmd">!upgrade [name]</span> | <span class="cmd">!buybestmax</span> spend all</div>
+    <div id="upgrades-list"></div>
+  </div>
+
+  <!-- Cosmetics Panel (AUX Audio Tab) -->
+  <div id="cosmetics-panel">
+    <div id="cosmetics-title">COSMETICS</div>
+    <div class="cos-tab-bar" id="cos-tab-bar"></div>
+    <div id="cosmetics-list"></div>
+  </div>
+
+  <!-- Event Ticker -->
+  <div id="ticker-container">
+    <div id="ticker-track"></div>
+  </div>
+
+  <!-- Income Bubbles -->
+  <div id="bubble-container"></div>
+
+  <!-- Command Response Toast -->
+  <div id="toast-container"></div>
+
+  <script>
+  // ===== Viewport Scaling =====
+  (function () {
+    var BASE = 1920;
+    var actualW = window.innerWidth;
+    var actualH = window.innerHeight;
+    var scale = actualW / BASE;
+    var baseH = Math.round(actualH / scale);
+    window.__gameScale = scale;
+    window.__gameViewport = { width: BASE, height: baseH };
+    if (Math.abs(scale - 1) > 0.01) {
+      var html = document.documentElement;
+      html.style.width = BASE + 'px';
+      html.style.height = baseH + 'px';
+      html.style.overflow = 'hidden';
+      html.style.transformOrigin = '0 0';
+      html.style.transform = 'scale(' + scale + ')';
+    }
+    document.documentElement.style.setProperty('--base-width', BASE + 'px');
+    document.documentElement.style.setProperty('--base-height', baseH + 'px');
+  })();
+  </script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="js/d3.min.js"></script>
+  <script src="js/audio-reactive.js?v=1"></script>
+  <script src="js/overlay.js?v=3"></script>
+</body>
+</html>

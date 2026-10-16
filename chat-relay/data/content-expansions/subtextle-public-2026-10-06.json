@@ -1,0 +1,40 @@
+{
+  "createdAt": "2026-10-06T17:54:19.552Z",
+  "additions": [
+    "basketball",
+    "television",
+    "electricity",
+    "photography",
+    "architecture",
+    "technology",
+    "literature",
+    "university",
+    "government"
+  ],
+  "quality": {
+    "canonicalModelMembership": true,
+    "dictionaryMembership": true,
+    "minZipf": 4.4,
+    "shorterPoolsUnchanged": true
+  },
+  "before": {
+    "targets": 6915,
+    "easy": 2801
+  },
+  "after": {
+    "targets": 6924,
+    "easy": 2810
+  },
+  "files": [
+    {
+      "name": "targets.json",
+      "beforeSha256": "99ce26d8ef29f3f2324b1931f32c3bdd0851f459d2fe16d4df0213a0db027875",
+      "afterSha256": "a42812ff6b1f52d4e411812bcd7d6677c86665664bb384c76e5c6eca59e129e8"
+    },
+    {
+      "name": "searchle-easy-targets.json",
+      "beforeSha256": "2aeb610e54fab9d8803b9fc15da0efd20cc9b556e2a8915775c35e945ca00453",
+      "afterSha256": "a78c57d1d59373da86422e4b4ddb2e71fe5cd3be3d20f59b85ab67b6f28084dd"
+    }
+  ]
+}

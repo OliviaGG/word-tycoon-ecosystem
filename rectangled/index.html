@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0d1320">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="recTangled">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="description" content="recTangled is a free word search puzzle game like Squaredle. Find hidden words in letter grids — common, rare, and ultra-rare words to discover. Live multiplayer rounds and daily solo puzzles. A free Squaredle alternative.">
+    <meta name="keywords" content="squaredle, squaredle game, squaredle alternative, word search puzzle, word search game, rectangled, rectangled, find words in grid, daily word puzzle, multiplayer word game, free word game, letter grid game, squaredle online, word puzzle game">
+    <title>recTangled — Free Word Search Puzzle Game | Squaredle Alternative</title>
+    <link rel="canonical" href="https://rectangled.live/">
+    <link rel="manifest" href="/manifest.webmanifest"/>
+    <link rel="icon" type="image/svg+xml" href="/app-icon.svg"/>
+    <link rel="apple-touch-icon" href="/app-icon.svg"/>
+    <!-- Open Graph -->
+    <meta property="og:title" content="recTangled — Word Search Game Like Squaredle">
+    <meta property="og:description" content="A free Squaredle-style word search puzzle game. Find hidden words in letter grids — common, rare, and ultra-rare. Live multiplayer and daily puzzles.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://rectangled.live/">
+    <meta property="og:image" content="https://rectangled.live/app-icon.svg">
+    <meta property="og:site_name" content="recTangled">
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="recTangled — Word Search Game Like Squaredle">
+    <meta name="twitter:description" content="Free Squaredle alternative. Find hidden words in letter grids — live multiplayer and daily solo puzzles.">
+    <!-- JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "VideoGame",
+      "name": "recTangled",
+      "alternateName": ["recTangled Game", "Squaredle Alternative", "recTangled Word Search"],
+      "description": "recTangled is a free word search puzzle game similar to Squaredle. Find hidden words by connecting adjacent letters in a grid. Words are categorized by rarity. Features live multiplayer rounds and daily solo puzzles.",
+      "url": "https://rectangled.live/",
+      "genre": ["Word Game", "Puzzle", "Multiplayer", "Word Search"],
+      "gamePlatform": "Web Browser",
+      "applicationCategory": "Game",
+      "operatingSystem": "Any",
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+      "author": { "@type": "Organization", "name": "Word Tycoon", "url": "https://wordtycoon.live" }
+    }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@700&family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="css/style.css?v=43">
+    <link rel="stylesheet" href="css/top-player-cards.css?v=3">
+    <link rel="stylesheet" href="https://wordtycoon.live/portal/assets/badges/perk-badges.css?b3">
+    <script src="https://wordtycoon.live/portal/assets/badges/perk-badges.js?b3"></script>
+    <script>
+    (function () {
+      var isObsOverlay = window.location.pathname === '/overlay' ||
+        window.location.pathname === '/overlay/' ||
+        /[?&]obs=1(?:&|$)/.test(window.location.search);
+      window.__RECTANGLED_OBS_OVERLAY = isObsOverlay;
+      if (isObsOverlay) {
+        document.documentElement.classList.add('obs-overlay-mode');
+      }
+    })();
+    </script>
+</head>
+<body>
+    <!-- Loading overlay -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <p id="loading-text">Loading dictionary...</p>
+        </div>
+    </div>
+
+    <!-- Game frame - everything visible on OBS goes inside here -->
+    <div class="game-frame">
+        <!-- Top bar -->
+        <div class="top-bar" style="justify-content: flex-end;">
+            <div class="top-bar-right">
+                <div class="word-count">
+                    <span id="found-count">0</span> / <span id="total-count">0</span> words
+                    <span id="daily-badge" class="daily-badge" style="display:none;">DAILY</span>
+                    <span id="frenzy-badge" class="frenzy-badge" style="display:none;"><span class="frenzy-label">FRENZY</span><span id="frenzy-multiplier"></span></span>
+                </div>
+                <div class="top-bar-badges">
+                    <span id="rare-count" class="rare-count" style="display:none;"></span>
+                    <span id="ultra-rare-count" class="ultra-rare-count" style="display:none;"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top players + word announcement share the same row -->
+        <div class="players-row">
+            <div id="top-players" class="top-players"></div>
+            <div id="word-announce" class="word-announce hidden">
+                <img id="word-announce-avatar" class="word-announce-avatar" src="" alt="" onerror="this.style.display='none';document.getElementById('word-announce-avatar-fallback').style.display='flex'">
+                <div id="word-announce-avatar-fallback" class="word-announce-avatar-fallback" style="display:none"></div>
+                <div class="word-announce-info">
+                    <div class="word-announce-top-line">
+                        <span id="word-announce-name" class="word-announce-name"></span>
+                        <span id="word-announce-score" class="word-announce-score"></span>
+                        <span id="word-announce-earned" class="word-announce-earned" style="display:none"></span>
+                    </div>
+                    <div class="word-announce-bottom-row">
+                        <span id="word-announce-word" class="word-announce-word"></span>
+                        <span id="word-announce-rarity" class="word-announce-rarity" style="display:none"></span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Progress bar -->
+        <div class="progress-bar-container">
+            <div id="progress-bar" class="progress-bar" style="width: 0%"></div>
+        </div>
+
+        <!-- Incorrect guesses area -->
+        <div id="incorrect-area" class="incorrect-area">
+            <div id="word-announce-placeholder" class="word-announce-placeholder">type to play</div>
+        </div>
+
+        <!-- Grid -->
+        <div id="game-board" class="game-board">
+            <div id="grid-container" class="grid-container"></div>
+        </div>
+
+    </div>
+
+    <script>
+    // ===== Viewport Scaling =====
+    (function () {
+      var BASE = 380;
+      var actualW = window.innerWidth;
+      var actualH = window.innerHeight;
+      var scale = actualW / BASE;
+      var baseH = Math.round(actualH / scale);
+      window.__gameScale = scale;
+      window.__gameViewport = { width: BASE, height: baseH };
+      if (Math.abs(scale - 1) > 0.01) {
+        var html = document.documentElement;
+        html.style.width = BASE + 'px';
+        html.style.height = baseH + 'px';
+        html.style.overflow = 'hidden';
+        html.style.transformOrigin = '0 0';
+        html.style.transform = 'scale(' + scale + ')';
+      }
+      document.documentElement.style.setProperty('--base-width', BASE + 'px');
+      document.documentElement.style.setProperty('--base-height', baseH + 'px');
+    })();
+    </script>
+    <script src="js/top-player-cards.js?v=3"></script>
+    <script src="socket.io/socket.io.js"></script>
+    <script src="coin-reward.js?v=2"></script>
+    <script src="https://wordtycoon.live/js/win-card.js"></script>
+    <script type="module" src="js/main.js?v=34"></script>
+    <script>
+    if (!window.__RECTANGLED_OBS_OVERLAY) {
+      var pwaScript = document.createElement('script');
+      pwaScript.src = '/pwa-install.js?v=1';
+      document.body.appendChild(pwaScript);
+    }
+    </script>
+
+</body>
+</html>

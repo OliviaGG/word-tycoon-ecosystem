@@ -1,0 +1,147 @@
+/* Refined guess rows, shared by the ranked list and pinned guess.
+   These are scene pixels: the existing renderer scales the entire row.
+   Cosmetic surfaces stay free of !important so equipped styles still win. */
+:is(html.subtextle-neon, body) .guess-entry.guess-entry-panel {
+  --st-row-radius: 36px;
+  border-radius: var(--st-row-radius);
+  background: linear-gradient(180deg, #1b3245 0%, #102334 52%, #0a1929 100%) !important;
+  box-shadow: 0 0 0 11px #07121e, 0 12px 26px #0006;
+}
+
+/* Draw the continuous fine rim above the liquid without clipping avatars,
+   bumper pictures, profile glows or XP effects. */
+:is(html.subtextle-neon, body) .guess-entry.guess-entry-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 3px #6c92ac4d, inset 0 3px 0 #b8d9ed26,
+    inset 0 -3px 0 #10263b66;
+  pointer-events: none;
+  z-index: 3;
+}
+
+:is(html.subtextle-neon, body) .guess-entry.guess-entry-panel > .rank-bar-svg {
+  clip-path: inset(0 round var(--st-row-radius));
+}
+
+:is(html.subtextle-neon, body) .guess-entry.guess-entry-panel .guess-chip {
+  border-radius: 36px;
+  background: linear-gradient(180deg, #31516be6 0%, #223d52f0 52%, #1b3349f5 100%) !important;
+  box-shadow: inset 0 0 0 3px #7ea3bc66, inset 0 4px 0 #d4eaff1f,
+    inset 0 -3px 0 #081b2b40, 0 3px 8px #03101c33;
+}
+
+:is(html.subtextle-neon, body) .guess-entry.guess-entry-panel .guess-rank {
+  border-radius: 26px;
+  background: linear-gradient(180deg, #345775bf, #1a354fbf);
+  box-shadow: inset 0 0 0 2px #8aafc633, inset 0 3px 0 #cce7fa14;
+  color: #fff;
+  font-weight: 800;
+  text-shadow: 0 2px 4px #05172566;
+}
+
+:is(html.subtextle-neon, body) .guess-entry.guess-entry-panel .guess-word {
+  color: #fff;
+  font-weight: 800;
+  text-shadow: 0 2px 5px #03111f66;
+}
+
+/* The player panel fills the row height and meets the continuous outer rim.
+   Plain panels share the row's top color; equipped frames paint inline. */
+:is(html.subtextle-neon, body) .guess-entry.guess-entry-panel .guess-panel-glow {
+  inset: 0;
+}
+
+:is(html.subtextle-neon, body) .guess-entry.guess-entry-panel .guess-panel-frame {
+  background: transparent;
+  border-radius: 0 36px 36px 0;
+  clip-path: polygon(55px 0, 100% 0, 100% 100%, 0 100%, 48px 8px, 51px 2px);
+}
+
+:is(html.subtextle-neon, body) .guess-entry.guess-entry-panel .guess-panel-surface {
+  inset: 3px;
+  border-radius: 0 33px 33px 0;
+  clip-path: polygon(51px 0, 100% 0, 100% 100%, 0 100%, 45px 7px, 48px 2px);
+  background: linear-gradient(180deg, #1b3245, #182e42 65%, #1c3347);
+}
+
+/* A transparent finish also sits above equipped artwork. It adds the same
+   gentle bevel without replacing the cosmetic's gradient or render layer. */
+:is(html.subtextle-neon, body) .guess-entry.guess-entry-panel .guess-panel-surface::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(180deg, transparent, #d1e9fa09 38%, #020f1b14);
+  box-shadow: inset 0 -3px 0 #aac9df0a;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* The applier clears inline backgrounds, glow filters and render layers when
+   panel cosmetics are removed. Plain panels reach all three outer edges;
+   painted panels retain the inset that reveals their equipped frame. */
+:is(html.subtextle-neon, body) .guess-entry.guess-entry-panel
+.guess-panel-glow:not([style*="filter"]):not(:has(
+  .guess-panel-frame[style*="background"],
+  .guess-panel-surface[style*="background"],
+  .searchle-cosmetic-layer
+)) .guess-panel-surface {
+  inset: 0;
+  border-radius: 0 36px 36px 0;
+  clip-path: polygon(55px 0, 100% 0, 100% 100%, 0 100%, 48px 8px, 51px 2px);
+}
+
+:is(html.subtextle-neon, body) .guess-entry.guess-entry-panel
+.guess-panel-glow:not([style*="filter"]):not(:has(
+  .guess-panel-frame[style*="background"],
+  .guess-panel-surface[style*="background"],
+  .searchle-cosmetic-layer
+)) .guess-panel-surface::after {
+  box-shadow: none;
+}
+
+/* Keep plain artwork anchored while the chip/portrait/name animate inside. */
+:is(html.subtextle-neon, body) .guess-entry.guess-entry-panel
+.guess-user:not(:has(
+  .guess-panel-glow[style*="filter"],
+  .guess-panel-frame[style*="background"],
+  .guess-panel-surface[style*="background"],
+  .searchle-cosmetic-layer
+)) {
+  transform: none !important;
+}
+
+/* Clip the plain rank fill with one continuous outline. Separate touching
+   masks leave a vertical seam when the scene is scaled. Canvas border-radius
+   keeps the outer corners rounded; the polygon follows the panel's bevel.
+   The sizing observer supplies the actual flex boundary in scene pixels. */
+:is(html.subtextle-neon, body) .guess-entry.guess-entry-panel:not(:has(
+  .guess-panel-glow[style*="filter"],
+  .guess-panel-frame[style*="background"],
+  .guess-panel-surface[style*="background"],
+  .guess-panel-surface .searchle-cosmetic-layer
+)) > .rank-bar-svg {
+  border-radius: var(--st-row-radius);
+  clip-path: polygon(0 0,
+    calc(var(--guess-water-width, 100%) + 55px) 0,
+    calc(var(--guess-water-width, 100%) + 51px) 2px,
+    calc(var(--guess-water-width, 100%) + 48px) 8px,
+    var(--guess-water-width, 100%) 100%, 0 100%);
+}
+
+:is(html.subtextle-neon, body) .guess-entry.guess-entry-panel .user-name {
+  font-size: calc(var(--text-size) * 0.92);
+  color: #f1f5f9;
+  text-shadow: 0 2px 4px #08172533;
+}
+
+:is(html.subtextle-neon, body) .guess-entry.guess-entry-panel :is(.guess-pic-wrap, .user-pic, .user-pic-fallback) {
+  width: 140px;
+  height: 140px;
+}
+
+:is(html.subtextle-neon, body) .guess-entry.guess-entry-panel .platform-icon {
+  filter: none;
+}

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Word Foundry W tile">
+  <rect width="64" height="64" rx="13" fill="#18233a"/>
+  <rect x="8" y="7" width="48" height="46" rx="8" fill="#f6c453" stroke="#0e1729" stroke-width="3"/>
+  <path d="M16 18l7 25h6l3-12 3 12h6l7-25h-7l-4 16-3-12h-4l-3 12-4-16z" fill="#18233a"/>
+  <path d="M14 57h36" stroke="#e36e45" stroke-width="4" stroke-linecap="round"/>
+</svg>

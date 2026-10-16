@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#16233b">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Word Foundry">
+  <meta name="description" content="Buy letter tiles, build words, and grow a foundry that earns while you are away.">
+  <title>Word Foundry — Idle Word Game</title>
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css?v=9">
+</head>
+<body>
+  <div class="app-frame">
+    <header class="app-header">
+      <div class="edition-row">
+        <a class="mini-brand" href="/portal/" aria-label="Return to Word Tycoon"><span>W</span><b>WORD FOUNDRY</b></a>
+        <p><span id="editionLabel">EDITION 1</span><b id="fameLabel">0 FAME</b></p>
+      </div>
+      <div class="economy-bar" aria-label="Foundry economy">
+        <div><small>CASH</small><strong id="cash">$0.00</strong></div>
+        <i aria-hidden="true"></i>
+        <div><small>PRODUCTION</small><strong id="income">$0.00/s</strong></div>
+        <div class="economy-pulse" aria-hidden="true"><span></span><span></span><span></span></div>
+      </div>
+      <a id="accountStatus" class="save-status local" href="https://wordtycoon.live/auth/discord?returnTo=https%3A%2F%2Fwordtycoon.live%2Fword-foundry%2F">
+        <i aria-hidden="true"></i><span>LOCAL SAVE · SIGN IN FOR CLOUD SYNC</span>
+      </a>
+    </header>
+
+    <main id="appScroll" class="app-scroll">
+      <section id="screen-foundry" class="screen active" data-screen="foundry" aria-labelledby="foundryTitle">
+        <div class="screen-heading foundry-heading">
+          <div><p>THE PRESSES NEVER SLEEP</p><h1 id="foundryTitle">Foundry floor</h1></div>
+          <span id="lineCapacity" class="capacity-pill">0 / 3</span>
+        </div>
+
+        <section id="tutorial" class="coach-card" aria-label="Getting started">
+          <div class="coach-title"><span>FIRST SHIFT</span><b id="tutorialCount">0/3</b></div>
+          <ol>
+            <li data-step="build"><i>1</i><span><b>Build your first word</b><small>Try EARN with your starter type</small></span></li>
+            <li data-step="earn"><i>2</i><span><b>Earn your first dollar</b><small>Words keep working while away</small></span></li>
+            <li data-step="buy"><i>3</i><span><b>Buy a new letter</b><small>Reinvest at the Market</small></span></li>
+          </ol>
+        </section>
+
+        <section id="clientBrief" class="brief-card" aria-labelledby="briefName">
+          <span class="brief-stamp" aria-hidden="true">TODAY</span>
+          <div><small>CLIENT BRIEF</small><b id="briefName">Pocket Catalogue</b><p id="briefDescription">Set an exact 4-letter word.</p></div>
+          <strong id="briefReward">+$30</strong>
+        </section>
+
+        <section class="app-card composer-card">
+          <div class="card-title">
+            <div><span class="section-icon">Aa</span><p><b>TYPESETTING BENCH</b><small>Build a 3–7 letter word</small></p></div>
+            <button id="clearSelection" class="link-button" type="button" disabled>Clear</button>
+          </div>
+          <div id="composition" class="composition" aria-live="polite"><p>Tap letters from your type case</p></div>
+          <div class="word-readout">
+            <p id="wordPreview"><span>—</span><small>$0.00 / sec</small></p>
+            <button id="buildButton" class="primary-button" type="button" disabled>START LINE <span>→</span></button>
+          </div>
+          <div class="inventory-heading"><b>AVAILABLE TYPE</b><small id="availableCount">0 tiles</small></div>
+          <div id="inventory" class="type-case"><p class="empty-state">Your available letters appear here.</p></div>
+        </section>
+
+        <div class="section-heading"><div><p>ACTIVE PRODUCTION</p><h2>Your words</h2></div><strong id="totalOutput">$0.00/s</strong></div>
+        <section class="portfolio-strip" aria-label="Active word portfolio bonus">
+          <span><small>PORTFOLIO</small><b id="portfolioMultiplier">×1.00</b></span>
+          <p id="portfolioHint">Run different word lengths together to boost every line.</p>
+        </section>
+        <div id="wordLines" class="word-lines"></div>
+      </section>
+
+      <section id="screen-market" class="screen" data-screen="market" aria-labelledby="marketTitle" hidden>
+        <div class="screen-heading">
+          <div><p>BUY PHYSICAL LETTER TILES</p><h1 id="marketTitle">Letter market</h1></div>
+          <span class="header-icon" aria-hidden="true">A</span>
+        </div>
+        <section class="market-callout">
+          <span>LIVE CRATE</span>
+          <p>Each tile can work in one word at a time. Dismantle a line to use its letters again.</p>
+        </section>
+        <div id="market" class="market-grid"></div>
+        <button id="refreshMarket" class="wide-button" type="button">OPEN A NEW CRATE <b id="refreshCost">$12</b></button>
+        <section class="app-card inventory-summary">
+          <div class="card-title"><div><span class="section-icon">▦</span><p><b>TYPE INVENTORY</b><small>Owned across every production line</small></p></div><strong id="lettersOwned">0</strong></div>
+          <div id="alphabetInventory" class="alphabet-inventory"></div>
+        </section>
+      </section>
+
+      <section id="screen-research" class="screen" data-screen="research" aria-labelledby="researchTitle" hidden>
+        <div class="screen-heading">
+          <div><p>INVEST IN PERMANENT ADVANTAGES</p><h1 id="researchTitle">Research lab</h1></div>
+          <span class="header-icon research-icon" aria-hidden="true">⌁</span>
+        </div>
+        <section class="research-summary">
+          <p><span>THIS EDITION</span><b id="researchSpent">LEVEL 0</b></p>
+          <small>Research resets when you publish a new Edition. Fame bonuses are permanent.</small>
+        </section>
+        <div id="upgradeList" class="upgrade-list"></div>
+        <section class="app-card manager-card">
+          <div class="card-title"><div><span class="section-icon">M</span><p><b>PRESS MANAGER</b><small>Permanent, conservative line automation</small></p></div><strong id="managerLevel">NOT HIRED</strong></div>
+          <div class="manager-body">
+            <div class="manager-avatar" aria-hidden="true">Aa</div>
+            <div class="manager-copy"><b id="managerName">Owner-operated</b><p id="managerDescription">Publish Editions and invest Fame to hire a manager who upgrades your cheapest active line—even while you are away.</p><small id="managerRecord">0 automatic upgrades</small></div>
+          </div>
+          <button id="hireManager" class="manager-button" type="button" disabled><span>UNLOCKS WITH FAME</span><b>3 FAME</b></button>
+        </section>
+      </section>
+
+      <section id="screen-goals" class="screen" data-screen="goals" aria-labelledby="goalsTitle" hidden>
+        <div class="screen-heading">
+          <div><p>ORDERS, DISCOVERIES & LEGACY</p><h1 id="goalsTitle">Publisher desk</h1></div>
+          <span class="header-icon goals-icon" aria-hidden="true">✓</span>
+        </div>
+
+        <section class="app-card daily-card">
+          <div class="card-title"><div><span class="section-icon">☀</span><p><b>DAILY ORDERS</b><small id="dailyDate">Resets at midnight Edmonton</small></p></div><strong id="dailyCount">0/3</strong></div>
+          <div id="dailyOrders" class="daily-orders"></div>
+        </section>
+
+        <section class="edition-card">
+          <div class="edition-copy">
+            <p>LEGACY PROGRESSION</p>
+            <h2>Publish Edition <span id="nextEdition">2</span></h2>
+            <small>Restart your foundry to earn permanent Fame. Each Fame adds 10% to every word forever.</small>
+          </div>
+          <div class="edition-meter"><span id="editionProgress"></span></div>
+          <div class="edition-numbers"><span id="editionEarnings">$0 earned</span><b id="editionTarget">$1,000 needed</b></div>
+          <div class="fame-preview"><span>NOW <b id="currentMultiplier">×1.00</b></span><i>→</i><span>NEXT <b id="nextMultiplier">×1.10</b></span></div>
+          <button id="publishButton" class="publish-button" type="button" disabled>PUBLISH NEW EDITION <b id="fameGain">+1 FAME</b></button>
+        </section>
+
+        <section class="app-card legacy-card">
+          <div class="card-title"><div><span class="section-icon">F</span><p><b>FAME WORKS</b><small>Permanent upgrades across every Edition</small></p></div><strong id="fameAvailable">0 AVAILABLE</strong></div>
+          <p class="legacy-note">Invest Fame points without reducing Fame's permanent production multiplier.</p>
+          <div id="legacyTree" class="legacy-tree"></div>
+        </section>
+
+        <section class="app-card collection-card">
+          <div class="card-title"><div><span class="section-icon">Aa</span><p><b>WORD COLLECTION</b><small>First discoveries pay an instant bonus</small></p></div><strong id="discoveryCount">0</strong></div>
+          <div id="discoveries" class="discoveries"><p class="empty-state">Your discovered words will appear here.</p></div>
+        </section>
+
+        <section class="app-card archive-card">
+          <div class="card-title"><div><span class="section-icon">↗</span><p><b>ARCHIVE POWER</b><small>Discoveries permanently improve every word</small></p></div><strong id="archiveMultiplier">×1.00</strong></div>
+          <div class="archive-progress">
+            <div><span id="archiveFill"></span></div>
+            <p><span id="archiveCount">0 discoveries</span><b id="archiveNext">5 for +5%</b></p>
+          </div>
+        </section>
+
+        <section class="app-card achievements-card">
+          <div class="card-title"><div><span class="section-icon">★</span><p><b>ACHIEVEMENTS</b><small>Permanent records across Editions</small></p></div><strong id="achievementCount">0/16</strong></div>
+          <div id="achievements" class="achievements"></div>
+        </section>
+
+        <section class="app-card stats-card">
+          <div class="card-title"><div><span class="section-icon">#</span><p><b>LIFETIME LEDGER</b></p></div></div>
+          <dl id="statsLedger"></dl>
+          <button id="resetGame" class="reset-button" type="button">Reset prototype</button>
+        </section>
+      </section>
+    </main>
+
+    <nav class="bottom-nav" aria-label="Game sections">
+      <button type="button" data-tab="foundry" class="active"><span aria-hidden="true">⚙</span><b>FOUNDRY</b></button>
+      <button type="button" data-tab="market"><span aria-hidden="true">A</span><b>MARKET</b><i id="marketBadge">6</i></button>
+      <button type="button" data-tab="research"><span aria-hidden="true">⌁</span><b>RESEARCH</b></button>
+      <button type="button" data-tab="goals"><span aria-hidden="true">✓</span><b>GOALS</b><i id="goalsBadge" hidden>!</i></button>
+    </nav>
+
+    <div id="toast" class="toast" role="status" hidden><span id="toastIcon">✓</span><p><b id="toastTitle">Done</b><small id="toastMessage"></small></p></div>
+
+    <div id="offlineSheet" class="sheet-backdrop" hidden>
+      <section class="bottom-sheet" role="dialog" aria-modal="true" aria-labelledby="offlineTitle">
+        <span class="sheet-handle" aria-hidden="true"></span>
+        <div class="sheet-hero moon" aria-hidden="true">☾</div>
+        <p>THE NIGHT SHIFT DELIVERED</p>
+        <h2 id="offlineTitle">Welcome back</h2>
+        <strong id="offlineAmount">+$0.00</strong>
+        <small id="offlineTime">Your presses kept working.</small>
+        <button id="dismissOffline" class="primary-button" type="button">COLLECT</button>
+      </section>
+    </div>
+
+    <div id="publishSheet" class="sheet-backdrop" hidden>
+      <section class="bottom-sheet" role="dialog" aria-modal="true" aria-labelledby="publishTitle">
+        <span class="sheet-handle" aria-hidden="true"></span>
+        <div class="sheet-hero book" aria-hidden="true">W</div>
+        <p>A NEW CHAPTER</p>
+        <h2 id="publishTitle">Publish this Edition?</h2>
+        <strong id="publishReward">+1 FAME</strong>
+        <small>Your cash, letters, active words, and research reset. Discoveries, achievements, lifetime records, Fame, Fame Works, and your Press Manager stay forever.</small>
+        <button id="confirmPublish" class="primary-button" type="button">PUBLISH & RESTART</button>
+        <button id="cancelPublish" class="sheet-cancel" type="button">Keep building</button>
+      </section>
+    </div>
+  </div>
+
+  <script src="../wordfall/words.js"></script>
+  <script src="cloud.js?v=9"></script>
+  <script src="core.js?v=9"></script>
+  <script src="game.js?v=9"></script>
+</body>
+</html>

@@ -1,0 +1,2777 @@
+<!doctype html>
+<html lang="en" data-brand="wikicontexto">
+<head>
+<meta charset="utf-8">
+<!-- viewport=device-width so CEF (OBS browser engine, DPR=1) rasterizes at the
+     native OBS source resolution rather than re-scaling a 720-logical render.
+     Layout scaling to fill the canvas is handled via CSS `zoom` set in JS
+     below — text re-rasterizes at the zoomed size = pixel-sharp. -->
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WikiContexto — OBS Overlay</title>
+<script>
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Roboto+Mono:wght@400;500&family=Inter:wght@400;600;700;800&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* Overlay-specific: fixed 1080x1920 portrait canvas for OBS. The page
+   background is always transparent so the stream shows through around the
+   game panels. Panels keep their own backgrounds. */
+/* MINIMAL BASELINE — no zoom, no fixed dimensions. Page renders at the
+   natural design size and OBS canvas can be any size. We'll add scaling
+   back ONCE we confirm content renders at all. */
+html, body {
+  width: 100%; height: 100%;
+  margin: 0; padding: 0;
+  background: transparent !important;
+  overflow: hidden;
+}
+body:not(.game-active) .page-wrap { display: none !important; }
+/* Content centered at ~720px — the "just before mobile breakpoint" sweet spot
+   the user liked on the game page. Default styling handles everything at this
+   width; no further per-element overrides. */
+.page-wrap { max-width: 720px !important; margin: 0 auto; padding: 0 20px 20px; }
+/* Overlay-specific: title/stats/scoreboard pack tight at the top; the
+   PULSES banner uses margin-top: auto so its bottom aligns with the bottom
+   of the 5th ranked card. */
+.left-col { justify-content: flex-start !important; gap: 4px !important; }
+.left-col .word-announce { margin-top: auto; }
+.title-block { margin-bottom: 0; min-width: 0; }
+.title-sub { margin-bottom: 2px; }
+.stats-bar { gap: 2px !important; }
+.stats-bar .stat { padding: 0; }
+.stat-label { font-size: 9px; letter-spacing: 2px; }
+.stat-val { font-size: 13px; }
+/* Overlay-only: solid dark bubble behind the logo with squared edges,
+   since the page bg is transparent. Logo sits flush against the game
+   area — zero gap, no overlap. */
+.site-header {
+  padding: 0;
+  margin: 0;
+}
+.site-header .brand-bubble {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(to bottom, rgba(15,17,23,0.5) 0%, rgba(15,17,23,1) 100%);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-bottom: none;
+  border-radius: 16px 16px 0 0;
+  padding: 5px 16px 0;
+  margin-bottom: 0;
+}
+.brand-img { max-height: 58px !important; }
+
+/* GPU compositing + smoothing — keeps text crisp when CSS `zoom` upscales
+   the 720-wide layout to large OBS canvases. Photos (avatars, brand logo)
+   use default smooth scaling — `image-rendering: crisp-edges` is wrong here
+   since it produces visible pixels rather than smooth bilinear. */
+.page-wrap {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Readable body + title at OBS scale */
+#body { font-size: 18px; line-height: 1.7; max-height: none; }
+#titleText { font-size: 24px; }
+.card .word-lbl { font-size: 20px; }
+
+/* Equalize left-col height with right-col (5 cards). Tighten gaps and fix
+   scoreboard / announce heights so the two columns line up top + bottom.
+   padding-bottom 0 pulls the ticker right up under the scoreboard + cards. */
+/* "TITLE" label hugs the border with zero top gap, and the 5 rank cards
+   grow (flex 1) to fill whatever vertical space the left column doesn't
+   use — so a 3-word title doesn't crowd the scoreboard into the podium
+   and the cards visually span the same height as the left column. */
+.top-row { padding: 0 12px 0; }
+.left-col { gap: 4px !important; justify-content: flex-start !important; }
+.left-col .word-announce { margin-top: auto; }
+.title-block { margin: 0; padding: 0; }
+.title-sub { margin: 0 0 0 0 !important; font-size: 9px !important; line-height: 1; padding-top: 2px; }
+#titleText { gap: 6px; margin-top: 2px; }
+.right-col {
+  --rank-card-gap: 6px;
+  --rank-card-min-height: 54px;
+}
+.stats-bar { gap: 16px; padding: 0; }
+.stat-label { font-size: 9px; letter-spacing: 2px; }
+.stat-val { font-size: 14px; }
+.scoreboard { padding: 8px 4px; min-height: 100px; flex: 1 1 0; }
+.tp-card.gold   { width: 82px; height: 94px; }
+.tp-card.silver { width: 70px; height: 80px; }
+.tp-card.bronze { width: 60px; height: 68px; }
+.word-announce { padding: 6px 10px; height: 48px; }
+.wa-avatar { width: 32px; height: 32px; }
+.wa-word { font-size: 14px; }
+.wa-top { font-size: 10px; }
+.wa-earned { font-size: 11px; }
+</style>
+<style>
+/* ── Reset & vars ──────────────────────────────────────────── */
+:root {
+  --bg: #0f1117;
+  --bg-card: #1a1d27;
+  --bg-panel: #14161f;
+  --border: rgba(255,255,255,0.07);
+  --text: #e2e8f0;
+  --muted: #64748b;
+  --accent: #ff6600;
+  --accent-glow: rgba(255,102,0,0.25);
+  --green: #4ade80;
+  --green-mid: #16a34a;
+  --green-dark: #166534;
+  --yellow: #fde047;
+  --red: #f87171;
+  --rank-bg: #0f1923;
+  --redact: #252836;
+  --body-font: 'Roboto Mono', ui-monospace, monospace;
+  --head-font: 'Orbitron', system-ui, sans-serif;
+  --ui-font: 'Inter', system-ui, sans-serif;
+  --radius: 12px;
+  --title-slot-height: 130px;
+}
+*, *::before, *::after { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--ui-font);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+.page-wrap {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px 80px;
+}
+@media (max-width: 540px) { .page-wrap { padding: 0 12px 60px; } }
+
+/* ── Header ────────────────────────────────────────────────── */
+.site-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0;
+  gap: 16px;
+}
+.brand {
+  font-family: var(--head-font);
+  font-weight: 700;
+  font-size: clamp(28px, 5.2vw, 52px);
+  letter-spacing: 2px;
+  color: var(--accent);
+  line-height: 1;
+}
+.brand span { color: var(--text); opacity: 0.55; }
+/* Logo image variant — black pixels drop out against the dark page bg. */
+.brand-img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  max-height: 96px;
+  mix-blend-mode: screen;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+@media (max-width: 540px) { .brand-img { max-height: 64px; } }
+
+/* ── Stats bar (inline, no card chrome) ───────────────────── */
+.stats-bar {
+  display: flex; gap: 22px; flex-wrap: wrap;
+  padding: 2px 2px;
+}
+.stat {
+  display: flex; align-items: center; gap: 10px;
+}
+.stat-label {
+  font-size: 10px; font-weight: 700; letter-spacing: 2.5px;
+  color: var(--muted); text-transform: uppercase;
+}
+.stat-val {
+  font-family: var(--head-font);
+  font-size: 16px; font-weight: 700; color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Idle / How to Play ────────────────────────────────────── */
+#idleScreen {
+  padding: 48px 20px 40px;
+  display: flex; flex-direction: column; align-items: center;
+  text-align: center; gap: 40px;
+}
+body.game-active #idleScreen { display: none; }
+.idle-hero h1 {
+  font-family: var(--head-font);
+  font-size: clamp(28px, 6vw, 56px);
+  letter-spacing: 3px;
+  color: var(--accent);
+  margin: 0 0 16px;
+}
+.idle-hero .tagline { font-size: clamp(14px, 2vw, 18px); color: var(--muted); margin: 0; line-height: 1.6; }
+.htp-card {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 26px;
+  max-width: 520px; text-align: left;
+}
+.htp-card h2 {
+  font-family: var(--head-font);
+  font-size: 11px; letter-spacing: 3px; color: var(--accent);
+  text-transform: uppercase; margin: 0 0 16px;
+}
+.steps { display: flex; flex-direction: column; gap: 14px; }
+.step { display: flex; gap: 14px; align-items: flex-start; }
+.step-num {
+  flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%;
+  background: var(--accent); color: #111;
+  font-weight: 800; font-size: 13px;
+  display: flex; align-items: center; justify-content: center;
+}
+.step-text { font-size: 14px; line-height: 1.55; color: var(--text); }
+.step-text strong { color: var(--accent); font-weight: 700; }
+
+/* ── Game area layout ──────────────────────────────────────── */
+#gameArea { display: none; flex-direction: column; gap: 14px; }
+body.game-active #gameArea { display: flex; }
+
+.article-panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.panel-header {
+  padding: 10px 18px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-card);
+  font-size: 10px; font-weight: 700; letter-spacing: 3px;
+  color: var(--muted); text-transform: uppercase;
+}
+
+.top-row {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) minmax(360px, 1.6fr);
+  gap: 14px;
+  /* Minimal top padding — TITLE label sits flush with the logo bubble.
+     Bottom 0 so the ticker sits right under the scoreboard / cards. */
+  padding: 2px 16px 0;
+}
+/* Column-stack breakpoint lowered below the locked 720 viewport so the
+   overlay always renders 2-col. */
+@media (max-width: 540px) { .top-row { grid-template-columns: 1fr; } }
+
+/* Left: title + scoreboard + announce */
+.left-col { display: flex; flex-direction: column; gap: 12px; }
+.title-block { min-width: 0; }
+.title-sub {
+  font-size: 10px; letter-spacing: 3px; color: var(--muted);
+  text-transform: uppercase; margin-bottom: 8px;
+}
+#titleText {
+  font-family: var(--head-font);
+  font-weight: 700;
+  font-size: clamp(16px, 2.1vw, 24px);
+  letter-spacing: 1px;
+  line-height: 1.25;
+  min-height: var(--title-slot-height);
+  max-height: var(--title-slot-height);
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+  align-content: flex-start;
+  min-width: 0;
+  overflow: hidden;
+}
+#titleText .t-word {
+  display: inline-flex; align-items: center; gap: 6px;
+  max-width: 100%;
+}
+#titleText .t-word .w-text { display: inline-block; }
+#titleText .t-word.revealed .w-text { color: var(--accent); }
+#titleText .t-word.hidden .w-text {
+  background: var(--redact);
+  color: var(--accent);
+  border-radius: 5px;
+  padding: 2px 10px;
+  letter-spacing: 3px;
+  font-weight: 700;
+  font-size: 0.82em;
+}
+#titleText .t-word.hidden.current-hint .w-text {
+  min-width: 42px;
+  color: #111721;
+  background: linear-gradient(135deg, #ffd166, var(--accent));
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow: 0 0 16px rgba(255, 129, 38, 0.28);
+  text-align: center;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  font-size: 0.95em;
+}
+#titleText .t-word.just-revealed .w-text {
+  animation: titleWordReveal 900ms ease-out forwards;
+}
+@keyframes titleWordReveal {
+  0%   { opacity: 0; transform: scale(0.75); filter: blur(4px); color: var(--redact); letter-spacing: 6px; }
+  40%  { opacity: 0.7; filter: blur(1px); letter-spacing: 3px; }
+  100% { opacity: 1; transform: scale(1); filter: blur(0); color: var(--accent); letter-spacing: 1px; }
+}
+#titleText .t-word .finder-pfp {
+  width: 22px; height: 22px; border-radius: 50%;
+  object-fit: cover; flex: 0 0 auto;
+  border: 2px solid var(--accent);
+  box-shadow: 0 0 0 2px rgba(255,102,0,0.12);
+  opacity: 0; transform: translateX(-6px);
+  animation: finderPfpIn 600ms 400ms ease-out forwards;
+}
+#titleText .t-word .finder-pfp.fallback {
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--redact); color: var(--text);
+  font-size: 10px; font-weight: 700; letter-spacing: 0;
+}
+.title-block.title-compact #titleText {
+  font-size: 21px;
+  gap: 6px;
+  line-height: 1.12;
+}
+.title-block.title-compact #titleText .t-word { gap: 4px; }
+.title-block.title-compact #titleText .t-word.hidden .w-text {
+  padding: 2px 8px;
+  letter-spacing: 2px;
+}
+.title-block.title-compact #titleText .t-word .finder-pfp {
+  width: 19px;
+  height: 19px;
+}
+.title-block.title-tight #titleText {
+  font-size: 18px;
+  gap: 4px;
+  line-height: 1.04;
+}
+.title-block.title-tight #titleText .t-word { gap: 3px; }
+.title-block.title-tight #titleText .t-word.hidden .w-text {
+  padding: 1px 6px;
+  letter-spacing: 1.5px;
+  font-size: 0.78em;
+}
+.title-block.title-compact #titleText .t-word.hidden.current-hint .w-text,
+.title-block.title-tight #titleText .t-word.hidden.current-hint .w-text {
+  min-width: 38px;
+  padding: 2px 10px;
+  letter-spacing: 0;
+}
+.title-block.title-tight #titleText .t-word .finder-pfp {
+  width: 17px;
+  height: 17px;
+  border-width: 1px;
+  box-shadow: none;
+}
+.title-block.title-clipped #titleText {
+  -webkit-mask-image: linear-gradient(180deg, #000 78%, transparent);
+  mask-image: linear-gradient(180deg, #000 78%, transparent);
+}
+@keyframes finderPfpIn {
+  from { opacity: 0; transform: translateX(-6px) scale(0.8); }
+  to   { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+/* ── Scoreboard (RecTangled-style podium, adapted) ──────────── */
+/* Scoreboard flexes to fill free vertical space in the left column;
+   podium cards scale up so they visually occupy the enlarged slot. */
+.scoreboard {
+  display: flex; align-items: flex-end; justify-content: center; gap: 10px;
+  padding: 8px 4px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  flex: 1 1 0;
+  min-height: 120px;
+  overflow: visible;
+}
+.tp-card {
+  position: relative;
+  display: flex; flex-direction: column; align-items: center;
+  padding: 4px 4px 4px;
+  overflow: hidden;
+  flex-shrink: 0;
+  isolation: isolate;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+/* Top specular highlight (soft sheen along the upper edge) */
+.tp-card::after {
+  content: "";
+  position: absolute;
+  top: 0; left: 6%; right: 6%; height: 42%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0) 100%);
+  border-radius: 50% 50% 40% 40% / 80% 80% 20% 20%;
+  pointer-events: none;
+  z-index: 0;
+  filter: blur(1px);
+}
+.tp-card > * { position: relative; z-index: 1; }
+.tp-card.gold {
+  width: 92px; height: 104px; border-radius: 14px;
+  background:
+    radial-gradient(ellipse 70% 50% at 30% 18%, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0) 60%),
+    linear-gradient(160deg, #fce78a 0%, #f4c730 32%, #c98e08 68%, #855c04 100%);
+  border: 1px solid rgba(255, 232, 140, 0.9);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 230, 0.75),
+    inset 0 -10px 16px rgba(90, 55, 0, 0.38),
+    0 8px 16px rgba(180, 130, 0, 0.38),
+    0 0 0 1px rgba(110, 75, 0, 0.35);
+}
+.tp-card.gold:hover { transform: translateY(-2px) rotate(-1deg); box-shadow: inset 0 1px 0 rgba(255,255,230,0.8), inset 0 -10px 16px rgba(90,55,0,0.38), 0 12px 22px rgba(180,130,0,0.5), 0 0 0 1px rgba(110,75,0,0.35); }
+
+.tp-card.silver {
+  width: 78px; height: 88px; border-radius: 12px;
+  background:
+    radial-gradient(ellipse 70% 50% at 30% 20%, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 60%),
+    linear-gradient(160deg, #f4f6fa 0%, #c8cdd6 32%, #8c93a1 72%, #565c68 100%);
+  border: 1px solid rgba(245, 248, 252, 0.85);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.75),
+    inset 0 -8px 14px rgba(40, 45, 55, 0.35),
+    0 6px 13px rgba(60, 65, 75, 0.38),
+    0 0 0 1px rgba(60, 65, 75, 0.32);
+}
+.tp-card.bronze {
+  width: 66px; height: 76px; border-radius: 11px;
+  background:
+    radial-gradient(ellipse 70% 50% at 30% 20%, rgba(255,235,210,0.55) 0%, rgba(255,235,210,0) 60%),
+    linear-gradient(160deg, #f3c79a 0%, #d0874a 32%, #9b561d 72%, #5f310e 100%);
+  border: 1px solid rgba(250, 215, 180, 0.85);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 230, 205, 0.7),
+    inset 0 -7px 12px rgba(60, 28, 5, 0.38),
+    0 5px 11px rgba(120, 70, 25, 0.4),
+    0 0 0 1px rgba(70, 35, 8, 0.35);
+}
+.tp-card.empty { opacity: 0.25; filter: grayscale(0.8); }
+/* Round-end pulse — applied to all 3 podium cards while the round is over
+   so viewers' eyes land on the winners during the 30s post-win hold. */
+@keyframes tp-round-end-pulse {
+  0%, 100% { transform: scale(1); filter: brightness(1); }
+  50%      { transform: scale(1.04); filter: brightness(1.18); }
+}
+.scoreboard.round-ended .tp-card:not(.empty) {
+  animation: tp-round-end-pulse 1.4s ease-in-out infinite;
+}
+.tp-card.empty::before, .tp-card.empty::after { display: none; }
+.tp-card:not(.empty) { cursor: pointer; }
+
+.tp-pfp {
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-weight: 800; overflow: hidden;
+  flex-shrink: 0;
+  box-shadow: inset 0 0 0 2px rgba(0,0,0,0.18), 0 2px 4px rgba(0,0,0,0.25);
+}
+.tp-card.gold .tp-pfp   { width: 68px; height: 68px; font-size: 26px; background: linear-gradient(160deg, #fff1a8 0%, #d39906 100%); border: 2px solid #fff4c2; }
+.tp-card.silver .tp-pfp { width: 52px; height: 52px; font-size: 20px; background: linear-gradient(160deg, #f6f8fc 0%, #6d7381 100%); border: 2px solid #fbfcfe; }
+.tp-card.bronze .tp-pfp { width: 34px; height: 34px; font-size: 13px; background: linear-gradient(160deg, #f4cda0 0%, #7a451a 100%); border: 2px solid #fddfbc; }
+.tp-pfp img { width: 100%; height: 100%; object-fit: cover; }
+.tp-name {
+  font-weight: 800; max-width: 100%;
+  /* clip + overflow-clip-margin so name_glow textShadow extends past
+     the .tp-name box and fades naturally instead of being hard-cut. */
+  overflow: clip; overflow-clip-margin: 80px;
+  text-overflow: ellipsis; white-space: nowrap;
+  text-align: center;
+  letter-spacing: 0.2px;
+  line-height: 13px;
+  height: 13px;
+  margin-top: auto;
+}
+.tp-card.gold .tp-name   { font-size: 11px; color: #3a2500; text-shadow: 0 1px 0 rgba(255, 240, 180, 0.6); }
+.tp-card.silver .tp-name { font-size: 10px; color: #1f242d; text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6); }
+.tp-card.bronze .tp-name { font-size: 9px;  color: #2a1505; text-shadow: 0 1px 0 rgba(255, 225, 195, 0.55); }
+.tp-score {
+  font-weight: 800; font-variant-numeric: tabular-nums;
+  text-align: center; margin-top: 1px;
+  padding: 0 5px;
+  border-radius: 999px;
+  letter-spacing: 0.2px;
+  line-height: 13px;
+  height: 13px;
+}
+.tp-card.gold .tp-score   { font-size: 10px; color: #fff4c2; background: rgba(60, 36, 0, 0.55); box-shadow: inset 0 1px 0 rgba(0,0,0,0.3); }
+.tp-card.silver .tp-score { font-size: 9px;  color: #f4f6fa; background: rgba(30, 34, 42, 0.5);  box-shadow: inset 0 1px 0 rgba(0,0,0,0.3); }
+.tp-card.bronze .tp-score { font-size: 8px;  color: #ffe0c2; background: rgba(40, 18, 4, 0.55);  box-shadow: inset 0 1px 0 rgba(0,0,0,0.3); }
+
+/* ── Word-announce banner (RecTangled-style) ───────────────── */
+/* Fixed-height banner so long names/words/totals can't push the
+   scoreboard up; every internal text field truncates with ellipsis. */
+.word-announce {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(30,40,80,0.9), rgba(20,30,60,0.88));
+  border: 1px solid rgba(255,255,255,0.12);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.35);
+  height: 56px;
+  flex-shrink: 0;
+  overflow: hidden;
+  min-width: 0;
+}
+.word-announce.hidden { visibility: hidden; }
+.wa-avatar {
+  width: 38px; height: 38px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-weight: 800; font-size: 13px;
+  border: 2px solid rgba(255,255,255,0.25);
+  flex-shrink: 0; overflow: hidden;
+  background: #555;
+}
+.wa-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.wa-info { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 2px; overflow: hidden; }
+.wa-top {
+  display: flex; align-items: baseline; gap: 8px;
+  font-size: 11px; color: rgba(255,255,255,0.75);
+  min-width: 0; overflow: hidden;
+}
+.wa-name {
+  font-weight: 700;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  min-width: 0; flex: 1 1 auto;
+}
+.wa-total { font-weight: 700; color: rgba(255,255,255,0.9); font-variant-numeric: tabular-nums; flex-shrink: 0; white-space: nowrap; }
+.wa-earned { margin-left: auto; font-weight: 800; color: var(--green); font-size: 12px; font-variant-numeric: tabular-nums; flex-shrink: 0; white-space: nowrap; }
+.wa-bottom { display: flex; align-items: center; gap: 6px; min-width: 0; overflow: hidden; }
+.wa-word {
+  font-family: var(--head-font);
+  font-size: 16px; font-weight: 700;
+  color: #ff6bd6;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  min-width: 0; flex: 1 1 auto;
+}
+.wa-rarity {
+  display: none !important;
+  font-size: 9px; font-weight: 800; letter-spacing: 0.08em;
+  padding: 2px 6px; border-radius: 3px; text-transform: uppercase;
+  flex-shrink: 0; white-space: nowrap;
+}
+.wa-rarity.rare    { color: #fde047; background: rgba(253,224,71,0.14); border: 1px solid rgba(253,224,71,0.4); }
+.wa-rarity.uncommon{ color: #22d3ee; background: rgba(34,211,238,0.12); border: 1px solid rgba(34,211,238,0.35); }
+.wa-rarity.common  { color: #94a3b8; background: rgba(148,163,184,0.12); border: 1px solid rgba(148,163,184,0.3); }
+
+/* ── Right column: guess cards ─────────────────────────────── */
+.right-col {
+  display: grid;
+  grid-template-rows: repeat(5, minmax(var(--rank-card-min-height, 46px), 1fr));
+  gap: var(--rank-card-gap, 8px);
+  min-height: calc((var(--rank-card-min-height, 46px) * 5) + (var(--rank-card-gap, 8px) * 4));
+  align-content: stretch;
+  min-width: 0;
+}
+.cards-empty {
+  grid-row: 1 / -1;
+  align-self: center;
+  padding: 22px 0 6px; font-size: 13px; color: var(--muted);
+  font-style: italic; text-align: center;
+}
+.card {
+  padding: 0;
+  border-radius: 999px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  animation: cardIn 240ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  min-height: 46px;
+  position: relative;
+  /* overflow:visible so equipped cosmetics (profile_glow boxShadow,
+     name_glow textShadow) can extend past the pill boundary instead of
+     being clipped at the card edge. The proximity fill bar that DID
+     need overflow:hidden lives in its own .card-clip wrapper below. */
+  overflow: visible;
+  height: 100%;
+}
+.card .card-clip {
+  position: absolute; inset: 0; overflow: hidden;
+  border-radius: 999px; pointer-events: none; z-index: 0;
+}
+/* Podium (top-3 player) cards skip the cosmetic title — the gold/silver/
+   bronze tiles are too compact and the title visually crowds the score. */
+.tp-card .cosmetic-title { display: none; }
+/* Default pulse for any surface decorated with a hero_badge cosmetic that
+   doesn't ship its own animation string. Class-based (not inline) so
+   higher-specificity rules — especially the round-end pulse on
+   .scoreboard.round-ended .tp-card — can take over at round end. */
+.cos-hero-badge { animation: gen-pulse 2s ease-in-out infinite; }
+/* Proximity fill bar: width & color reflect the guess's semantic closeness
+   to the target. Rank 1 → 100% wide pure green (only the target word gets
+   there). Far ranks → short red sliver. Floored at 5% so every card shows
+   at least a nub. */
+.card .fill {
+  position: absolute;
+  top: 0; bottom: 0; left: 0;
+  width: var(--fill-pct, 0%);
+  background: var(--fill-color, transparent);
+  transition: width 400ms ease, background 400ms ease;
+  z-index: 0;
+  border-radius: 999px 0 0 999px;
+}
+/* Two identical content layers: the base holds white text everywhere; the
+   overlay holds black text but is clip-path'd to the fill bar's region, so
+   letters get pixel-sliced at the exact fill edge — half a letter can be
+   black (over the fill) and half white (over the dark panel bg). */
+.card-inner {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 14px;
+  min-height: 46px;
+  width: 100%;
+  box-sizing: border-box;
+}
+/* Both layers absolute so they share the card's exact box — prevents a
+   height mismatch (base sizing to content vs overlay sizing to card)
+   that would offset the overlay's black text slightly from the base's
+   white text. */
+.card-inner.base { position: absolute; inset: 0; z-index: 1; }
+.card-inner.overlay {
+  position: absolute; inset: 0; z-index: 2;
+  pointer-events: none;
+  clip-path: inset(0 calc(100% - var(--fill-pct, 0%)) 0 0);
+  transition: clip-path 400ms ease;
+}
+.card-inner.overlay > *:not(.rank-word) { visibility: hidden; }
+.card-inner.base .word-lbl { color: #fff; }
+.card-inner.overlay .word-lbl { color: #fff; }
+.card-inner.overlay .rank-word { background: transparent; border-color: transparent; }
+.card.top { outline: 2px solid #86efac; outline-offset: -1px; }
+.card.placeholder {
+  background: transparent;
+  border: 1px dashed rgba(255,255,255,0.12);
+  animation: none;
+  opacity: 0.55;
+}
+.card.lg-word .word-lbl { font-size: 14px; letter-spacing: 0.5px; }
+.card.xl-word .word-lbl { font-size: 12px; letter-spacing: 0.3px; }
+.card.placeholder .card-inner { padding: 9px 14px; justify-content: flex-start; }
+.card.placeholder .word-lbl:empty { display: none; }
+.card.placeholder .rank-word {
+  background: transparent;
+  border: 1px dashed rgba(255,255,255,0.2);
+  color: rgba(255,255,255,0.45);
+  font-weight: 700;
+}
+.card.placeholder .rank { color: rgba(255,255,255,0.45); }
+@keyframes cardIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+.rank-word {
+  display: flex; align-items: center;
+  flex: 0 0 auto; min-width: 0;
+  background: var(--rank-bg);
+  border: 1.5px solid hsl(var(--rank-hue, 142), 72%, 55%);
+  border-radius: 999px;
+  height: 32px;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  /* flex-shrink: 0 — the word area never gets compressed by flex layout.
+     .who shrinks first (down to just the avatar) before fitWordLabel
+     kicks in to shrink the word's font as a last resort. */
+}
+.card .rank {
+  flex-shrink: 0; min-width: 64px;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 13px; color: #fff;
+  font-variant-numeric: tabular-nums; padding: 0 10px;
+}
+.card .word-lbl {
+  font-weight: 800; font-size: 18px;
+  letter-spacing: 1px; text-transform: uppercase;
+  flex: 1 1 auto;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  min-width: 0;
+  padding: 0 12px;
+  display: flex; align-items: center;
+}
+.card .who {
+  display: flex; align-items: center; gap: 8px;
+  flex: 0 1 auto; min-width: 38px;
+  margin-left: auto;
+  /* overflow:visible so avatar profile_glow + name_glow extend past .who.
+     fitWordLabel uses a smarter detection (rank-word.scrollWidth vs
+     allotted space) that ignores .who's decorative overflow. */
+  overflow: visible;
+}
+.card .avatar {
+  width: 38px; height: 38px; border-radius: 50%; object-fit: cover;
+  border: 1.5px solid rgba(255,255,255,0.45);
+}
+.card .avatar-fb {
+  width: 38px; height: 38px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 700; color: #fff; background: #555;
+  flex-shrink: 0;
+}
+/* Raw <img> from avatarHtml has no sizing — without this it renders at
+   natural resolution (often 128px from Discord CDN) and gets clipped by
+   the avatar-fb container, showing just the top-left of the picture. */
+.card .avatar-fb img {
+  width: 100%; height: 100%; object-fit: cover; border-radius: 50%;
+  display: block;
+}
+.card .who-text {
+  display: flex; flex-direction: column; align-items: flex-start;
+  min-width: 0;
+  overflow: hidden;
+  flex: 0 1 auto;
+}
+.card .gname {
+  color: #fff; font-weight: 600; font-size: 14px;
+  max-width: 120px; min-width: 0; flex: 0 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis; white-space: nowrap;
+}
+.card .cosmetic-title {
+  font-size: 10px; font-weight: 700; opacity: 0.85;
+  letter-spacing: 0.4px; text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px; min-width: 0;
+  margin-top: 1px;
+}
+.tp-card .cosmetic-title {
+  font-size: 8px; font-weight: 700; opacity: 0.85;
+  letter-spacing: 0.3px; text-transform: uppercase;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  max-width: 100%;
+  margin-top: 1px;
+}
+
+/* ── Ticker (right-to-left sliding chips) ──────────────────── */
+.ticker-wrap {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 2px 0 0;
+  margin: 0 -8px;
+  overflow: hidden;
+  position: relative;
+}
+.ticker {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 3px;
+  height: 36px;
+  overflow: hidden;
+  position: relative;
+}
+
+.chip {
+  flex-shrink: 0;
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-family: var(--ui-font);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.4px;
+  text-transform: lowercase;
+  white-space: nowrap;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  /* Chips spawn with their right edge just inside the ticker's right fade
+     gradient (fully visible, never offscreen) and slide left to their
+     natural flex slot. --slide-dist is set per-chip by JS after layout. */
+  --slide-dist: 0px;
+  animation: chipSlideIn 500ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.chip.hit      { background: linear-gradient(90deg, #4ade80 0%, #16a34a 100%); color: #ffffff; border: 1px solid #86efac; box-shadow: 0 0 10px rgba(74,222,128,0.35); }
+.chip.dup-hit,
+.chip.dup-miss { background: rgba(253,224,71,0.14);  color: #fde047; border: 1px solid rgba(253,224,71,0.5); }
+.chip.miss     { background: rgba(248,113,113,0.14); color: #fca5a5; border: 1px solid rgba(248,113,113,0.5); }
+/* Yellow duplicate chips still get a status-coded tick: green check when
+   the original guess was a hit (word is in the article), red x when the
+   original guess was a miss (word was guessed before but not in article). */
+.chip.dup-hit  .tick { color: #4ade80; }
+.chip.dup-miss .tick { color: #f87171; }
+.chip .chip-avatar {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1.5px solid rgba(255,255,255,0.35);
+  flex-shrink: 0;
+}
+.chip .tick { font-size: 11px; }
+.chip.exit  { animation: chipSlideOut 420ms ease-in forwards; pointer-events: none; }
+@keyframes chipSlideIn {
+  from { transform: translateX(var(--slide-dist)); opacity: 0.4; }
+  to   { transform: translateX(0); opacity: 1; }
+}
+@keyframes chipSlideOut {
+  from { transform: translateX(0); opacity: 1; max-width: 200px; padding-left: 10px; padding-right: 10px; }
+  to   { transform: translateX(-60px); opacity: 0; max-width: 0; padding-left: 0; padding-right: 0; }
+}
+
+/* ── Article body ──────────────────────────────────────────── */
+.article-body-panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+#body {
+  padding: 2px 22px 8px;
+  font-family: var(--body-font);
+  font-size: clamp(14px, 2vw, 17px);
+  line-height: 1.75;
+  max-height: 62vh; overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.1) transparent;
+}
+#body::-webkit-scrollbar { width: 6px; }
+#body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+#body p { margin: 0 0 14px; }
+#body p:last-child { margin-bottom: 0; }
+.word {
+  display: inline-block;
+  vertical-align: baseline;
+  transition: color 400ms ease;
+}
+.word.redacted {
+  background: var(--redact); color: transparent;
+  border-radius: 3px; padding: 0 4px; line-height: 1.3;
+  vertical-align: text-bottom;
+  user-select: none;
+}
+/* Numeric tokens get an orange redaction box so numbers are visually
+   distinct from regular hidden words. The box shows "N DIGIT(S)" in black
+   on top of the orange — tells players the length of the hidden number
+   without revealing its value. Revealed numbers use the default text
+   color — this only styles the redacted state. */
+.word.redacted.is-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent);
+  color: #000;
+  font-weight: 800;
+  font-size: 0.62em;
+  line-height: 1;
+  height: 1.38em;
+  min-width: max-content;
+  padding: 0 0.58em;
+  letter-spacing: 0.04em;
+  vertical-align: text-bottom;
+  white-space: nowrap;
+  text-transform: uppercase;
+  user-select: none;
+}
+.word.revealed { color: var(--text); }
+/* Title-word body slot: stays redacted until round end. After two title
+   words have been found, every found-slot in the body flips to a green
+   redaction so players see confirmation without learning the answer. */
+.word.redacted.target-slot.confirmed {
+  background: #2ea043;
+  box-shadow: 0 0 0 1px rgba(46,160,67,0.55) inset;
+}
+
+/* ── Round-end modal ───────────────────────────────────────── */
+.round-end-overlay {
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(10,11,16,0.88);
+  display: flex; align-items: center; justify-content: center;
+  backdrop-filter: blur(8px);
+}
+.round-end-overlay.hidden { display: none !important; }
+.round-end-card {
+  background: var(--bg-panel);
+  border: 1px solid rgba(255,102,0,0.25);
+  border-radius: 20px;
+  padding: 40px 48px;
+  text-align: center; max-width: 480px; width: 90%;
+  box-shadow: 0 0 60px rgba(255,102,0,0.12);
+}
+.re-label { font-size: 10px; letter-spacing: 4px; color: var(--accent); text-transform: uppercase; margin-bottom: 16px; }
+.re-word { font-family: var(--head-font); font-size: clamp(24px, 5vw, 40px); color: #fff; margin-bottom: 12px; text-transform: uppercase; word-break: break-all; }
+.re-winner { color: var(--green); font-weight: 600; margin-bottom: 8px; }
+.re-stats { font-size: 13px; color: var(--muted); }
+.re-dismiss {
+  margin-top: 24px;
+  background: transparent; border: 1px solid var(--border);
+  color: var(--muted); font-size: 12px; letter-spacing: 2px;
+  text-transform: uppercase; border-radius: 999px;
+  padding: 7px 20px; cursor: pointer;
+}
+.re-dismiss:hover { border-color: var(--muted); color: var(--text); }
+</style>
+
+<style>
+  /* Scale .page-wrap (the 720-wide design) to fill whatever OBS Browser
+     Source size you set. transform: scale on a child works in CEF where
+     `zoom` on html/body did not. Set by JS on load + resize. */
+  .page-wrap {
+    transform-origin: top center;
+    /* transform: scale(N) set by the script below */
+  }
+</style>
+<script>
+  (function () {
+    const DESIGN_WIDTH = 720;
+    function applyScale() {
+      const wrap = document.querySelector('.page-wrap');
+      if (!wrap) {
+        requestAnimationFrame(applyScale);
+        return;
+      }
+      const scale = window.innerWidth / DESIGN_WIDTH;
+      wrap.style.transform = 'scale(' + scale + ')';
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', applyScale);
+    } else {
+      applyScale();
+    }
+    window.addEventListener('resize', applyScale);
+    setTimeout(applyScale, 800);
+  })();
+</script>
+
+<style>
+  /* Per-word dodge — each .word is its own positioned element with a smooth
+     transform transition. As Sassie drifts past, words inside her "force
+     field" radius get pushed radially outward, with falloff (close words
+     push more, far words barely move). Looks like she's a magnet repelling
+     the article.
+
+     NOTE: we deliberately do NOT use will-change:transform here. With thousands
+     of .word spans in a Wikipedia article, forcing each one into its own
+     compositor layer explodes GPU memory in OBS's CEF renderer and causes the
+     overlay to drop frames. The transition property is enough for the effect. */
+  #body .word {
+    display: inline-block;
+    transition: transform 240ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+</style>
+
+<script>
+/* Article-word force-field dodge.
+   Subscribes to /api/runtime/events SSE for Sassie's live base.x/y/scale.
+   Each tick: compute Sassie's center+radius in viewport px, then for every
+   word inside that radius apply a radial-outward translate. Words further
+   than the radius reset to natural (no transform).
+
+   Performance tuning for OBS/CEF:
+   - The word list is cached in an array and only rebuilt when #body mutates.
+   - bodyRect/pageScale are cached and only refreshed on resize/mutation.
+   - Ticks run on a timer (~15 fps by default) instead of requestAnimationFrame.
+   - Frames are skipped entirely when Sassie hasn't moved and the DOM is clean.
+   - will-change:transform was removed from the CSS (the biggest memory win). */
+(function () {
+  const DESIGN_WIDTH = 720;
+  // Mirrors live2d-overlay.html's SCENE_SCALE_MULTIPLIER (commit b180acc).
+  // sassie-runtime publishes the logical scale; the renderer applies this
+  // multiplier visually. We mirror it here so the dodge force-field matches
+  // Sassie's actual visible silhouette, not the published logical size.
+  const SCENE_SCALE_MULTIPLIER = 2 / 3;
+  let sassieX = 0.18, sassieY = 0.78, sassieScale = 0.22 * SCENE_SCALE_MULTIPLIER;
+  let lastSassieX = sassieX, lastSassieY = sassieY, lastSassieScale = sassieScale;
+
+  function connectSSE() {
+    try {
+      const sse = new EventSource('/api/runtime/events');
+      sse.addEventListener('sassie-scene', (e) => {
+        try {
+          const s = JSON.parse(e.data);
+          if (s && s.base) { sassieX = s.base.x; sassieY = s.base.y; sassieScale = s.base.scale * SCENE_SCALE_MULTIPLIER; }
+        } catch (_) {}
+      });
+      sse.onerror = () => { setTimeout(() => { sse.close(); connectSSE(); }, 5000); };
+    } catch (_) {
+      setTimeout(connectSSE, 5000);
+    }
+  }
+  connectSSE();
+  fetch('/api/runtime/scene').then(r => r.json()).then(j => {
+    if (j && j.scene && j.scene.base) {
+      sassieX = j.scene.base.x; sassieY = j.scene.base.y; sassieScale = j.scene.base.scale * SCENE_SCALE_MULTIPLIER;
+    }
+  }).catch(() => {});
+
+  // Per-word natural-center cache. Set ONCE when the word first appears via
+  // the MutationObserver below, using offsetLeft/offsetTop (which are
+  // transform-independent so we never need to clear an in-flight transition
+  // to measure — that was causing visible snap-back glitches).
+  // Center is in BODY-LOCAL coords; tick converts to viewport on the fly.
+  const naturalMap = new WeakMap();
+  let wordEls = [];
+  let bodyEl = null;
+  let bodyRect = { left: 0, top: 0 };
+  let pageScale = 1;
+  let geometryDirty = true;
+
+  function updateGeometry() {
+    bodyEl = document.getElementById('body') || null;
+    pageScale = (window.innerWidth / DESIGN_WIDTH) || 1;
+    if (bodyEl) {
+      const br = bodyEl.getBoundingClientRect();
+      bodyRect = { left: br.left, top: br.top };
+    }
+    geometryDirty = false;
+  }
+
+  function recordWord(el) {
+    if (!bodyEl) return;
+    // offsetLeft/Top are relative to the nearest positioned ancestor. Neither
+    // #body nor .page-wrap is CSS-positioned, so for word elements that ends
+    // up being far above #body in the DOM (typically document.body). We
+    // subtract #body's own offset (measured against the same ancestor chain)
+    // to get true body-local coords. Without this, n.cx/cy includes body's
+    // position-within-page-wrap as a fixed offset and the dodge zone
+    // misaligns by that amount (~750px in WikiContexto's layout).
+    const baseLeft = bodyEl.offsetLeft;
+    const baseTop  = bodyEl.offsetTop;
+    naturalMap.set(el, {
+      cx: el.offsetLeft - baseLeft + el.offsetWidth / 2,
+      cy: el.offsetTop  - baseTop  + el.offsetHeight / 2,
+    });
+  }
+  function recordAllWords() {
+    if (!bodyEl) updateGeometry();
+    if (!bodyEl) return;
+    wordEls = Array.from(bodyEl.querySelectorAll('.word'));
+    for (let i = 0; i < wordEls.length; i++) recordWord(wordEls[i]);
+  }
+
+  // Whenever #body's DOM changes (reveal, rerender, sentence skip), re-record
+  // every word's natural center on the next frame (lets layout settle first).
+  let recordPending = false;
+  function scheduleRecord() {
+    if (recordPending) return;
+    recordPending = true;
+    requestAnimationFrame(() => {
+      recordPending = false;
+      geometryDirty = true;
+      recordAllWords();
+    });
+  }
+  document.addEventListener('DOMContentLoaded', () => {
+    bodyEl = document.getElementById('body') || null;
+    if (!bodyEl) return;
+    updateGeometry();
+    new MutationObserver(() => scheduleRecord()).observe(bodyEl, { childList: true, subtree: true });
+    scheduleRecord();
+  });
+  window.addEventListener('resize', () => { geometryDirty = true; });
+
+  // Debug visualization: load /overlay.html?dodgedebug=1 to draw a magenta
+  // circle showing the actual dodge zone so we can see where it sits relative
+  // to Sassie's visible body. Magenta dot = dodge centre, ring = force radius.
+  // NOTE: this script runs in <head> before <body> exists, so appendChild
+  // would throw on null document.body and halt the IIFE — defer to ready.
+  const DEBUG_DODGE = /[?&]dodgedebug=1\b/.test(location.search);
+  let debugEl = null;
+  if (DEBUG_DODGE) {
+    const initDebugViz = () => {
+      debugEl = document.createElement('div');
+      debugEl.style.cssText = 'position:fixed;border:3px solid #FF00FF;border-radius:50%;pointer-events:none;z-index:99999;box-shadow:0 0 0 1px rgba(255,0,255,0.4);';
+      document.body.appendChild(debugEl);
+      const dot = document.createElement('div');
+      dot.style.cssText = 'position:fixed;width:14px;height:14px;border-radius:50%;background:#FF00FF;pointer-events:none;z-index:99999;box-shadow:0 0 8px #FF00FF;';
+      document.body.appendChild(dot);
+      debugEl._dot = dot;
+    };
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initDebugViz);
+    } else {
+      initDebugViz();
+    }
+  }
+
+  // Live2D anchor (0.5, 0.5) sits at the model's geometric centre, but the
+  // sprite includes transparent space above her head — so her *visible* body
+  // centre is below the anchor. ANCHOR_VISUAL_BIAS shifts the dodge centre
+  // DOWN by that fraction of her bbox height so the force field aligns with
+  // where she actually appears, not where her PIXI anchor sits.
+  // Override via ?dodgebias=N for visual tuning; negative values shift UP.
+  const _biasParam = parseFloat(new URLSearchParams(location.search).get('dodgebias'));
+  const ANCHOR_VISUAL_BIAS = Number.isFinite(_biasParam) ? _biasParam : 0.30;
+
+  // OBS/CEF cannot sustain a 60 fps loop that touches thousands of word spans.
+  // 15 fps is plenty for a slow drift and keeps the overlay smooth. Override
+  // via ?dodgefps=N (frames per second, clamped to avoid absurd values).
+  const fpsParam = parseFloat(new URLSearchParams(location.search).get('dodgefps'));
+  const TICK_MS = Math.max(16, Math.min(250, Math.round(1000 / (Number.isFinite(fpsParam) && fpsParam > 0 ? fpsParam : 15))));
+
+  function tick() {
+    // Skip work entirely if nothing changed since the last tick. The CSS
+    // transition will keep any in-flight word motion smooth.
+    if (sassieX === lastSassieX && sassieY === lastSassieY && sassieScale === lastSassieScale && !geometryDirty) {
+      setTimeout(tick, TICK_MS);
+      return;
+    }
+    lastSassieX = sassieX; lastSassieY = sassieY; lastSassieScale = sassieScale;
+
+    const W = window.innerWidth;
+    const H = window.innerHeight;
+    if (geometryDirty) updateGeometry();
+    if (!bodyEl || !bodyEl.offsetParent) {
+      setTimeout(tick, TICK_MS);
+      return;
+    }
+
+    const sassieH_px = sassieScale * H * 1.0;
+    const sassieW_px = sassieScale * H * 0.55;
+    const sassieCx = sassieX * W;
+    const sassieCy = sassieY * H + sassieH_px * ANCHOR_VISUAL_BIAS;
+    const forceR  = Math.max(sassieW_px, sassieH_px) * 0.65 + 30;
+    const forceR2 = forceR * forceR;
+    const pushMax = sassieW_px * 0.6;
+
+    // Debug viz update runs unconditionally so the magenta dot/ring track
+    // Sassie even in a standalone browser tab where no game is active.
+    if (DEBUG_DODGE && debugEl) {
+      const r = forceR;
+      debugEl.style.left = (sassieCx - r) + 'px';
+      debugEl.style.top  = (sassieCy - r) + 'px';
+      debugEl.style.width = (r * 2) + 'px';
+      debugEl.style.height = (r * 2) + 'px';
+      debugEl._dot.style.left = (sassieCx - 7) + 'px';
+      debugEl._dot.style.top  = (sassieCy - 7) + 'px';
+    }
+
+    for (let i = 0; i < wordEls.length; i++) {
+      const el = wordEls[i];
+      const n = naturalMap.get(el);
+      if (!n) continue;  // not yet recorded; will be on next tick
+      // Convert body-local natural center to viewport coords.
+      const vCx = n.cx * pageScale + bodyRect.left;
+      const vCy = n.cy * pageScale + bodyRect.top;
+      const vx = vCx - sassieCx;
+      const vy = vCy - sassieCy;
+      const d2 = vx * vx + vy * vy;
+      if (d2 >= forceR2) {
+        if (el.style.transform) el.style.transform = '';
+        continue;
+      }
+      const d = Math.sqrt(d2) || 0.0001;
+      const t = 1 - d / forceR;
+      const fall = t * t * t * t;
+      const pushPx = pushMax * fall;
+      const ux = vx / d, uy = vy / d;
+      const lx = (ux * pushPx) / pageScale;
+      const ly = (uy * pushPx) / pageScale;
+      const tx = `translate(${lx.toFixed(1)}px, ${ly.toFixed(1)}px)`;
+      if (el.style.transform !== tx) el.style.transform = tx;
+    }
+    setTimeout(tick, TICK_MS);
+  }
+  setTimeout(tick, TICK_MS);
+})();
+</script>
+
+<style>
+  /* ── Round transition ─────────────────────────────
+     Mirror choreography: pieces slide IN from a direction at game start
+     (left-col items from left, cards from right, body from below) and
+     slide OUT in the same directions at game end. End-of-round holds
+     for HOLD_MS after the article is fully revealed so viewers can read
+     the article before it leaves. */
+  @keyframes fpInLeft {
+    0%   { opacity: 0; transform: translateX(-220px) scale(0.85); }
+    60%  { opacity: 1; transform: translateX(12px) scale(1.03); }
+    100% { opacity: 1; transform: translateX(0) scale(1); }
+  }
+  @keyframes fpInRight {
+    0%   { opacity: 0; transform: translateX(220px) scale(0.85); }
+    60%  { opacity: 1; transform: translateX(-12px) scale(1.03); }
+    100% { opacity: 1; transform: translateX(0) scale(1); }
+  }
+  @keyframes fpInBottom {
+    0%   { opacity: 0; transform: translateY(160px) scale(0.85); }
+    60%  { opacity: 1; transform: translateY(-10px) scale(1.02); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  @keyframes fpOutLeft {
+    0%   { opacity: 1; transform: translateX(0) scale(1); }
+    35%  { opacity: 1; transform: translateX(14px) scale(1.02); }
+    100% { opacity: 0; transform: translateX(-260px) scale(0.82); }
+  }
+  @keyframes fpOutRight {
+    0%   { opacity: 1; transform: translateX(0) scale(1); }
+    35%  { opacity: 1; transform: translateX(-14px) scale(1.02); }
+    100% { opacity: 0; transform: translateX(260px) scale(0.82); }
+  }
+  @keyframes fpOutBottom {
+    0%   { opacity: 1; transform: translateY(0) scale(1); }
+    35%  { opacity: 1; transform: translateY(-12px) scale(1.02); }
+    100% { opacity: 0; transform: translateY(200px) scale(0.82); }
+  }
+  .fp-build-in {
+    will-change: transform, opacity;
+    animation-duration: 880ms;
+    animation-timing-function: cubic-bezier(0.34, 1.4, 0.6, 1);
+    animation-fill-mode: backwards;
+  }
+  .fp-tear-out {
+    will-change: transform, opacity;
+    animation-duration: 880ms;
+    animation-timing-function: cubic-bezier(0.55, 0, 0.85, 0.45);
+    animation-fill-mode: forwards;
+  }
+  .fp-in-l  { animation-name: fpInLeft; }
+  .fp-in-r  { animation-name: fpInRight; }
+  .fp-in-b  { animation-name: fpInBottom; }
+  .fp-out-l { animation-name: fpOutLeft; }
+  .fp-out-r { animation-name: fpOutRight; }
+  .fp-out-b { animation-name: fpOutBottom; }
+</style>
+
+<style>
+
+/* Unified overlay: Sassie iframes sandwich the article. The article's
+   .page-wrap must establish a stacking context above the back-layer iframe
+   and below the front-layer iframe so Sassie can pass behind/in-front of it. */
+html, body { background: transparent !important; }
+.sassie-layer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  pointer-events: none;
+  background: transparent;
+}
+#sassie-back  { z-index: 1; }
+#sassie-front { z-index: 1000; }
+.page-wrap { position: relative; z-index: 100; }
+</style>
+
+<style>
+/* Sassie scanner FX — cyan ring + rotating crosshair drawn over a freshly-
+   revealed word for ~1.2s. Triggered on wikiword-reveal socket event. */
+.sassie-scanner-fx {
+  position: fixed;
+  pointer-events: none;
+  z-index: 900;
+  width: 80px;
+  height: 80px;
+  margin-left: -40px;
+  margin-top: -40px;
+  animation: sassieScannerFade 1200ms ease-out forwards;
+  will-change: opacity, transform;
+}
+.sassie-scanner-fx .ring {
+  position: absolute;
+  inset: 0;
+  border: 3px solid #00E5FF;
+  border-radius: 50%;
+  box-shadow: 0 0 28px #00E5FF, inset 0 0 16px rgba(0, 229, 255, 0.6);
+}
+.sassie-scanner-fx .crosshair {
+  position: absolute;
+  inset: 22%;
+  border: 2px solid #00E5FF;
+  border-radius: 4px;
+  opacity: 0.85;
+  animation: sassieScannerSpin 1200ms linear forwards;
+}
+.sassie-scanner-fx .crosshair::before,
+.sassie-scanner-fx .crosshair::after {
+  content: '';
+  position: absolute;
+  background: #00E5FF;
+  box-shadow: 0 0 8px #00E5FF;
+}
+.sassie-scanner-fx .crosshair::before {
+  left: 50%; top: -8px; bottom: -8px;
+  width: 2px; transform: translateX(-1px);
+}
+.sassie-scanner-fx .crosshair::after {
+  top: 50%; left: -8px; right: -8px;
+  height: 2px; transform: translateY(-1px);
+}
+@keyframes sassieScannerFade {
+  0%   { opacity: 0; transform: scale(0.5); }
+  18%  { opacity: 1; transform: scale(1.0); }
+  100% { opacity: 0; transform: scale(1.7); }
+}
+@keyframes sassieScannerSpin {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(135deg); }
+}
+
+/* === Compact stats inline with title — fixes long-target-word visibility === */
+.title-block { position: relative; }
+.title-header { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: nowrap; }
+.title-header .stats-bar { gap: 10px; padding: 0; flex-wrap: nowrap; flex-direction: row; align-items: center; }
+.title-header .stat { display: inline-flex; align-items: center; gap: 4px; padding: 0; }
+.title-header .stat-label { display: none; }
+.title-header .stat-val { font-size: 13px; font-weight: 700; line-height: 1; }
+.title-header .stat .stat-val::before {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: var(--accent, #ff7a1a);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  margin-right: 4px;
+  letter-spacing: 0;
+}
+.title-header .stat:first-child .stat-val::before { content: "G"; }
+.title-header .stat:last-child .stat-val::before { content: "F"; }
+</style>
+  <link rel="stylesheet" href="/css/fx.css?v=3">
+
+<style>
+/* Less-aggressive auto-shrink — title prefers using available space and
+   only compresses when long titles risk pushing the podium down. */
+.title-block.title-tight #titleText {
+  font-size: clamp(15px, 1.85vw, 19px) !important;
+  gap: 5px !important;
+  line-height: 1.1 !important;
+}
+.title-block.title-tight #titleText .t-word.hidden .w-text {
+  padding: 2px 8px !important;
+  letter-spacing: 1.5px !important;
+  font-size: 0.82em !important;
+}
+.title-block.title-clipped #titleText {
+  font-size: clamp(13px, 1.6vw, 16px) !important;
+  gap: 4px !important;
+  line-height: 1.05 !important;
+  -webkit-mask-image: none !important;
+  mask-image: none !important;
+}
+.title-block.title-clipped #titleText .t-word.hidden .w-text {
+  padding: 1px 6px !important;
+  letter-spacing: 1px !important;
+  font-size: 0.75em !important;
+}
+</style>
+<style id="title-word-font-v1">/* Title words in Atkinson Hyperlegible - unmistakable letterforms (I/l/1, O/0, B/8) */
+#titleText,
+#titleText .t-word .w-text,
+.re-word {
+  font-family: 'Atkinson Hyperlegible', 'Inter', system-ui, sans-serif;
+}</style>
+<link rel="stylesheet" href="/css/wikicontexto-toon.css?v=27">
+<link rel="stylesheet" href="/css/wikicontexto-neon.css?v=20261002a">
+<link rel="stylesheet" href="/css/refined-guesses.css?v=20261004-word-fit">
+</head>
+<body class="neon-obs">
+
+<iframe id="sassie-back" class="sassie-layer" src="/api/runtime/overlay/back?layer=back" allow="autoplay" loading="eager" title="Sassie back layer"></iframe>
+
+<div class="page-wrap">
+
+  <!-- Logo split out to /overlay-logo.html so streamers can position it as a
+       separate OBS browser source. -->
+
+  <!-- Game area (OBS: no idle screen; whole body goes transparent when idle) -->
+  <div class="neon-brand"><img src="/wikicontexto-brand-web.svg" alt="WikiContexto"></div>
+  <main id="gameArea">
+    <!-- Article panel: 2-col top + ticker + body (no header) -->
+    <section class="article-panel">
+      <div class="top-row">
+        <!-- Left: title + stats + scoreboard + announce -->
+        <aside class="left-col">
+          <div class="title-block">
+            <div class="title-header">
+              <div class="title-sub">Title</div>
+              <div class="stats-bar">
+                <div class="stat"><span class="stat-label">Guesses</span><span class="stat-val" id="guessCount">0</span></div>
+                <div class="stat"><span class="stat-label">Words Revealed</span><span class="stat-val" id="revealProgress">— / —</span></div>
+              </div>
+            </div>
+            <div id="titleText"></div>
+          </div>
+          <div class="scoreboard" id="scoreboard">
+            <div class="tp-card gold empty"><div class="tp-pfp">1</div><div class="tp-name">—</div><div class="tp-score">0</div></div>
+            <div class="tp-card silver empty"><div class="tp-pfp">2</div><div class="tp-name">—</div><div class="tp-score">0</div></div>
+            <div class="tp-card bronze empty"><div class="tp-pfp">3</div><div class="tp-name">—</div><div class="tp-score">0</div></div>
+          </div>
+        </aside>
+
+        <!-- Right: guess cards -->
+        <div class="right-col" id="cards">
+          <div class="cards-empty" id="cardsEmpty">No guesses yet — be the first!</div>
+        </div>
+          <div class="word-announce hidden" id="announce">
+            <div class="wa-avatar" id="waAvatar">?</div>
+            <div class="wa-info">
+              <div class="wa-top">
+                <span class="wa-name" id="waName">—</span>
+                <span class="wa-total" id="waTotal">0 pts</span>
+              </div>
+              <div class="wa-bottom">
+                <span class="wa-word" id="waWord">—</span>
+                <span class="wa-rarity common" id="waRarity">COMMON</span>
+              </div>
+              <span class="wa-earned" id="waEarned">+0</span>
+            </div>
+          </div>
+
+      </div>
+
+      <!-- Ticker -->
+      <div class="ticker-wrap">
+        <div class="ticker" id="ticker"></div>
+      </div>
+
+      <!-- Article body -->
+      <div class="article-body-panel">
+        <div id="body"></div>
+      </div>
+    </section>
+    <div class="particle-layer" aria-hidden="true"></div>
+  </main>
+</div>
+
+<!-- Round-end modal -->
+<div class="round-end-overlay hidden" id="roundEndOverlay">
+  <div class="round-end-card">
+    <div class="re-label">Round Complete</div>
+    <div class="re-word" id="reWord"></div>
+    <div class="re-winner" id="reWinner"></div>
+    <div class="re-stats" id="reStats"></div>
+    <button class="re-dismiss" id="reDismiss">Dismiss</button>
+  </div>
+</div>
+
+<script src="/js/cosmetics-cache.js?v=20260808k"></script>
+<script src="/js/xp-flyout.js?v=20260808k"></script>
+<script src="/js/refined-guesses.js?v=20261004"></script>
+<script src="/js/cosmetics-applier.js?v=20261004"></script>
+<script src="/js/fx-engine.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+(() => {
+  // Streamer-private session OBS overlay: ?session=<handle> means we
+  // landed via /overlay/<handle> redirect. Pass auth.session so the
+  // server scopes broadcasts to the streamer's session room.
+  const _sessionHandle = (() => {
+    try {
+      const h = new URLSearchParams(location.search).get('session');
+      return h && /^[a-z0-9_-]{1,32}$/i.test(h) ? h.toLowerCase() : null;
+    } catch (_) { return null; }
+  })();
+  const _sockOpts = { path: '/socket.io' };
+  if (_sessionHandle) _sockOpts.auth = { session: _sessionHandle };
+  const socket = io(_sockOpts);
+  // Cache invalidation when WT pushes a cosmetics-updated event upstream.
+  // Mirrors wikirec's listener at /opt/wikirectangled/public/js/main.js:1061.
+  socket.on('cosmetics-updated', (data) => {
+    if (data && window.cosmeticsCache) window.cosmeticsCache.invalidatePlayer(data.platform, data.platformUserId, data.equipped);
+    if (data) WikiGuessCards.updateEquipment(data);
+  });
+
+  const cardsEl          = document.getElementById('cards');
+  const cardsEmpty       = document.getElementById('cardsEmpty');
+  const ticker           = document.getElementById('ticker');
+  const titleText        = document.getElementById('titleText');
+  const titleBlock       = titleText ? titleText.closest('.title-block') : null;
+  const bodyEl           = document.getElementById('body');
+  const guessCountEl     = document.getElementById('guessCount');
+  const revealProgressEl = document.getElementById('revealProgress');
+  const scoreboardEl     = document.getElementById('scoreboard');
+  const announceEl       = document.getElementById('announce');
+  const waAvatar         = document.getElementById('waAvatar');
+  const waName           = document.getElementById('waName');
+  const waTotal          = document.getElementById('waTotal');
+  const waEarned         = document.getElementById('waEarned');
+  const waWord           = document.getElementById('waWord');
+  const waRarity         = document.getElementById('waRarity');
+  const roundEndOverlay  = document.getElementById('roundEndOverlay');
+  const reWord           = document.getElementById('reWord');
+  const reWinner         = document.getElementById('reWinner');
+  const reStats          = document.getElementById('reStats');
+  const reDismiss        = document.getElementById('reDismiss');
+
+  let roundEndTimer = null;
+  let localGuessCount = 0;
+
+  function _fitTitleSlotOnce() {
+    if (!titleBlock || !titleText) return;
+    titleBlock.classList.remove('title-compact', 'title-tight', 'title-clipped');
+    if (!titleText.textContent.trim()) return;
+
+    for (const cls of ['title-compact', 'title-tight']) {
+      if (titleText.scrollHeight <= titleText.clientHeight + 1) break;
+      titleBlock.classList.add(cls);
+    }
+
+    if (titleText.scrollHeight > titleText.clientHeight + 1) {
+      titleBlock.classList.add('title-clipped');
+    }
+  }
+  function fitTitleSlot() {
+    // Run immediately, then again after layout/animation settles. The
+    // mid-round title updates (word reveals) can fire while the just-revealed
+    // animation is still expanding letter-spacing — first pass would measure
+    // wider-than-final, second pass corrects after the keyframe ends.
+    _fitTitleSlotOnce();
+    requestAnimationFrame(() => {
+      _fitTitleSlotOnce();
+      // One more pass after the reveal animation completes (~0.9s).
+      setTimeout(_fitTitleSlotOnce, 950);
+    });
+  }
+
+  function setIdle() {
+    document.body.classList.remove('game-active');
+    hideRoundEnd();
+  }
+  function setActive() {
+    document.body.classList.add('game-active');
+    hideRoundEnd();
+  }
+  function hideRoundEnd() {
+    roundEndOverlay.classList.add('hidden');
+    if (roundEndTimer) { clearTimeout(roundEndTimer); roundEndTimer = null; }
+  }
+  function showRoundEnd(/* word, winner, count */) {
+    // OBS overlay deliberately suppresses the win modal — viewers see the
+    // fully-revealed article in the normal layout instead, which is more
+    // informative for the stream than a modal blocking the game state.
+    // The round-end socket events still fire so the article reveal /
+    // scoreboard / cards update naturally; only the modal is hidden.
+    hideRoundEnd();
+  }
+  reDismiss.addEventListener('click', () => { hideRoundEnd(); setIdle(); });
+
+  // ── Helpers ────────────────────────────────────────
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function fmtNum(n) { const v = Number(n); return isFinite(v) ? v.toLocaleString() : '?'; }
+  function compactRank(n) { const v = Number(n); return v >= 1000 ? (v / 1000).toFixed(1).replace(/\.0$/, '') + 'k' : fmtNum(n); }
+  const PLAT_COLORS = { tiktok:'#69C9D0', youtube:'#FF0000', discord:'#5865F2', web:'#FF6600' };
+  // Anonymous / no-avatar fallback — show the Word Tycoon PFP at full size,
+  // matching the solo page so anon presence reads as "Word Tycoon" everywhere.
+  const ANON_PFP_URL = '/img/wt-pfp.png';
+  // User profile pics from Word Tycoon are sometimes stored as root-relative
+  // paths (/portal/assets/profile-logos/foo.png). Browsers resolve those
+  // against this domain which 404s — they live on wordtycoon.live.
+  function resolvePfp(url) {
+    if (!url) return null;
+    if (/^(?:https?:)?\/\//i.test(url)) return url;
+    if (url.charAt(0) === '/') return 'https://wordtycoon.live' + url;
+    return url;
+  }
+  function avatarHtml(user, cls) {
+    const url = user && user.profilePic ? resolvePfp(user.profilePic) : null;
+    if (url) {
+      const onerr = `if(!this.dataset.f){this.dataset.f=1;this.src='${ANON_PFP_URL}';this.alt='Word Tycoon';}else{this.replaceWith(Object.assign(document.createElement('div'),{className:'${cls}-fb',textContent:'?'}));}`;
+      return `<img src="${esc(url)}" alt="" onerror="${onerr}">`;
+    }
+    return `<img src="${esc(ANON_PFP_URL)}" alt="Word Tycoon">`;
+  }
+
+  // ── Cards ─────────────────────────────────────────
+  // Each card has a proximity fill bar whose width & colour reflect the
+  // guess's semantic rank vs the target. Log scale so the middle ranks get
+  // visibly distinct treatment. Width floor keeps far cards from vanishing.
+  let totalRankedWordsCache = 339509;
+  const MIN_FILL_PCT = 5;
+  function rankMeter(rank) {
+    const r = Math.max(1, Number(rank) || 0);
+    const max = Math.max(r, totalRankedWordsCache || r);
+    const progress = Math.min(1, Math.log(r) / Math.log(max));
+    const hue = 120 - progress * 120;
+    const fillPct = Math.max(MIN_FILL_PCT, (1 - progress) * 100);
+    return { fillPct, fillColor: `hsl(${hue}, 72%, 50%)`, hue };
+  }
+  // Stable-DOM card render. Keyed by the guess word, so cards that are
+  // still in the top-5 after a refresh keep their existing DOM node —
+  // no animation replay, no flash. Only genuinely new entries animate in.
+  const _guessCards = WikiGuessCards.create(cardsEl);
+  const _cardDomCache = new Map();
+  const _placeholderCache = [];
+  const TOP_N_SLOTS = 6;
+  // Auto-shrink the word label to fit the card width. Reads scrollWidth vs
+  // clientWidth on the .word-lbl after layout — if the word is being clipped
+  // by overflow:hidden+ellipsis, drop the font-size 1px at a time until it
+  // fits or hits minPx. Keeps both .card-inner.base and .card-inner.overlay
+  // in sync (clip-path layer mirrors the base layer's text). Idempotent —
+  // safe to re-call on resize.
+  function fitWordLabel(card, minPx) {
+    if (card.dataset.refinedGuess) { WikiGuessCards.fit(card); return; }
+    const labels = card.querySelectorAll('.word-lbl');
+    if (!labels.length) return;
+    labels.forEach((l) => { l.style.fontSize = ''; l.style.letterSpacing = ''; });
+    // Available space for rank-word = card-inner content minus avatar's
+    // footprint and the gap. Ignore .who's overflow (it's intentionally
+    // visible so cosmetic glow can extend past it).
+    const inner = card.querySelector('.card-inner.base') || card;
+    const rankWord = inner.querySelector('.rank-word');
+    if (!rankWord) return;
+    const avatar = inner.querySelector('.avatar-fb');
+    const innerStyle = getComputedStyle(inner);
+    const padX = (parseFloat(innerStyle.paddingLeft) || 0) + (parseFloat(innerStyle.paddingRight) || 0);
+    const gap = parseFloat(innerStyle.columnGap || innerStyle.gap || '0') || 0;
+    const avatarW = avatar ? (avatar.offsetWidth || 38) : 38;
+    const available = inner.clientWidth - padX - avatarW - gap;
+    if (rankWord.scrollWidth <= available + 1 && labels[0].scrollWidth <= labels[0].clientWidth + 1) return;
+    let size = parseFloat(getComputedStyle(labels[0]).fontSize) || 18;
+    while ((rankWord.scrollWidth > available + 1 || labels[0].scrollWidth > labels[0].clientWidth + 1) && size > minPx) {
+      size -= 1;
+      labels.forEach((l) => { l.style.fontSize = size + 'px'; l.style.letterSpacing = '0.3px'; });
+    }
+  }
+  function renderCards(top, restored = false) {
+    if (restored) _guessCards.snapshot(top);
+    const newTop = (top || []).slice(0, TOP_N_SLOTS);
+    if (!newTop.length) {
+      for (const [, el] of _cardDomCache) { WikiGuessCards.dispose(el); if (el.parentNode) el.remove(); }
+      _cardDomCache.clear();
+      _guessCards.sync();
+      for (const ph of _placeholderCache) {
+        if (ph && ph.parentNode) ph.remove();
+      }
+      if (!cardsEmpty.parentNode) cardsEl.appendChild(cardsEmpty);
+      return;
+    }
+    if (cardsEmpty.parentNode === cardsEl) cardsEl.removeChild(cardsEmpty);
+    for (const ph of _placeholderCache) {
+      if (ph && ph.parentNode) ph.remove();
+    }
+
+    const keepWords = new Set(newTop.map(g => g.word));
+    for (const [word, el] of [..._cardDomCache.entries()]) {
+      if (!keepWords.has(word)) {
+        WikiGuessCards.dispose(el);
+        if (el.parentNode) el.remove();
+        _cardDomCache.delete(word);
+      }
+    }
+
+    newTop.forEach((g, i) => {
+      const isTopSlot = i === 0;
+      const { fillPct, fillColor, hue } = rankMeter(g.rank);
+      const wlen = (g.word || '').length;
+      const sizeCls = wlen > 13 ? ' xl-word' : wlen > 10 ? ' lg-word' : '';
+      let c = _cardDomCache.get(g.word);
+      if (!c) {
+        c = document.createElement('div');
+        c.dataset.word = g.word;
+        c.className = 'card' + (isTopSlot ? ' top' : '') + sizeCls;
+        // White text and the inset capsule sit above the proximity fill.
+        const inner = (
+          `<div class="rank-word">` +
+          `<div class="rank">#${compactRank(g.rank)}</div>` +
+          `<div class="word-lbl">${esc(g.word || '')}</div>` +
+          `</div>` +
+          `<div class="who">` +
+          `<div class="avatar-fb" style="overflow:hidden">${avatarHtml(g.user, 'avatar')}</div>` +
+          `<div class="who-text">` +
+          `<div class="gname">${esc((g.user && g.user.displayName) || 'viewer')}</div>` +
+          `</div>` +
+          `</div>`
+        );
+        // .card-clip wraps the fill so the proximity bar still gets clipped
+        // to the rounded pill, while the outer .card stays overflow:visible
+        // so cosmetic glows can extend past the card edge.
+        c.innerHTML =
+          `<div class="card-clip"><div class="fill"></div></div>` +
+          `<div class="card-inner base">${inner}</div>`;
+        _cardDomCache.set(g.word, c);
+      } else {
+        // Update structural classes without wiping FX classes
+        c.classList.remove('top', 'lg-word', 'xl-word');
+        if (isTopSlot) c.classList.add('top');
+        if (wlen > 13) c.classList.add('xl-word');
+        else if (wlen > 10) c.classList.add('lg-word');
+        // Kill the cardIn keyframe on reused nodes so a reorder can't
+        // replay the pop-in flash.
+        c.style.animation = 'none';
+      }
+      // Update proximity meter every render so totalRankedWords changes
+      // propagate and fill bars animate via their CSS transition.
+      c.style.setProperty('--fill-pct', fillPct.toFixed(2) + '%');
+      c.style.setProperty('--fill-color', fillColor);
+      c.style.setProperty('--rank-hue', hue);
+      // appendChild on an existing node is a move, not a recreate — no flash.
+      cardsEl.appendChild(c);
+      c._guessUser = g.user;
+      WikiGuessCards.prepare(c, g.user && g.user.cosmetics);
+      c.querySelector('.rank').textContent = '#' + compactRank(g.rank);
+      if (window.WikiCosmetics) {
+        window.WikiCosmetics.apply({
+          surfaceEl: c.querySelector('.guess-panel-surface'),
+          wordFrameEl: c.querySelector('.guess-panel-frame'),
+          wordGlowEl: c.querySelector('.guess-panel-glow'),
+          avatarEl: c.querySelector('.avatar-fb'),
+          nameEl: c.querySelector('.gname'),
+          titleContainer: c.querySelector('.who-text'),
+        }, g.user && g.user.cosmetics);
+      }
+      fitWordLabel(c, 10);
+    });
+    _guessCards.sync();
+
+    for (let i = newTop.length; i < TOP_N_SLOTS; i++) {
+      let ph = _placeholderCache[i];
+      if (!ph) {
+        ph = document.createElement('div');
+        ph.className = 'card placeholder';
+        ph.innerHTML = `<div class="card-inner base"><div class="rank-word"><div class="rank">#${i + 1}</div><div class="word-lbl"></div></div></div>`;
+        _placeholderCache[i] = ph;
+      }
+      cardsEl.appendChild(ph);
+    }
+  }
+
+  // ── Scoreboard ────────────────────────────────────
+  let _prevGoldKey = null;
+  function renderScoreboard(top3) {
+    scoreboardEl.innerHTML = '';
+    const slots = [{cls:'gold', idx:0}, {cls:'silver', idx:1}, {cls:'bronze', idx:2}];
+    for (const s of slots) {
+      const p = (top3 || [])[s.idx];
+      const card = document.createElement('div');
+      card.className = `tp-card ${s.cls}` + (p ? '' : ' empty');
+      if (!p) {
+        card.innerHTML = `<div class="tp-pfp">${s.idx + 1}</div><div class="tp-name">—</div><div class="tp-score">0</div>`;
+      } else {
+        // Keyed so the XP fly-out can resolve this player's card at flight
+        // time — renderScoreboard rebuilds the whole row every tick.
+        card.dataset.playerKey = String(p.nickname || '').toLowerCase();
+        card.innerHTML =
+          `<div class="tp-pfp">${avatarHtml(p.user, 'tp')}</div>` +
+          `<div class="tp-name">${esc(p.nickname)}</div>` +
+          `<div class="tp-score">${fmtNum(p.points)}</div>`;
+      }
+      scoreboardEl.appendChild(card);
+      if (s.cls === 'gold' && p) {
+        const key = String(p.nickname || '').toLowerCase();
+        if (_prevGoldKey !== key) {
+          _prevGoldKey = key;
+          if (window.FX) window.FX.podiumCoronation();
+        }
+      }
+      if (p && window.WikiCosmetics) {
+        window.WikiCosmetics.apply({
+          surfaceEl: card,
+          avatarEl: card.querySelector('.tp-pfp'),
+          nameEl: card.querySelector('.tp-name'),
+          titleContainer: card,
+        }, p.user && p.user.cosmetics);
+      }
+      if (p) {
+        const scoreEl = card.querySelector('.tp-score');
+        if (scoreEl && typeof fitText === 'function') {
+          requestAnimationFrame(() => fitText(scoreEl, 7));
+        }
+      }
+    }
+  }
+
+  // Shrink an element's font-size 1px at a time until its text fits within
+  // its own clientWidth (or hits minPx). Keeps the announce card's word +
+  // name fully visible without ellipsis when they're long.
+  function fitText(el, minPx) {
+    if (!el) return;
+    el.style.fontSize = '';
+    if (el.scrollWidth <= el.clientWidth + 1) return;
+    let size = parseFloat(getComputedStyle(el).fontSize) || 16;
+    while (el.scrollWidth > el.clientWidth + 1 && size > (minPx || 8)) {
+      size -= 1;
+      el.style.fontSize = size + 'px';
+    }
+  }
+  function fitRow(parent, minPx) {
+    if (!parent) return;
+    const kids = Array.from(parent.children).filter((c) => c.offsetParent !== null);
+    if (!kids.length) return;
+    kids.forEach((c) => { c.style.fontSize = ''; });
+    if (parent.scrollWidth <= parent.clientWidth + 1) return;
+    const sizes = kids.map((c) => parseFloat(getComputedStyle(c).fontSize) || 14);
+    const min = minPx || 8;
+    let scale = 1;
+    while (parent.scrollWidth > parent.clientWidth + 1 && scale > 0.4) {
+      scale -= 0.04;
+      kids.forEach((c, i) => {
+        const s = Math.max(min, sizes[i] * scale);
+        c.style.fontSize = s + 'px';
+      });
+      if (sizes.every((s) => s * scale <= min)) break;
+    }
+  }
+  // ── Announce banner ───────────────────────────────
+  // ── Per-word XP fly-out ───────────────────────────
+  // Numbers erupt from the word where it actually appears in the ARTICLE BODY
+  // and arc into the "word found" banner.
+  //
+  // Source and award arrive as SEPARATE socket events for the same guess:
+  // `wikisearchle-announce` carries the points, `wikiword-reveal` un-redacts the
+  // spans. So the award is recorded by normalised word here and claimed when the
+  // reveal lands. Keyed rather than assumed-in-order because the two events are
+  // emitted from different points in the server's guess handler.
+  // Diagnostic only. No behaviour change unless ?xpdebug=1 is on the URL —
+  // the XP chain spans three socket events and cannot be reproduced without a
+  // logged-in guess, so it has to be able to explain itself in place.
+  const XPDBG = /[?&]xpdebug=1/.test(location.search);
+  function xpdbg() { if (XPDBG) try { console.log.apply(console, ['[xp]'].concat([].slice.call(arguments))); } catch (e) {} }
+
+  const _xpAwardByNorm = new Map();   // norm -> { earned, cosmetics, at }
+  const _xpPaidNorms = new Set();     // norms already paid out this round
+  const XP_AWARD_TTL_MS = 15000;
+
+  function normWord(w) {
+    return String(w || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  }
+
+  function noteXpAward(a) {
+    if (!a || !a.word) { xpdbg('award: no announce/word'); return; }
+    const n = normWord(a.word);
+    xpdbg('award in: word=' + a.word + ' norm=' + n + ' earned=' + a.earned);
+    if (!n) { xpdbg('award: empty norm'); return; }
+    if (_xpPaidNorms.has(n)) { xpdbg('award: already paid this round'); return; }
+    const now = Date.now();
+    // Prune, or a long round grows this unbounded — renderAnnounce is replayed
+    // on every state push, not just on a new guess.
+    for (const [k, v] of _xpAwardByNorm) if (now - v.at > XP_AWARD_TTL_MS) _xpAwardByNorm.delete(k);
+    _xpAwardByNorm.set(n, {
+      earned: Number(a.earned) || 0,
+      cosmetics: (a.user && a.user.cosmetics) || null,
+      at: now
+    });
+
+    // 🔴 THE REVEAL ARRIVES FIRST. The server emits `wikiword-reveal` well
+    // before `wikisearchle-announce` for the same guess, so
+    // applyFreshRevealToDom has already run and found nothing banked. Without
+    // this second attempt the numbers never fired at all.
+    // Gated on the word still being FRESH: renderAnnounce is replayed on every
+    // state push and on page load, and an ungated call would throw numbers for
+    // a guess that happened minutes ago.
+    // Which word do the numbers actually come out of?
+    //
+    // Normally the guessed word IS the revealed one. But the announce carries
+    // the player's guess while the reveal carries the article's own tokens, and
+    // those need not be the same string — a variant match (guess "power",
+    // article has "powers") would leave freshReveals keyed under something the
+    // exact lookup never finds, and the effect would silently never fire.
+    // So: prefer an exact hit, otherwise attribute the award to whatever THIS
+    // guess just revealed, which is what the player is looking at anyway.
+    const ts = freshReveals.get(n);
+    let target = (typeof ts === 'number' && (now - ts) < FRESH_REVEAL_MS) ? n : null;
+    if (!target) {
+      for (const [k, t] of freshReveals) {
+        if ((now - t) < FRESH_REVEAL_MS && !_xpPaidNorms.has(k)) { target = k; break; }
+      }
+      if (target) xpdbg('award: exact norm not fresh, attributing to just-revealed "' + target + '"');
+    }
+    xpdbg('award banked. exactFresh=' + (typeof ts === 'number') +
+          ' target=' + target +
+          ' freshKeys=[' + Array.from(freshReveals.keys()).join(',') + ']');
+    if (target) {
+      // Bank under the norm we will actually spawn from.
+      if (target !== n) _xpAwardByNorm.set(target, _xpAwardByNorm.get(n));
+      spawnRevealXp(target);
+    } else {
+      xpdbg('award: NOT spawning — nothing was revealed in the fresh window ' +
+            '(normal on a page load replaying an old announce)');
+    }
+  }
+
+  // Fired once per freshly-revealed word. Throws from the first occurrence that
+  // is actually SCROLLED INTO VIEW inside #body — that panel is overflow:auto
+  // and taller than its box, so a word below the fold would otherwise launch
+  // numbers from somewhere the viewer cannot see.
+  function spawnRevealXp(norm) {
+    xpdbg('spawn try: norm=' + norm + ' XpFlyout=' + !!window.XpFlyout + ' bodyEl=' + !!bodyEl);
+    if (!window.XpFlyout || !norm || !bodyEl) { xpdbg('spawn: missing XpFlyout/norm/bodyEl'); return; }
+    if (_xpPaidNorms.has(norm)) { xpdbg('spawn: already paid'); return; }
+    const award = _xpAwardByNorm.get(norm);
+    if (!award || award.earned <= 0) { xpdbg('spawn: no award banked yet for this norm (earned=' + (award && award.earned) + ')'); return; }
+
+    const box = bodyEl.getBoundingClientRect();
+    // norm is [a-z0-9] only by construction, so it is selector-safe as-is.
+    const cands = bodyEl.querySelectorAll('.word.revealed[data-norm="' + norm + '"]');
+    let src = null;
+    for (let i = 0; i < cands.length; i++) {
+      const r = cands[i].getBoundingClientRect();
+      if (r.width && r.bottom > box.top + 2 && r.top < box.bottom - 2) { src = cands[i]; break; }
+    }
+    // Every occurrence is scrolled away. This is the COMMON case — articles
+    // run thousands of px inside a small panel — and "leave it unclaimed for a
+    // later re-render" meant the effect almost never fired. So: scroll the
+    // panel to the first occurrence (still wearing its reveal flash), then
+    // fire once the scroll settles. The award is claimed BEFORE the scroll:
+    // applyFreshRevealToDom re-attempts on every render and would double-pay
+    // mid-flight otherwise.
+    if (!src) {
+      if (!cands.length) {
+        xpdbg('spawn: no revealed occurrence of "' + norm + '" in #body — nothing to fire from');
+        return;
+      }
+      _xpAwardByNorm.delete(norm);
+      _xpPaidNorms.add(norm);
+      xpdbg('spawn: all ' + cands.length + ' occurrence(s) of "' + norm +
+            '" off-screen — scrolling to the first, earned=' + award.earned);
+      const el = cands[0];
+      const r0 = el.getBoundingClientRect();
+      const top = Math.max(0, bodyEl.scrollTop + (r0.top - box.top) - box.height / 2 + r0.height / 2);
+      let reduced = false;
+      try { reduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
+      bodyEl.scrollTo({ top: top, behavior: reduced ? 'auto' : 'smooth' });
+      // 'scrollend' isn't universal, and an inactive OBS scene can stall the
+      // smooth scroll outright — poll until scrollTop stops moving, give up
+      // after ~1.4s and fire anyway (rects are measured at fire time).
+      let last = -1, ticks = 0;
+      const iv = setInterval(function () {
+        const cur = bodyEl.scrollTop;
+        ticks++;
+        if ((cur === last && ticks > 1) || ticks > 15) {
+          clearInterval(iv);
+          if (el.isConnected) fireRevealXpFrom(el, award);
+        }
+        last = cur;
+      }, 90);
+      return;
+    }
+    xpdbg('spawn: firing from occurrence 1 of ' + cands.length + ', earned=' + award.earned);
+
+    const node = src.firstChild;
+    if (!node || node.nodeType !== 3 || !node.data) return;
+
+    _xpAwardByNorm.delete(norm);
+    _xpPaidNorms.add(norm);
+    fireRevealXpFrom(src, award);
+  }
+
+  // Measure per-letter rects and throw the numbers. Rects come from Ranges so
+  // the DOM stays untouched: the body span is a single text node and wrapping
+  // its letters would break the redaction sizing.
+  function fireRevealXpFrom(src, award) {
+    const node = src.firstChild;
+    if (!node || node.nodeType !== 3 || !node.data) return;
+    const cellEls = [];
+    for (let i = 0; i < node.data.length; i++) {
+      const rg = document.createRange();
+      rg.setStart(node, i);
+      rg.setEnd(node, i + 1);
+      const r = rg.getBoundingClientRect();
+      cellEls.push((r.width || r.height) ? { getBoundingClientRect: () => r } : null);
+    }
+    try {
+      XpFlyout.spawn({
+        word: node.data,
+        cellEls: cellEls,
+        gridEl: bodyEl,
+        total: award.earned,
+        cosmetics: award.cosmetics,
+        targetSelectors: ['#waEarned', '#waTotal', '.word-announce'],
+        onArrive: function () { XpFlyout.pulse(announceEl, null); }
+      });
+    } catch (e) { /* decoration only */ }
+  }
+
+  function renderAnnounce(a) {
+    if (!a) { announceEl.classList.add('hidden'); return; }
+    announceEl.classList.remove('hidden');
+    noteXpAward(a);
+    waAvatar.innerHTML = avatarHtml(a.user, 'wa-avatar');
+    waName.textContent = a.nickname || 'viewer';
+    waTotal.textContent = `${fmtNum(a.totalPoints)} pts`;
+    waEarned.textContent = `+${fmtNum(a.earned)}`;
+    waWord.textContent = (a.word || '').toUpperCase();
+    const tier = (a.rarity || 'common').toLowerCase();
+    waRarity.className = `wa-rarity ${tier}`;
+    waRarity.textContent = tier.toUpperCase();
+    if (window.WikiCosmetics) {
+      window.WikiCosmetics.apply({
+        surfaceEl: announceEl,
+        avatarEl: waAvatar,
+        nameEl: waName,
+        titleContainer: null,
+      }, a.user && a.user.cosmetics);
+    }
+    requestAnimationFrame(() => {
+      fitText(waWord, 10);
+      fitRow(waName.parentNode, 10);
+    });
+  }
+
+  // ── Ticker chips ──────────────────────────────────
+  // Flex fills left-to-right; each new chip slides in from the right edge of
+  // the ticker to its natural slot. Chips accumulate until the row is full,
+  // then the oldest (leftmost) slides off to make room.
+  const TICKER_GAP = 3;
+  const TICKER_FADE_INSET = 24; // matches .ticker::after gradient width
+  function pushChip(chip) {
+    const el = document.createElement('div');
+    el.className = `chip ${chip.status}`;
+    // Icon: red x for any miss-flavoured chip (fresh miss OR duplicate miss);
+    // green check for everything else (fresh hit OR duplicate hit).
+    const isMiss = chip.status === 'miss' || chip.status === 'dup-miss';
+    const icon = isMiss ? '✕' : '✓';
+    // If the server attached a profilePic for the guesser, render it on the
+    // left of the word. Falls back silently if the image fails to load.
+    const avatarHtml = chip.profilePic
+      ? `<img class="chip-avatar" src="${esc(chip.profilePic)}" alt="" onerror="this.remove();">`
+      : '';
+    el.innerHTML = `${avatarHtml}<span>${esc(chip.word)}</span><span class="tick">${icon}</span>`;
+    ticker.appendChild(el);
+    // After layout, compute slide distance so the chip starts with its
+    // right edge just inside the ticker's fade gradient (always fully
+    // visible) and animates to its natural flex slot. If the chip's
+    // natural position is already inside that zone, slideDist = 0 and the
+    // chip just fades in place.
+    requestAnimationFrame(() => {
+      const chipRightAtEnd = el.offsetLeft + el.offsetWidth;
+      const chipRightAtStart = ticker.clientWidth - TICKER_FADE_INSET;
+      const slideDist = Math.max(0, chipRightAtStart - chipRightAtEnd);
+      el.style.setProperty('--slide-dist', `${slideDist}px`);
+      // Restart the animation so the newly-set variable is applied.
+      el.style.animation = 'none'; void el.offsetWidth;
+      el.style.animation = '';
+
+      // Eviction: when the row overflows, fade out the oldest chip.
+      let total = 0;
+      for (const c of ticker.children) {
+        if (c.classList.contains('exit')) continue;
+        total += c.offsetWidth + TICKER_GAP;
+      }
+      total -= TICKER_GAP;
+      if (total > ticker.clientWidth) {
+        for (const c of ticker.children) {
+          if (c === el) break;
+          if (c.classList.contains('exit')) continue;
+          c.classList.add('exit');
+          c.addEventListener('animationend', () => { if (c.parentNode) c.remove(); }, { once: true });
+          break;
+        }
+      }
+    });
+  }
+
+  // ── Fresh-reveal + sentence pending-hide tracking ─────────
+  // Every revealed word flashes green on reveal and fades back to normal
+  // text color over 5 seconds (freshReveals, populated by wikiword-reveal).
+  // Independently, fully-revealed sentences linger on-screen for 5 seconds
+  // before being removed (pendingHideSentences, populated by state diff).
+  // Both timers share one expiry setTimeout.
+  const FRESH_REVEAL_MS = 5000;
+  const PENDING_HIDE_MS = 5000;
+  let prevArticleState = null;
+  const freshReveals = new Map();
+  const _fxTumbledWords = new Set();          // norm -> revealedAt ms
+  const titleWordFinders = new Map();      // norm -> { nickname, profilePic, platform }
+  const titleJustRevealedNorms = new Set();
+  const pendingHideSentences = new Map();  // "pi:sid" -> { completeAt }
+  let expiryTimer = null;
+
+  function buildSentenceMap(state) {
+    const out = new Map();
+    if (!state) return out;
+    for (let pi = 0; pi < state.paragraphs.length; pi++) {
+      for (const t of state.paragraphs[pi]) {
+        if (t.type !== 'word') continue;
+        const sid = t.sentenceId || 0;
+        const key = `${pi}:${sid}`;
+        if (!out.has(key)) out.set(key, { words: [], allRevealed: true });
+        const rec = out.get(key);
+        rec.words.push(t);
+        if (!t.revealed) rec.allRevealed = false;
+      }
+    }
+    return out;
+  }
+
+  function diffPendingHide(prev, next) {
+    if (!next) return;
+    const prevMap = buildSentenceMap(prev);
+    const nextMap = buildSentenceMap(next);
+    const now = Date.now();
+    for (const [key, rec] of nextMap) {
+      if (!rec.allRevealed) continue;
+      const pr = prevMap.get(key);
+      if (pr && pr.allRevealed) continue;
+      if (pendingHideSentences.has(key)) continue;
+      pendingHideSentences.set(key, { completeAt: now });
+    }
+  }
+
+  function markFreshReveals(words) {
+    if (!words || !words.length) return;
+    const now = Date.now();
+    for (const w of words) {
+      const n = String(w).toLowerCase().replace(/[^a-z0-9]/g, '');
+      if (n) freshReveals.set(n, now);
+    }
+  }
+
+  function applyFreshRevealToDom() {
+    const now = Date.now();
+    document.querySelectorAll('#body .word.revealed').forEach(el => {
+      const n = el.dataset.norm || el.textContent.toLowerCase().replace(/[^a-z0-9]/g, '');
+      const ts = freshReveals.get(n);
+      if (typeof ts !== 'number') return;
+      const elapsed = now - ts;
+      if (elapsed < 0 || elapsed >= FRESH_REVEAL_MS) return;
+      el.classList.remove('fresh-reveal');
+      void el.offsetWidth;
+      el.classList.add('fresh-reveal');
+      el.style.animationDelay = `-${elapsed}ms`;
+      if (window.FX && !_fxTumbledWords.has(n)) {
+        _fxTumbledWords.add(n);
+        window.FX.tumbleWord(el);
+      }
+      // Not gated on window.FX: spawnRevealXp owns its own once-per-word guard,
+      // so the numbers still fly if the FX engine failed to load.
+      spawnRevealXp(n);
+    });
+  }
+
+  function scheduleExpiryRerender() {
+    if (expiryTimer) return;
+    let soonest = Infinity;
+    for (const ts of freshReveals.values()) soonest = Math.min(soonest, ts + FRESH_REVEAL_MS);
+    for (const r of pendingHideSentences.values()) soonest = Math.min(soonest, r.completeAt + PENDING_HIDE_MS);
+    if (soonest === Infinity) return;
+    const delay = Math.max(0, soonest - Date.now());
+    expiryTimer = setTimeout(() => {
+      expiryTimer = null;
+      const now = Date.now();
+      for (const [n, ts] of freshReveals) if (now - ts >= FRESH_REVEAL_MS) freshReveals.delete(n);
+      for (const [k, r] of pendingHideSentences) if (now - r.completeAt >= PENDING_HIDE_MS) pendingHideSentences.delete(k);
+      if (prevArticleState) renderArticle(prevArticleState);
+      scheduleExpiryRerender();
+    }, delay + 20);
+  }
+
+  // ── Article ───────────────────────────────────────
+  function renderArticle(state) {
+    if (!state) {
+      titleText.innerHTML = '';
+      bodyEl.innerHTML = '';
+      revealProgressEl.textContent = '— / —';
+      fitTitleSlot();
+      return;
+    }
+    let total = 0, revealed = 0;
+    for (const para of state.paragraphs) for (const t of para) if (t.type === 'word') { total++; if (t.text) revealed++; }
+    revealProgressEl.textContent = `${fmtNum(revealed)} / ${fmtNum(total)}`;
+
+    titleText.innerHTML = '';
+    // Always render per-word. Revealed words show the text (orange) with
+    // a small finder PFP badge; unrevealed words show a HIDDEN redaction
+    // box. Flex gap handles spacing so punctuation tokens are skipped.
+    for (const t of state.titleTokens) {
+      if (t.type !== 'word') continue;
+      // Hidden hard-title words (T3/T4) are gameplay-invisible. Don't render
+      // during play; the round-end full reveal (state.won) brings them in.
+      // Matches the main MP index.html behavior.
+      if (t.isSkipped && !state.won) continue;
+      const wrap = document.createElement('span');
+      const norm = (t.text ? t.text : '').toLowerCase().replace(/[^\p{L}\p{N}]/gu, '') || (t.norm || '');
+      const wText = document.createElement('span');
+      wText.className = 'w-text';
+      if (t.revealed && t.text) {
+        wrap.className = 't-word revealed';
+        wText.textContent = t.text;
+        wrap.dataset.norm = norm;
+        if (titleJustRevealedNorms.has(norm)) {
+          wrap.classList.add('just-revealed');
+          if (window.FX) window.FX.unlockTitleWord(wrap);
+        }
+        wrap.appendChild(wText);
+        const finder = titleWordFinders.get(norm);
+        if (finder) {
+          const pfp = document.createElement(finder.profilePic ? 'img' : 'span');
+          pfp.className = 'finder-pfp';
+          if (finder.profilePic) {
+            pfp.src = finder.profilePic;
+            pfp.alt = '';
+            pfp.onerror = () => {
+              const fb = document.createElement('span');
+              fb.className = 'finder-pfp fallback';
+              fb.textContent = (finder.nickname || '?').charAt(0).toUpperCase();
+              pfp.replaceWith(fb);
+            };
+          } else {
+            pfp.classList.add('fallback');
+            pfp.textContent = (finder.nickname || '?').charAt(0).toUpperCase();
+          }
+          wrap.appendChild(pfp);
+        }
+      } else {
+        const hintLetter = String(t.hintLetter || '').trim().slice(0, 1).toUpperCase();
+        const hintLen = Math.max(1, Number(t.len) || hintLetter.length || 1);
+        const hintMask = hintLetter ? hintLetter + '_'.repeat(Math.max(0, hintLen - 1)) : '';
+        wrap.className = 't-word hidden' + (hintLetter ? ' current-hint' : '');
+        wText.textContent = hintMask || 'HIDDEN';
+        if (hintLetter) {
+          wrap.title = `Current target starts with ${hintLetter} and is ${hintLen} letters`;
+          wText.setAttribute('aria-label', `Current target starts with ${hintLetter} and is ${hintLen} letters`);
+        }
+        wrap.appendChild(wText);
+      }
+      titleText.appendChild(wrap);
+    }
+    fitTitleSlot();
+    if (titleJustRevealedNorms.size > 0) {
+      setTimeout(() => titleJustRevealedNorms.clear(), 1000);
+    }
+
+    // Sentence-skip: once the title is revealed, hide the contiguous prefix
+    // of already-fully-revealed sentences so the next partially-redacted
+    // sentence moves to the top. A sentence in pendingHideSentences is fully
+    // revealed but still within its 5s victory window — render it with green
+    // highlights on the words that just completed it, and stop the prefix
+    // walk there so later sentences render normally.
+    // Only skip fully-revealed sentences mid-game, never on round-end —
+    // otherwise the 25s post-win reveal hides the whole article.
+    const skipKeys = new Set();
+    if (state.titleRevealed && !state.won) {
+      let stop = false;
+      for (let pi = 0; pi < state.paragraphs.length && !stop; pi++) {
+        const buckets = new Map();
+        for (const t of state.paragraphs[pi]) {
+          if (t.type !== 'word') continue;
+          const sid = t.sentenceId || 0;
+          if (!buckets.has(sid)) buckets.set(sid, []);
+          buckets.get(sid).push(t);
+        }
+        const sids = [...buckets.keys()].sort((a, b) => a - b);
+        for (const sid of sids) {
+          const key = `${pi}:${sid}`;
+          if (buckets.get(sid).every(w => w.revealed)) {
+            if (pendingHideSentences.has(key)) { stop = true; break; }
+            skipKeys.add(key);
+          } else { stop = true; break; }
+        }
+      }
+    }
+
+    const foundSlotSet = new Set(Array.isArray(state.foundSlotIds) ? state.foundSlotIds : []);
+    const foundConfirmed = !!state.foundConfirmed;
+
+    bodyEl.innerHTML = '';
+    for (let pi = 0; pi < state.paragraphs.length; pi++) {
+      const para = state.paragraphs[pi];
+      const p = document.createElement('p');
+      for (const t of para) {
+        const sid = t.sentenceId || 0;
+        const key = `${pi}:${sid}`;
+        if (skipKeys.has(key)) continue;
+        if (t.type === 'space') { p.appendChild(document.createTextNode(t.text)); continue; }
+        const s = document.createElement('span');
+        s.className = 'word';
+        s.dataset.len = t.len;
+        if (t.isNumber) s.classList.add('is-number');
+        if (t.text) {
+          s.textContent = t.text;
+          s.classList.add('revealed');
+          s.dataset.norm = t.text.toLowerCase().replace(/[^a-z0-9]/g, '');
+          const ts = freshReveals.get(s.dataset.norm);
+          if (typeof ts === 'number') {
+            const elapsed = Date.now() - ts;
+            if (elapsed < FRESH_REVEAL_MS) {
+              s.classList.add('fresh-reveal');
+              s.style.animationDelay = `-${elapsed}ms`;
+              if (window.FX && !_fxTumbledWords.has(s.dataset.norm)) {
+                _fxTumbledWords.add(s.dataset.norm);
+                window.FX.tumbleWord(s);
+              }
+            }
+          }
+        } else {
+          s.classList.add('redacted');
+          if (t.targetSlotId) {
+            s.classList.add('target-slot');
+            s.dataset.slotId = t.targetSlotId;
+            if (foundConfirmed && foundSlotSet.has(t.targetSlotId)) {
+              s.classList.add('confirmed');
+            }
+          }
+          if (t.isNumber) {
+            // Show "N DIGIT(S)" label inside the orange box so players know
+            // the length of the hidden number without seeing its value.
+            // Prefer digitCount (digits only, ignores trailing letters like
+            // "1920s") and fall back to total token length if unset.
+            const digits = (typeof t.digitCount === 'number' && t.digitCount > 0) ? t.digitCount : t.len;
+            s.textContent = digits + ' DIGIT' + (digits === 1 ? '' : 'S');
+          } else {
+            s.style.minWidth = `calc(${t.len}ch + 8px)`;
+            s.textContent = '\u00a0'.repeat(t.len);
+          }
+        }
+        p.appendChild(s);
+      }
+      if (p.childNodes.length > 0) bodyEl.appendChild(p);
+    }
+  }
+
+  function setGuessCount(n) { localGuessCount = n; guessCountEl.textContent = fmtNum(n); fitStats(); }
+  function fitStats() {
+    document.querySelectorAll('.stats-bar .stat').forEach((stat) => {
+      const val = stat.querySelector('.stat-val');
+      if (!val) return;
+      val.style.fontSize = '';
+      let size = parseFloat(getComputedStyle(val).fontSize);
+      let tries = 0;
+      while (stat.scrollWidth > stat.clientWidth && size > 12 && tries < 30) {
+        size -= 1;
+        val.style.fontSize = size + 'px';
+        tries++;
+      }
+    });
+  }
+  window.addEventListener('resize', () => {
+    try { fitStats(); } catch (e) {}
+    try { _cardDomCache.forEach((c) => fitWordLabel(c, 10)); } catch (e) {}
+  });
+
+  // ── Round transition choreography ─────────────────
+  // Mirror animation: each container slides OUT in the direction it
+  // slid IN from. Left-col items (title/stats/scoreboard/announce) exit
+  // left, the cards column exits right, the ticker and article body
+  // exit downward. Hold the revealed article until the next round is ready.
+  const roundTransition = (() => {
+    const STAGGER_MS    = 240;
+    const ANIM_DUR_MS   = 880;
+
+    // Same containers, same direction at both ends — fp-out-* mirrors
+    // fp-in-* keyframes so a piece exits the way it entered.
+    const PLAN = [
+      { sel: '.title-block',        dirOut: 'fp-out-l', dirIn: 'fp-in-l' },
+      { sel: '.stats-bar',          dirOut: 'fp-out-l', dirIn: 'fp-in-l' },
+      { sel: '#scoreboard',         dirOut: 'fp-out-l', dirIn: 'fp-in-l' },
+      { sel: '.right-col',          dirOut: 'fp-out-r', dirIn: 'fp-in-r' },
+      { sel: '#announce',           dirOut: 'fp-out-l', dirIn: 'fp-in-l' },
+      { sel: '.ticker-wrap',        dirOut: 'fp-out-b', dirIn: 'fp-in-b' },
+      { sel: '.article-body-panel', dirOut: 'fp-out-b', dirIn: 'fp-in-b' },
+    ];
+
+    let phase = 'idle';     // idle | held | sliding-out | waiting | sliding-in
+    let roundEverShown = false;
+    let pendingBuild = false;
+    let newRoundReady = false;
+    let pendingClear = null; // callback to run BETWEEN slide-out and slide-in,
+                             // so the previous round's content rides the
+                             // tear-out animation off-screen instead of being
+                             // replaced with empty placeholders before it.
+    // The new round's `wikisearchle-state` and `wikiword-state` events arrive
+    // milliseconds after `round-start` (server broadcasts them back-to-back).
+    // If they paint into the visible DOM during slide-out, viewers see the
+    // OLD content vanish and the NEW content slide off — opposite of what we
+    // want. Buffer them here while a transition is in flight; the round-
+    // start clear callback flushes them after slide-out completes (panels
+    // off-screen, swap is invisible).
+    let bufferedState = null;
+    let bufferedArticle = null;
+    let timers = [];
+
+    function clearTimers() { timers.forEach(clearTimeout); timers = []; }
+    function later(fn, ms) { const t = setTimeout(fn, ms); timers.push(t); return t; }
+
+    const ANIM_CLASSES = ['fp-build-in', 'fp-tear-out',
+      'fp-in-l', 'fp-in-r', 'fp-in-b', 'fp-out-l', 'fp-out-r', 'fp-out-b'];
+    function clearAnim(el) {
+      ANIM_CLASSES.forEach((c) => el.classList.remove(c));
+      el.style.animationDelay = '';
+    }
+
+    function applyAnim(el, modeClass, dirClass, delayMs) {
+      clearAnim(el);
+      void el.offsetWidth; // restart animation if previously applied
+      el.style.animationDelay = delayMs + 'ms';
+      el.classList.add(modeClass, dirClass);
+    }
+
+    function startSlideOut() {
+      phase = 'sliding-out';
+      PLAN.forEach((step, i) => {
+        const el = document.querySelector(step.sel);
+        if (!el) return;
+        applyAnim(el, 'fp-tear-out', step.dirOut, i * STAGGER_MS);
+      });
+
+      const totalOut = ANIM_DUR_MS + (PLAN.length - 1) * STAGGER_MS + 80;
+      later(() => {
+        // animation-fill-mode: forwards keeps each element at the end
+        // state (off-screen, opacity 0) so any DOM mutation by socket
+        // handlers in the gap between rounds isn't visible.
+        // Run the deferred clear NOW (panels are off-screen, so swapping
+        // old content for empty placeholders here is invisible to the
+        // viewer). Then slide the new round in.
+        if (pendingClear) {
+          try { pendingClear(); } catch (_) {}
+          pendingClear = null;
+        }
+        if (newRoundReady) {
+          startSlideIn();
+        } else {
+          phase = 'waiting';
+          pendingBuild = true;
+        }
+      }, totalOut);
+    }
+
+    function startSlideIn() {
+      if (phase === 'sliding-in' || phase === 'idle') return;
+      phase = 'sliding-in';
+      pendingBuild = false;
+
+      PLAN.forEach((step, i) => {
+        const el = document.querySelector(step.sel);
+        if (!el) return;
+        applyAnim(el, 'fp-build-in', step.dirIn, i * STAGGER_MS);
+      });
+
+      const totalIn = ANIM_DUR_MS + (PLAN.length - 1) * STAGGER_MS + 100;
+      later(() => {
+        PLAN.forEach((step) => {
+          const el = document.querySelector(step.sel);
+          if (el) clearAnim(el);
+        });
+        phase = 'idle';
+        pendingBuild = false;
+        newRoundReady = false;
+        clearTimers();
+      }, totalIn);
+    }
+
+    function onRoundEnd() {
+      if (phase !== 'idle') return;
+      if (!roundEverShown) return;
+      // Hold the revealed article on screen and DO NOT slide out yet —
+      // sliding out leaves the panels off-screen (animation-fill-mode:
+      // forwards) which produced a 12-second grey-blank window between
+      // round-end and the server's 30-second next-round commit. Instead,
+      // we wait for `onNewRoundReady` to trigger the slide-out, so the
+      // tear-out animation runs back-to-back with the slide-in for the
+      // new round and viewers never see an empty overlay.
+      phase = 'held';
+      newRoundReady = false;
+      pendingBuild = false;
+    }
+
+    function onNewRoundReady(onAfterSlideOut) {
+      if (phase === 'idle' || phase === 'sliding-in') {
+        // A reconnect can miss the previous win. Reset immediately when
+        // there is no old round waiting to slide out.
+        if (typeof onAfterSlideOut === 'function') onAfterSlideOut();
+        return;
+      }
+      newRoundReady = true;
+      // Stash the caller's "clear and reset" work to run AFTER slide-out
+      // ends — panels are off-screen at that point, so wiping cards /
+      // scoreboard / announce / ticker / guess count is invisible to the
+      // viewer. Without this defer, the round-start handler clears the
+      // data immediately, the panels visibly empty out, and then the
+      // empty placeholders are what slide off — which reads as "tearing
+      // apart the new game" instead of "tearing apart the old game".
+      if (typeof onAfterSlideOut === 'function') pendingClear = onAfterSlideOut;
+      if (phase === 'held') {
+        // Round-end is still being held on screen. Now that the new round
+        // is ready, kick off the slide-out → slide-in transition.
+        pendingBuild = true;
+        startSlideOut();
+        return;
+      }
+      if (pendingBuild) startSlideIn();
+    }
+
+    function markShown() { roundEverShown = true; }
+
+    // True while the overlay is post-win-holding the previous round or
+    // animating its panels off-screen. Used by state handlers to buffer
+    // incoming snapshots instead of repainting the visible DOM mid-slide.
+    function isInTransition() {
+      return phase === 'held' || phase === 'sliding-out';
+    }
+    function setBufferedState(s)   { bufferedState = s; }
+    function setBufferedArticle(s) { bufferedArticle = s; }
+    function takeBufferedState()   { const x = bufferedState; bufferedState = null; return x; }
+    function takeBufferedArticle() { const x = bufferedArticle; bufferedArticle = null; return x; }
+
+    return {
+      onRoundEnd, onNewRoundReady, markShown,
+      isInTransition, setBufferedState, setBufferedArticle,
+      takeBufferedState, takeBufferedArticle,
+    };
+  })();
+
+  // ── Socket events ─────────────────────────────────
+  let activeRoundStartTime = null;
+  socket.on('wikisearchle-state', s => {
+    // Between rounds the server emits a null/empty snapshot. Keep the last
+    // round's content (revealed article, podium pulse, top guesses) on
+    // screen rather than blanking the whole overlay — `wikisearchle-round-
+    // start` will clear and replace it when the next round opens.
+    if (!s || !s.targetWord) return;
+    // Recover after a disconnect that missed round-start. A state snapshot
+    // belongs to one startTime and must release any held previous article.
+    if (s.startTime && s.startTime !== activeRoundStartTime) {
+      if (activeRoundStartTime) beginRound(s.startTime);
+      else activeRoundStartTime = s.startTime;
+    }
+    // The new round's snapshot arrives ms after `round-start`. Don't repaint
+    // the visible DOM mid-slide-out — buffer it; the round-start clear
+    // callback flushes it once panels are off-screen.
+    if (roundTransition.isInTransition()) {
+      roundTransition.setBufferedState(s);
+      return;
+    }
+    if (s.totalRankedWords) totalRankedWordsCache = s.totalRankedWords;
+    setActive();
+    renderCards(s.topGuesses || [], true);
+    renderScoreboard(s.scoreboard || []);
+    renderAnnounce(s.lastAnnounce || null);
+    setGuessCount(s.guessCount || 0);
+    titleWordFinders.clear();
+    if (s.titleWordFinders) {
+      for (const [n, f] of Object.entries(s.titleWordFinders)) titleWordFinders.set(n, f);
+    }
+    roundTransition.markShown();
+  });
+  function beginRound(startTime) {
+    if (startTime && startTime === activeRoundStartTime) return;
+    activeRoundStartTime = startTime || null;
+    _guessCards.reset();
+    _xpAwardByNorm.clear();
+    _xpPaidNorms.clear();
+    if (window.XpFlyout) XpFlyout.clearAll();
+    _fxTumbledWords.clear();
+    setActive();
+    // Defer data clears until AFTER the slide-out animation so the
+    // PREVIOUS round's content rides the tear-out off-screen. If we
+    // cleared here synchronously, the panels would visibly empty out
+    // and viewers would see the new (empty) round being torn apart
+    // instead of the old round.
+    roundTransition.onNewRoundReady(() => {
+      // Step 1 — clear the OLD round's data. Panels are off-screen here,
+      // so this is invisible to the viewer.
+      renderCards([]);
+      renderScoreboard([]);
+      renderAnnounce(null);
+      ticker.innerHTML = '';
+      setGuessCount(0);
+      titleWordFinders.clear();
+      titleJustRevealedNorms.clear();
+      scoreboardEl.classList.remove('round-ended');
+      prevArticleState = null;
+      freshReveals.clear();
+      pendingHideSentences.clear();
+      if (expiryTimer) { clearTimeout(expiryTimer); expiryTimer = null; }
+      renderArticle(null);
+      // Step 2 — apply any new-round state that was buffered during the
+      // transition, so when slide-in plays the panels already contain the
+      // new round's data.
+      const bufS = roundTransition.takeBufferedState();
+      if (bufS) {
+        if (bufS.totalRankedWords) totalRankedWordsCache = bufS.totalRankedWords;
+        renderCards(bufS.topGuesses || [], true);
+        renderScoreboard(bufS.scoreboard || []);
+        renderAnnounce(bufS.lastAnnounce || null);
+        setGuessCount(bufS.guessCount || 0);
+        if (bufS.titleWordFinders) {
+          for (const [n, f] of Object.entries(bufS.titleWordFinders)) titleWordFinders.set(n, f);
+        }
+      }
+      const bufA = roundTransition.takeBufferedArticle();
+      if (bufA) {
+        diffPendingHide(prevArticleState, bufA);
+        renderArticle(bufA);
+        prevArticleState = bufA;
+        scheduleExpiryRerender();
+      }
+    });
+  }
+  socket.on('wikisearchle-round-start', e => beginRound(e && e.startTime));
+  socket.on('wikisearchle-title-word-found', e => {
+    if (!e) return;
+    if (e.finders) {
+      titleWordFinders.clear();
+      for (const [n, f] of Object.entries(e.finders)) titleWordFinders.set(n, f);
+    } else if (Array.isArray(e.wordsRevealed) && e.user) {
+      for (const n of e.wordsRevealed) {
+        titleWordFinders.set(n, {
+          nickname: e.user.displayName || e.by || '',
+          profilePic: e.user.profilePic || null,
+          platform: e.user.platform || 'unknown',
+        });
+      }
+    }
+    for (const n of (e.wordsRevealed || [])) titleJustRevealedNorms.add(n);
+    if (prevArticleState) renderArticle(prevArticleState);
+    if (typeof e.totalRankedWords === 'number') totalRankedWordsCache = e.totalRankedWords;
+  });
+  socket.on('wikisearchle-title-revealed', () => {});
+  socket.on('wikisearchle-round-end', ({ targetWord, winner, finalGuessCount }) => {
+    if (window.FX) window.FX.finale(titleBlock);
+    showRoundEnd(targetWord, winner, finalGuessCount || localGuessCount);
+    // Pulse the top-3 podium cards during the post-win hold so viewers'
+    // attention lands on the winners. Cleared on the next round-start.
+    scoreboardEl.classList.add('round-ended');
+  });
+  socket.on('wikisearchle-new-guess', g => { _guessCards.queue(g && g.word); setGuessCount(localGuessCount + 1); });
+  socket.on('wikisearchle-top', top => { renderCards(top || []); });
+  socket.on('wikisearchle-scoreboard', top3 => { renderScoreboard(top3 || []); });
+  socket.on('wikisearchle-announce', a => { renderAnnounce(a); });
+  socket.on('wikisearchle-chip', chip => { pushChip(chip); });
+
+  socket.on('wikiword-state', s => {
+    if (s) {
+      // The new round's article arrives ms after `round-start`. Don't paint
+      // it into #body mid-slide-out — buffer it; the round-start clear
+      // callback flushes it once .article-body-panel is off-screen.
+      if (roundTransition.isInTransition()) {
+        roundTransition.setBufferedArticle(s);
+        return;
+      }
+      setActive();
+      diffPendingHide(prevArticleState, s);
+      renderArticle(s);
+      prevArticleState = s;
+      scheduleExpiryRerender();
+      roundTransition.markShown();
+    }
+    // Between rounds the server emits a null snapshot. Leave the previous
+    // round's revealed article on screen rather than wiping #body to blank
+    // — `wikiword-state` with the new article will repaint it when the
+    // next round opens.
+  });
+  socket.on('wikiword-reveal', e => {
+    if (!e || !e.words) return;
+    markFreshReveals(e.words);
+    applyFreshRevealToDom();
+    scheduleExpiryRerender();
+  });
+  socket.on('wikiword-round-end', state => {
+    freshReveals.clear();
+    pendingHideSentences.clear();
+    if (expiryTimer) { clearTimeout(expiryTimer); expiryTimer = null; }
+    prevArticleState = state;
+    renderArticle(state);
+    document.querySelectorAll('#body .word.redacted').forEach(s => { s.classList.remove('redacted'); s.classList.add('revealed'); });
+    // Article is now fully revealed — this is the "won state" snapshot
+    // moment. Defer one tick so the DOM mutation above settles before
+    // we clone, so the floaters reflect the final revealed layout.
+    setTimeout(() => roundTransition.onRoundEnd(), 50);
+  });
+  socket.on('wikiword-idle', () => {
+    prevArticleState = null;
+    freshReveals.clear();
+    pendingHideSentences.clear();
+    if (expiryTimer) { clearTimeout(expiryTimer); expiryTimer = null; }
+    renderArticle(null);
+    setIdle();
+  });
+
+  // Prime from REST
+  fetch('/api/state').then(r => r.json()).then(s => {
+    if (s && s.targetWord) {
+      setActive();
+      renderCards(s.topGuesses || [], true);
+      renderScoreboard(s.scoreboard || []);
+      renderAnnounce(s.lastAnnounce || null);
+      setGuessCount(s.guessCount || 0);
+      roundTransition.markShown();
+    }
+  }).catch(() => {});
+
+  window.addEventListener('resize', fitTitleSlot);
+  window._wsSocket = socket;
+})();
+</script>
+
+
+<script>
+/* Sassie word-reveal scanner — listens for wikiword-reveal events, finds the
+   freshly-revealed word's viewport position, sends Sassie there via the
+   sassie-runtime move-to API, and draws a cyan scanner ring on the word.
+
+   Lookup of the .word DOM element is by data-norm, set by the renderer to the
+   normalized form of the word. Picking just the first revealed word per event
+   keeps Sassie from teleporting wildly when multiple words reveal at once. */
+(function () {
+  // Best-effort wait for the existing window._wsSocket to be ready. The page
+  // declares it after the article state machine boots; we attach our listener
+  // when it appears so we don't need to refactor the existing socket lifecycle.
+  let attached = false;
+  function tryAttach() {
+    if (attached) return;
+    const sock = window._wsSocket;
+    if (!sock || typeof sock.on !== 'function') {
+      setTimeout(tryAttach, 250);
+      return;
+    }
+    attached = true;
+    sock.on('wikiword-reveal', (e) => {
+      try {
+        if (!e || !Array.isArray(e.words) || e.words.length === 0) return;
+        // Wait one frame so the DOM update from applyFreshRevealToDom lands.
+        requestAnimationFrame(() => requestAnimationFrame(() => onWordRevealed(e.words)));
+      } catch (_) {}
+    });
+  }
+  tryAttach();
+
+  let lastTriggerAt = 0;
+  function onWordRevealed(words) {
+    // Pick the first revealed word that's actually present in the DOM and visible.
+    let el = null;
+    for (const norm of words) {
+      const candidate = document.querySelector(
+        '#body .word[data-norm="' + cssEscape(String(norm).toLowerCase()) + '"]'
+      );
+      if (candidate && candidate.offsetParent) { el = candidate; break; }
+    }
+    if (!el) return;
+
+    const rect = el.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const W = window.innerWidth || 1080;
+    const H = window.innerHeight || 1920;
+
+    // Throttle so rapid back-to-back reveals don't spam Sassie's move queue.
+    const now = Date.now();
+    if (now - lastTriggerAt < 1500) {
+      // Still draw the scanner FX (it's per-word) but skip the move-to.
+      drawScannerFx(cx, cy);
+      return;
+    }
+    lastTriggerAt = now;
+
+    // Sassie hovers ABOVE the word so her scanner can beam down. Clamp so she
+    // doesn't slide off the top of the canvas for words near the title.
+    const sassieXNorm = clamp(cx / W, 0.10, 0.90);
+    const sassieYNorm = clamp((cy / H) - 0.14, 0.10, 0.85);
+
+    fetch('/api/runtime/move-to', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        x: sassieXNorm,
+        y: sassieYNorm,
+        durationMs: 700,
+        returnAfterMs: 2400,
+        source: 'wikisearchle-scanner',
+      }),
+    }).catch(() => {});
+
+    drawScannerFx(cx, cy);
+  }
+
+  function drawScannerFx(x, y) {
+    const fx = document.createElement('div');
+    fx.className = 'sassie-scanner-fx';
+    fx.style.left = x + 'px';
+    fx.style.top  = y + 'px';
+    fx.innerHTML = '<div class="ring"></div><div class="crosshair"></div>';
+    document.body.appendChild(fx);
+    setTimeout(() => { fx.remove(); }, 1300);
+  }
+
+  function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+  function cssEscape(s) {
+    if (window.CSS && window.CSS.escape) return window.CSS.escape(s);
+    return String(s).replace(/["\\]/g, '\\$&');
+  }
+})();
+</script>
+
+<iframe id="sassie-front" class="sassie-layer" src="/api/runtime/overlay/front?layer=front" allow="autoplay" loading="eager" title="Sassie front layer"></iframe>
+</body>
+</html>

@@ -1,0 +1,11 @@
+node_modules/
+.env
+*.log
+logs/
+.codex-backups/
+*.bak
+*.bak-*
+*.bak-pre-*
+data/sessions.json
+
+data/mp-actions/

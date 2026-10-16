@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spelling Bee - Admin</title>
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+  <header>
+    <h1>&#x2B21; Spelling Bee Admin</h1>
+    <div class="header-status">
+      <span class="status-dot" id="server-dot"></span>
+      <span id="server-status">Connecting...</span>
+      <span class="divider">|</span>
+      <span class="status-dot" id="chat-dot"></span>
+      <span id="chat-status">Chat Relay</span>
+    </div>
+  </header>
+
+  <main>
+    <!-- Left Column: Controls -->
+    <div class="column controls-column">
+      <!-- Puzzle Setup -->
+      <section class="card">
+        <h2>Puzzle Setup</h2>
+        <div class="btn-row">
+          <button id="btn-generate" class="btn primary">Generate Random Puzzle</button>
+        </div>
+        <div class="divider-line"></div>
+        <h3>Custom Puzzle</h3>
+        <div class="custom-puzzle-form">
+          <div class="form-row">
+            <label>7 Letters:</label>
+            <input type="text" id="custom-letters" maxlength="7" placeholder="abcdefg" spellcheck="false">
+          </div>
+          <div class="form-row">
+            <label>Center:</label>
+            <input type="text" id="custom-center" maxlength="1" placeholder="a" spellcheck="false">
+          </div>
+          <button id="btn-custom" class="btn">Load Custom Puzzle</button>
+        </div>
+      </section>
+
+      <!-- Current Puzzle Info -->
+      <section class="card" id="puzzle-info" style="display:none">
+        <h2>Current Puzzle</h2>
+        <div class="puzzle-preview">
+          <div class="mini-honeycomb" id="mini-honeycomb"></div>
+          <div class="puzzle-stats">
+            <div class="stat"><span class="stat-val" id="stat-words">0</span><span class="stat-label">Words</span></div>
+            <div class="stat"><span class="stat-val" id="stat-points">0</span><span class="stat-label">Points</span></div>
+            <div class="stat"><span class="stat-val" id="stat-pangrams">0</span><span class="stat-label">Pangrams</span></div>
+          </div>
+        </div>
+        <button id="btn-shuffle" class="btn small">Shuffle Letters</button>
+      </section>
+
+      <!-- Game Controls -->
+      <section class="card">
+        <h2>Game Controls</h2>
+        <div class="form-row">
+          <label>Timer (sec):</label>
+          <input type="number" id="timer-input" value="0" min="0" step="30" placeholder="0 = no timer">
+        </div>
+        <div class="btn-row">
+          <button id="btn-start" class="btn success">Start</button>
+          <button id="btn-pause" class="btn warning" disabled>Pause</button>
+          <button id="btn-resume" class="btn" disabled>Resume</button>
+          <button id="btn-end" class="btn danger" disabled>End</button>
+        </div>
+        <button id="btn-reset" class="btn small danger">Reset Everything</button>
+      </section>
+
+      <!-- Overlay Settings -->
+      <section class="card">
+        <h2>Overlay Settings</h2>
+        <div class="form-row toggle-row">
+          <label for="toggle-recent-words">Show Recent Words</label>
+          <label class="toggle-switch">
+            <input type="checkbox" id="toggle-recent-words" checked>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </section>
+
+      <!-- Manual Word Test -->
+      <section class="card">
+        <h2>Test Word</h2>
+        <div class="form-row">
+          <input type="text" id="test-word" placeholder="Type a word..." spellcheck="false">
+          <button id="btn-test" class="btn small">Submit</button>
+        </div>
+        <div id="test-result" class="test-result"></div>
+      </section>
+
+      <!-- Chat Relay -->
+      <section class="card">
+        <h2>Chat Relay</h2>
+        <div class="form-row">
+          <span class="status-dot" id="chat-dot-2"></span>
+          <span id="chat-status-2">Disconnected</span>
+          <button id="btn-reconnect-chat" class="btn small">Reconnect</button>
+        </div>
+        <p class="hint">Connects to Chat Relay at localhost:3000</p>
+      </section>
+    </div>
+
+    <!-- Right Column: Scores + Words -->
+    <div class="column info-column">
+      <!-- Live Status -->
+      <section class="card">
+        <h2>Game Status: <span id="game-status" class="game-status">Idle</span></h2>
+        <div class="progress-info">
+          <span><span id="info-found">0</span>/<span id="info-total">0</span> words found</span>
+          <span><span id="info-score">0</span>/<span id="info-max-score">0</span> points</span>
+          <span id="info-timer-wrap" style="display:none">Timer: <span id="info-timer">--:--</span></span>
+        </div>
+        <div class="progress-bar">
+          <div id="admin-progress" class="progress-fill"></div>
+        </div>
+      </section>
+
+      <!-- Leaderboard -->
+      <section class="card">
+        <h2>Leaderboard</h2>
+        <div id="admin-leaderboard" class="admin-leaderboard">
+          <div class="empty">No players yet</div>
+        </div>
+      </section>
+
+      <!-- Recent Words -->
+      <section class="card">
+        <h2>Recent Words</h2>
+        <div id="admin-feed" class="admin-feed">
+          <div class="empty">No words found yet</div>
+        </div>
+      </section>
+
+      <!-- Valid Words -->
+      <section class="card">
+        <h2>Valid Words</h2>
+        <div id="valid-words" class="valid-words">
+          <div class="empty">Load a puzzle first</div>
+        </div>
+      </section>
+
+      <!-- Saved Games -->
+      <section class="card">
+        <h2>Saved Games</h2>
+        <div id="saved-games" class="saved-games-list">
+          <div class="empty">No saved games</div>
+        </div>
+      </section>
+
+      <!-- All-Time Stats -->
+      <section class="card">
+        <h2>All-Time Stats</h2>
+        <div id="player-stats" class="player-stats-list">
+          <div class="empty">No stats yet</div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

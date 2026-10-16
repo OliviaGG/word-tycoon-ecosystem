@@ -1,0 +1,56 @@
+node_modules/
+.env
+*.log
+*.db
+*.db-journal
+data/puzzles.json
+cloudflare-static-phase1/package-lock.json
+NUL
+nul
+data/backups/
+
+# Root scratch / investigation artifacts
+tmp_*
+tmp-*
+*.check.js
+*.check.html
+jorry-infographic.*
+
+# Sassie runtime-generated state
+tools/sassie-mvp/data/player-knowledge.json
+tools/sassie-mvp/logs/
+tools/sassie-runtime/audio/
+tools/sassie-voice/generated/
+
+# Local development artifacts
+.claude/
+.codex-backups/
+.codex-tmp/
+diagnostics/
+
+# Backup / runtime clutter from prod sync work
+.env.bak*
+*.bak
+*.bak-*
+*.bak.*
+*.undo-*
+*.preport
+AGENTS.md.bak-*
+backups/
+exports/
+tmp/
+data/*.bak*
+data/*.db*
+data/elo-ratings.json
+data/suspicion-scores.json
+
+# Sassie runtime state from prod
+tools/sassie-mvp/data/
+tools/sassie-runtime/data/
+tools/sassie-runtime/logs/
+tools/sassie-runtime/models/
+tools/sassie-runtime/piper/
+
+# Private per-service issuer registry
+data/service-keys.json
+data/service-keys.json.*

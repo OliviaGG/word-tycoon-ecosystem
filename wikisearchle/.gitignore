@@ -1,0 +1,26 @@
+node_modules/
+data/
+logs/
+*.log
+*.db
+*.db-journal
+.env
+*.bak
+*.bak-*
+dist/
+tmp/
+
+# Android local tools, signing material, and generated artifacts
+android/.gradle/
+android/.idea/
+android/build/
+android/app/build/
+android/local.properties
+android/keystore.properties
+android/**/*.iml
+*.aab
+*.apk
+*.idsig
+*.jks
+*.keystore
+.env.play-billing

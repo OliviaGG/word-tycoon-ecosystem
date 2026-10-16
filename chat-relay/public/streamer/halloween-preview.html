@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Halloween background · Word Tycoon</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #0c0a12; color: #eee7f4; font: 15px/1.5 system-ui,sans-serif; }
+    main { max-width: 1340px; padding: 32px; margin: auto; }
+    .eyebrow { color: #edb465; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; }
+    h1 { font-size: clamp(28px,4vw,42px); letter-spacing: -.04em; margin: 6px 0; }
+    p { color: #aea1bc; margin: 0 0 22px; }
+    .controls { display: flex; flex-wrap: wrap; gap: 18px; align-items: center; margin-bottom: 24px; }
+    label { display: flex; gap: 9px; align-items: center; color: #d2c6db; }
+    button, select { font: inherit; border: 1px solid #49364f; border-radius: 8px; color: #f4eafa; background: #201527; padding: 8px 12px; }
+    input { accent-color: #eda64b; }
+    input[type=color] { width: 32px; height: 30px; background: none; padding: 0; border: 0; }
+    .layouts { display: grid; grid-template-columns: minmax(0,1fr) 260px; gap: 24px; align-items: start; }
+    figure { margin: 0; min-width: 0; }
+    figcaption { color: #9889a4; font-size: 12px; margin: 10px 0; display: flex; justify-content: space-between; }
+    .stage { position: relative; overflow: hidden; border-radius: 14px; border: 1px solid #46334f; isolation: isolate; }
+    .landscape-stage { aspect-ratio: 16/9; }
+    .portrait-stage { aspect-ratio: 9/16; }
+    .backdrop { position: absolute; inset: 0; z-index: -1; }
+    .sample { position: absolute; top: 29%; left: 24%; width: 52%; padding: 20px; text-align: center; border: 1px solid #c8a0eb24; border-radius: 14px; background: #140e22c9; }
+    .sample small { font-size: 9px; letter-spacing: .2em; color: #c8b6d6; }
+    .sample strong { display: block; font-size: 19px; letter-spacing: .07em; margin: 10px 0 16px; }
+    .tiles { display: flex; justify-content: center; gap: 5px; }
+    .tiles span { display: grid; place-items: center; width: 34px; height: 36px; border: 1px solid #e9b8766b; color: #ffe2ad; background: #c77c2524; border-radius: 4px; font-weight: 650; }
+    .sample .caption { font-size: 10px; margin: 14px 0 0; color: #b5a4c3; }
+    .portrait-stage .sample { top: 36%; left: 9%; width: 82%; padding: 18px 10px; }
+    .portrait-stage .tiles span { width: 29px; height: 32px; }
+    .showcase-off .sample { display: none; }
+    .note { color: #95869f; font-size: 12px; margin-top: 18px; }
+    @media(max-width:800px) { main { padding: 20px; } .layouts { grid-template-columns: 1fr; } .portrait-stage { max-width: 320px; margin: auto; } .sample { padding: 10px; } .sample strong { font-size: 14px; margin: 5px 0 9px; } .sample .caption { display: none; } }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="eyebrow">Seasonal overlay · October</div>
+    <h1>Moonlit pumpkins</h1>
+    <p>A quiet Halloween night, with room for your game to take centre stage.</p>
+    <div class="controls">
+      <label>Speed <input id="speed" type="range" min="1" max="10" value="4"></label>
+      <label>Activity <input id="intensity" type="range" min="1" max="10" value="5"></label>
+      <label>Glow <input id="accent" type="color" value="#9b55dd"></label>
+      <label><input id="sample" type="checkbox" checked> Sample game card</label>
+    </div>
+    <div class="layouts">
+      <figure>
+        <div class="stage landscape-stage"><div class="backdrop" id="landscape"></div>
+          <div class="sample"><small>WORD TYCOON</small><strong>YOUR GAME HERE</strong><div class="tiles"><span>S</span><span>P</span><span>O</span><span>O</span><span>K</span></div><div class="caption">Dark centre · clear game and widgets</div></div>
+        </div>
+        <figcaption><span>Landscape</span><span>1920 × 1080</span></figcaption>
+      </figure>
+      <figure>
+        <div class="stage portrait-stage"><div class="backdrop" id="portrait"></div>
+          <div class="sample"><small>WORD TYCOON</small><strong>YOUR GAME HERE</strong><div class="tiles"><span>S</span><span>P</span><span>O</span><span>O</span><span>K</span></div></div>
+        </div>
+        <figcaption><span>Portrait</span><span>1080 × 1920</span></figcaption>
+      </figure>
+    </div>
+    <div class="note">Preview only. These controls change the preview; your saved stream setup stays as it is. Animation follows your device’s reduced-motion setting.</div>
+  </main>
+  <script src="/streamer/halloween-background.js?v=1"></script>
+  <script>
+    let stops = [];
+    function render() {
+      stops.forEach(stop => stop());
+      const config = {
+        speed: document.getElementById('speed').value,
+        intensity: document.getElementById('intensity').value,
+        primaryColor: document.getElementById('accent').value,
+        secondaryColor: '#170d29'
+      };
+      stops = ['landscape', 'portrait'].map(id => WordTycoonHalloween.mount(
+        document.getElementById(id), config, { landscape: id === 'landscape' }
+      ));
+    }
+    ['speed', 'intensity', 'accent'].forEach(id => document.getElementById(id).addEventListener('input', render));
+    document.getElementById('sample').addEventListener('change', event => document.body.classList.toggle('showcase-off', !event.target.checked));
+    window.addEventListener('pagehide', () => stops.forEach(stop => stop()));
+    render();
+  </script>
+</body>
+</html>

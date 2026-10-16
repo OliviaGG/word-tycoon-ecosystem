@@ -1,0 +1,56 @@
+{
+  "name": "Wordle",
+  "short_name": "Wordle",
+  "description": "Play Wordle on Word Tycoon — a free daily word puzzle game. Install for one-tap solo and multiplayer rounds.",
+  "id": "/wordle/solo/?source=pwa",
+  "start_url": "/wordle/solo/?source=pwa",
+  "scope": "/wordle/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#111827",
+  "theme_color": "#111827",
+  "categories": ["games", "entertainment", "word"],
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "/wordle/app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/wordle/app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Solo Daily",
+      "short_name": "Solo",
+      "description": "Open the current solo Wordle puzzle.",
+      "url": "/wordle/solo/?source=shortcut-solo",
+      "icons": [
+        {
+          "src": "/wordle/app-icon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "Live Game",
+      "short_name": "Live",
+      "description": "Jump into the multiplayer Wordle round.",
+      "url": "/wordle/online/?source=shortcut-live",
+      "icons": [
+        {
+          "src": "/wordle/app-icon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
+    }
+  ]
+}

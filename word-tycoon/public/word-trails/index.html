@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#c6e8ef">
+  <meta name="description" content="Follow 24 crosswords from easy to expert, or escape into one fresh daily puzzle. Connect letters and grow your Word Trail.">
+  <title>Word Trails · Daily Crossword Adventures</title>
+  <link rel="canonical" href="https://wordtycoon.live/word-trails/">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Word Trails · Daily Crossword Adventures">
+  <meta property="og:description" content="Connect letters, explore 24 crosswords from easy to expert, and discover a fresh daily puzzle.">
+  <meta property="og:url" content="https://wordtycoon.live/word-trails/">
+  <meta property="og:image" content="https://wordtycoon.live/word-trails/assets/alpine-3d.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css?v=beta-1">
+  <link rel="stylesheet" href="theme.css?v=beta-1">
+  <link rel="preload" href="assets/alpine-3d.jpg" as="image">
+</head>
+<body data-theme="alpine">
+  <noscript><p>Please enable JavaScript to play Word Trails. <a href="https://wordtycoon.live/">Back to Word Tycoon</a></p></noscript>
+  <div class="landscape" aria-hidden="true">
+    <svg viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice">
+      <defs><linearGradient id="sky" x2="0" y2="1"><stop stop-color="#edf2df"/><stop offset="1" stop-color="#d8e4d9"/></linearGradient></defs>
+      <path fill="url(#sky)" d="M0 0h1600v1000H0z"/>
+      <circle class="sun" cx="1185" cy="230" r="76" fill="#e9c985"/>
+      <path class="far-mountain" d="M0 565 245 293 438 488 712 183 1080 574 1275 372 1600 605V1000H0Z" fill="#bacdc6"/>
+      <path class="snow" d="m712 183-130 182 93-32 44 52 23-78 69 41ZM245 293l-82 91 62-13 37 27 12-76Z" fill="#edf2e8"/>
+      <path class="mid-mountain" d="M0 675 166 580 460 692 899 419 1212 662 1420 502 1600 622V1000H0Z" fill="#8cac9e"/>
+      <path class="near-mountain" d="M0 781Q250 550 526 804T1115 733T1600 700V1000H0Z" fill="#5c8b77"/>
+      <path class="foreground" d="M0 857Q297 727 657 892T1600 798V1000H0Z" fill="#325b4a"/>
+      <path class="trail" d="M935 1000Q1290 945 1030 887T985 802" fill="none" stroke="#d7cca2" stroke-width="24" opacity=".6"/>
+      <g class="trees" fill="#284e40"><path d="m66 807 55-125 55 125h-37l49 65H58l47-65Z"/><path d="m1350 737 45-104 45 104h-28l40 56h-116l39-56Z"/><path d="m1475 786 64-158 64 158h-41l52 74h-151l52-74Z"/></g>
+      <g fill="none" stroke="#748b79" stroke-width="3" stroke-linecap="round"><path d="M990 187q10-10 20 0 10-10 20 0M1048 213q7-7 14 0 7-7 14 0"/></g>
+    </svg>
+  </div>
+  <div class="page">
+    <header class="topbar">
+      <a class="brand" href="./" aria-label="Word Trails home"><span class="brand-icon" aria-hidden="true">w<span>↗</span></span><span>word<span class="brand-light">trails</span><small>A WORD TYCOON GAME</small></span></a>
+      <div class="header-actions"><button id="mapButton" class="map-button" type="button"><span aria-hidden="true">⌁</span> Your trail <span id="trailCount">0 / 24</span></button><button id="helpButton" class="icon-button" type="button" aria-label="How to play">?</button></div>
+    </header>
+    <main>
+      <div class="intro"><div class="intro-title"><span class="eyebrow" id="regionPlace">THE MOUNTAIN TRAIL</span><h1 id="regionName">Alpine morning<span>.</span></h1><p id="regionDescription">A little fresh air. A few new words.</p></div><div class="intro-controls"><div class="mode-switch" role="group" aria-label="Choose game mode"><button id="trailButton" type="button" class="mode-button active" aria-pressed="true"><span class="mode-icon" aria-hidden="true">⌁</span><span><b>Adventure</b><small>Easy to expert</small></span></button><button id="dailyButton" type="button" class="mode-button daily-button" aria-pressed="false"><span class="mode-icon" aria-hidden="true">☀</span><span><b>Daily crossword</b><small id="dailyDate">Today</small></span><em id="dailyBadge">NEW</em></button></div><div class="daily-timing"><span id="dailyStreak">A fresh challenge every day</span><span id="dailyReset">Resets at midnight in Edmonton</span></div></div></div>
+      <div class="play-layout">
+        <section class="crossword-panel" aria-label="Crossword puzzle">
+          <div class="board-header"><div class="level-pill"><span class="level-dot"></span><span id="levelLabel">LEVEL 01</span></div><span id="wordCount">0 of 3 words</span></div>
+          <div class="board-meta"><span id="difficultyLabel" class="difficulty" data-difficulty="easy">Easy · 3 letters</span></div>
+          <div class="board-wrap"><div id="crossword" class="crossword" role="group" aria-label="Hidden crossword letters"></div></div>
+          <div class="board-bottom"><span id="boardTip"><span aria-hidden="true">✧</span> Every word is a step forward.</span><button id="bonusButton" class="bonus-button" type="button"><span aria-hidden="true">✦</span> Extra words <b id="bonusCount">0</b></button></div>
+          <div class="progress-track"><div id="progressFill"></div></div>
+        </section>
+        <section class="wheel-panel" aria-label="Connect letters">
+          <span class="eyebrow wheel-eyebrow">FIND YOUR NEXT WORD</span>
+          <div id="selection" class="selection" aria-live="polite"><span>Connect the letters</span></div>
+          <div id="wheel" class="wheel" aria-label="Letter wheel"><svg class="wheel-lines" viewBox="0 0 300 300" aria-hidden="true"><polyline id="selectionLine" points=""/></svg><button id="shuffleButton" class="shuffle-button" type="button" aria-label="Shuffle letters">↻</button></div>
+          <p id="feedback" class="feedback" role="status">Swipe, tap, or type a word.</p>
+          <div class="word-actions"><button id="clearButton" type="button" class="clear-button" aria-label="Undo last letter">⌫</button><button id="submitButton" class="submit-button" type="button">Enter word <span>↵</span></button><button id="hintButton" class="hint-button" type="button" aria-label="Reveal a letter"><span aria-hidden="true">☼</span></button></div>
+          <p class="hint-caption">☼ Reveal a letter · No timer. Take your time.</p>
+        </section>
+      </div>
+      <nav class="trail-strip" aria-label="Your current trail"><div class="trail-label"><span class="eyebrow" id="trailEyebrow">EASY STEPS. BIGGER DISCOVERIES.</span><span id="chapterLabel">Mountain trail · 1 of 3</span></div><div id="levelSteps" class="level-steps"></div><span class="chapter-symbol" aria-hidden="true">↗</span></nav>
+    </main>
+    <footer><a href="https://wordtycoon.live/portal/">← Word Tycoon</a><span id="saveStatus">Progress saves in this browser</span><span>Made for a little escape.</span></footer>
+  </div>
+  <dialog id="helpDialog" class="dialog help-dialog" aria-labelledby="helpTitle"><button class="close-dialog" data-close type="button" aria-label="Close instructions">×</button><span class="eyebrow">MAKE YOURSELF AT HOME</span><h2 id="helpTitle">One word at a time.</h2><p>Connect letters on the wheel to uncover words in the crossword. You can use each letter tile once per word, including separate tiles of the same letter.</p><ol><li><b>Swipe</b> through letters and release to submit.</li><li><b>Tap</b> letters, then select Enter word.</li><li><b>Type</b> a word and press Enter. Backspace undoes; Escape clears; Space shuffles.</li></ol><p><b>Adventure:</b> 24 levels grow from tiny three-letter warmups to seven-letter expert crosswords. Complete a level to unlock the next.</p><p><b>Daily:</b> a separate crossword for everyone, refreshed every day at midnight in Edmonton. Your daily save and streak stay separate from your adventure.</p><p>Select a crossword cell to focus a word; the sun button reveals one letter. Finish with no hints for <b>three stars</b>, up to three hints for two, or more hints for one.</p><p class="fine-print">Curated word lists, progress, extra words, and stars are saved in this browser.</p><button data-close class="submit-button full-button" type="button">Let’s wander <span>→</span></button></dialog>
+  <dialog id="mapDialog" class="dialog map-dialog" aria-labelledby="mapTitle"><button class="close-dialog" data-close type="button" aria-label="Close trail map">×</button><span class="eyebrow">YOUR LITTLE ADVENTURE</span><h2 id="mapTitle">Follow the words.</h2><p>Start small. Find your stride. Explore all 24 levels.</p><div class="difficulty-legend"><span>Easy</span><span>Growing</span><span>Challenging</span><span>Expert</span></div><div id="trailMap" class="trail-map"></div><p class="fine-print">Complete each level to open the next. Finished puzzles can be replayed. Daily games have their own progress.</p></dialog>
+  <dialog id="bonusDialog" class="dialog" aria-labelledby="bonusTitle"><button class="close-dialog" data-close type="button" aria-label="Close extra words">×</button><span class="eyebrow">THE SCENIC ROUTE</span><h2 id="bonusTitle">A little extra discovery.</h2><p>These words fit the wheel, even though they aren’t in the crossword.</p><div id="bonusWords" class="bonus-words"></div><p id="bonusMilestone" class="fine-print"></p></dialog>
+  <dialog id="completeDialog" class="dialog complete-dialog" aria-labelledby="completeTitle"><span class="completion-icon" aria-hidden="true">↗</span><span class="eyebrow">A NEW PIECE OF THE WORLD</span><h2 id="completeTitle">Beautifully done.</h2><div id="completeStars" class="complete-stars" aria-label="Three stars">★★★</div><p id="completeCopy"></p><div id="completeWords" class="bonus-words"></div><button id="nextButton" class="submit-button full-button" type="button">Next little adventure <span>→</span></button><button id="reviewButton" class="review-button" type="button">Stay and enjoy the view</button><button id="replayButton" class="review-button" type="button">Replay this puzzle</button></dialog>
+  <script src="core.js?v=beta-1"></script><script src="game.js?v=beta-1"></script>
+</body>
+</html>

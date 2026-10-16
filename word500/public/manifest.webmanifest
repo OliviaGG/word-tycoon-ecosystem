@@ -1,0 +1,56 @@
+{
+  "name": "Word5000",
+  "short_name": "Word5000",
+  "description": "Play Word5000 on Word Tycoon — a free live multiplayer word deduction game. Install for one-tap live rounds and solo daily mode.",
+  "id": "/?source=pwa",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#101525",
+  "theme_color": "#101525",
+  "categories": ["games", "entertainment", "word"],
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "/icon-192-v3.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512-v3.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Word5000",
+      "short_name": "Live",
+      "description": "Jump straight into the live multiplayer round.",
+      "url": "/?source=shortcut-live",
+      "icons": [
+        {
+          "src": "/icon-192-v3.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Word5000 Solo",
+      "short_name": "Solo",
+      "description": "Open the solo daily mode.",
+      "url": "/solo?source=shortcut-solo",
+      "icons": [
+        {
+          "src": "/icon-192-v3.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ]
+}

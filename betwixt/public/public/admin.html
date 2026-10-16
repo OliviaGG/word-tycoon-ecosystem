@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Betwixt Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="admin.css" />
+</head>
+<body>
+  <header>
+    <h1>Betwixt Admin</h1>
+    <div class="status-dots">
+      <span class="dot" id="dot-displays" title="Displays">0 displays</span>
+      <span class="dot" id="dot-relay" title="Chat Relay">Relay</span>
+    </div>
+  </header>
+
+  <div class="grid">
+    <!-- Current Game -->
+    <div class="card">
+      <h2>Current Game</h2>
+      <div class="game-info">
+        <div class="info-row">
+          <span class="info-label">Secret Word</span>
+          <span class="info-value secret-word" id="secret-word">-----</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Word Length</span>
+          <span class="info-value" id="word-length">-</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Bounds</span>
+          <span class="info-value"><span id="current-lower">---</span> &mdash; <span id="current-upper">---</span></span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Guesses</span>
+          <span class="info-value" id="guess-count">0</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Status</span>
+          <span class="info-value" id="game-status">Active</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="card">
+      <h2>Controls</h2>
+      <div class="control-group">
+        <label>Word Length</label>
+        <div class="length-selector" id="length-selector"></div>
+      </div>
+      <div class="control-group">
+        <label>Game Modes</label>
+        <div class="toggle-row">
+          <span class="toggle-label">Random Word Length</span>
+          <button class="toggle-btn" id="toggle-random-length" title="Each game picks a random word length">OFF</button>
+        </div>
+        <div class="toggle-row">
+          <span class="toggle-label">Use Full Dictionary</span>
+          <button class="toggle-btn" id="toggle-full-dict" title="Use all valid words as targets instead of curated list">OFF</button>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" id="btn-new-game">New Game</button>
+
+      <hr />
+
+      <div class="control-group">
+        <label>Word Pool Status</label>
+        <div class="pool-stats" id="pool-stats"></div>
+        <button class="btn btn-small btn-reset" id="btn-reset-played" title="Reset played words tracker">Reset Played Words</button>
+      </div>
+
+      <hr />
+
+      <div class="control-group">
+        <label>Test Guess</label>
+        <div class="test-row">
+          <input type="text" id="test-word" placeholder="Word" />
+          <input type="text" id="test-name" placeholder="Name" value="Admin" />
+          <button class="btn btn-small" id="btn-test-guess">Guess</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Live Feed -->
+    <div class="card card-full">
+      <h2>Live Guess Feed</h2>
+      <div class="feed" id="feed">
+        <div class="feed-empty">No guesses yet</div>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="card">
+      <h2>Stats</h2>
+      <div class="stat-row">
+        <span>Games Played</span>
+        <strong id="stat-games">0</strong>
+      </div>
+      <h3>Leaderboard</h3>
+      <div class="leaderboard" id="leaderboard">
+        <div class="feed-empty">No games yet</div>
+      </div>
+    </div>
+
+    <!-- Recent Games -->
+    <div class="card">
+      <h2>Recent Games</h2>
+      <div class="recent-games" id="recent-games">
+        <div class="feed-empty">No history</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

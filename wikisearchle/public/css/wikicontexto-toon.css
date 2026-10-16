@@ -1,0 +1,692 @@
+/* WikiContexto — Toon Block Redesign Overrides
+   Loads after the existing inline styles and /css/guessbar.css.
+   Keeps all DOM hooks/IDs/classes intact; only restyles surfaces. */
+
+@import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&display=swap');
+
+:root {
+  /* palette */
+  --bg: #0f172a;
+  --bg-deep: #0b1221;
+  --bg-card: #1e293b;
+  --bg-panel: #1e293b;
+  --panel-lift: #27364f;
+  --border: rgba(255, 255, 255, 0.12);
+  --text: #f8fafc;
+  --muted: #94a3b8;
+  --soft: #e2e8f0;
+
+  --gold: #facc15;
+  --gold-side: #b45309;
+  --gold-dark: #ca8a04;
+  --cyan: #38bdf8;
+  --cyan-side: #075985;
+  --mint: #4ade80;
+  --mint-side: #14532d;
+  --rose: #fb7185;
+  --rose-side: #9f1239;
+  --orange: #fb923c;
+  --orange-side: #9a3412;
+  --redact: #334155;
+  --rank-bg: #0f172a;
+
+  --accent: var(--gold);
+  --accent-glow: rgba(250, 204, 21, 0.25);
+  --green: var(--mint);
+  --green-mid: #16a34a;
+  --green-dark: #14532d;
+  --yellow: var(--gold);
+  --red: var(--rose);
+
+  --body-font: 'Nunito', system-ui, sans-serif;
+  --head-font: 'Nunito', system-ui, sans-serif;
+  --ui-font: 'Nunito', system-ui, sans-serif;
+  --radius: 6px;
+}
+
+html.theme-light {
+  --bg: #f1f5f9;
+  --bg-deep: #e2e8f0;
+  --bg-card: #ffffff;
+  --bg-panel: #ffffff;
+  --panel-lift: #f8fafc;
+  --border: rgba(30, 41, 59, 0.18);
+  --text: #0f172a;
+  --muted: #64748b;
+  --soft: #1e293b;
+  --redact: #cbd5e1;
+  --rank-bg: #e2e8f0;
+}
+
+html, body {
+  color: var(--text);
+  font-family: var(--ui-font);
+}
+/* Unify all UI text (header, stats, cards, ticker, etc.) under the same
+   rounded font used for the title words. Leave the article body (#body)
+   on its own readable sans font. */
+html[data-brand="wikicontexto"] body *:not(#body):not(#body *) {
+  font-family: var(--head-font);
+}
+#titleText,
+#titleText .t-word .w-text,
+.card .rank,
+.card .word-lbl {
+  font-family: var(--head-font) !important;
+}
+
+/* Keep the 720px "just before mobile" layout even on wide monitors so the
+   toon block UI doesn't stretch out and distort. */
+@media (min-width: 1000px) {
+  html:not(.obs-overlay-mode) .page-wrap { max-width: 720px; }
+}
+
+/* ── Header ───────────────────────────────────────────────── */
+.site-header {
+  top: 8px;
+  margin: 8px 0 12px;
+  padding: 10px 14px 10px 18px;
+  min-height: auto;
+  background: var(--bg-panel);
+  border: 4px solid var(--border);
+  border-bottom-color: var(--gold);
+  border-radius: var(--radius);
+  box-shadow: 6px 6px 0 rgba(0,0,0,0.45);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  flex-wrap: nowrap;
+}
+.header-nav {
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+  flex: 0 1 auto;
+  min-width: 0;
+}
+.brand-link { min-width: 0; }
+.brand-img {
+  height: 40px;
+  width: auto;
+  max-width: 170px;
+  object-fit: contain;
+  display: block;
+}
+html.theme-light .site-header {
+  background: var(--bg-panel);
+  border-bottom-color: var(--gold);
+  box-shadow: 6px 6px 0 rgba(0,0,0,0.12);
+}
+
+.brand-link { display: inline-flex; align-items: center; gap: 12px; min-width: 0; }
+.brand-img {
+  height: 40px;
+  width: auto;
+  max-width: 170px;
+  object-fit: contain;
+  display: block;
+}
+.brand {
+  font-family: var(--head-font);
+  font-size: clamp(24px, 4.5vw, 36px);
+  color: var(--gold);
+}
+.brand span { color: var(--cyan); opacity: 1; }
+
+.header-nav { gap: 8px; flex: 0 1 auto; min-width: 0; }
+.nav-btn,
+.theme-toggle,
+.mute-toggle {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 7px 10px;
+  background: var(--panel-lift);
+  color: var(--text);
+  border: 3px solid var(--border);
+  border-radius: var(--radius);
+  font-family: var(--ui-font);
+  font-weight: 900;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  box-shadow: 4px 4px 0 rgba(0,0,0,0.35);
+  transition: transform .06s, box-shadow .06s;
+  white-space: nowrap;
+}
+.nav-btn:hover,
+.theme-toggle:hover,
+.mute-toggle:hover { transform: translate(-1px,-1px); box-shadow: 5px 5px 0 rgba(0,0,0,0.35); }
+.nav-btn:active,
+.theme-toggle:active,
+.mute-toggle:active { transform: translate(2px,2px); box-shadow: 2px 2px 0 rgba(0,0,0,0.35); }
+.nav-btn svg,
+.theme-toggle svg,
+.mute-toggle svg { width: 18px; height: 18px; }
+.theme-toggle,
+.mute-toggle { padding: 7px; }
+.nav-btn[aria-expanded="true"] {
+  background: var(--cyan); color: #082f49; border-color: var(--cyan-side);
+  box-shadow: 4px 4px 0 var(--cyan-side);
+}
+
+/* ── Game area background card ────────────────────────────── */
+#gameArea { margin-top: 70px; }
+html.obs-overlay-mode #gameArea { margin-top: 0; padding-top: 48px; }
+#gameArea::before {
+  top: -10px; left: -10px; right: -10px; bottom: -50px;
+  background: var(--bg-panel);
+  border: 4px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 8px 8px 0 rgba(0,0,0,0.35);
+  backdrop-filter: none; -webkit-backdrop-filter: none;
+}
+html.theme-light #gameArea::before {
+  box-shadow: 8px 8px 0 rgba(0,0,0,0.12);
+}
+
+/* ── Title block ──────────────────────────────────────────── */
+.title-block {
+  padding: 14px;
+  min-height: 130px;
+  background: var(--bg-panel);
+  border: 4px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 5px 5px 0 rgba(0,0,0,0.35);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.title-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 10px;
+}
+.title-sub {
+  font-family: var(--head-font);
+  font-size: 12px;
+  letter-spacing: 1.5px;
+  color: var(--muted);
+}
+.stats-bar { display: flex; gap: 12px; }
+.stat { display: flex; align-items: center; gap: 6px; }
+.stat-label {
+  font-size: 10px; font-weight: 900; letter-spacing: 1.5px;
+  color: var(--muted); text-transform: uppercase;
+}
+.stat-val { font-family: var(--head-font); font-size: 16px; color: var(--gold); }
+
+#titleText {
+  min-height: auto; max-height: none;
+  font-family: var(--head-font);
+  font-size: clamp(18px, 2.2vw, 26px);
+  gap: 10px;
+}
+#titleText .t-word { display: inline-flex; align-items: center; gap: 6px; }
+#titleText .t-word .w-text {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 40px; padding: 0 12px;
+  border-radius: var(--radius);
+}
+#titleText .t-word.revealed .w-text {
+  background: var(--mint);
+  color: #052e16;
+  border: 3px solid var(--mint-side);
+  box-shadow: 3px 3px 0 var(--mint-side);
+}
+#titleText .t-word.hidden {
+  display: inline-flex !important;
+  visibility: visible !important;
+}
+#titleText .t-word.hidden .w-text {
+  background: var(--redact);
+  color: var(--gold) !important;
+  border: 3px dashed rgba(255,255,255,0.18);
+  border-radius: var(--radius);
+  background-image: repeating-linear-gradient(45deg, rgba(255,255,255,0.04) 0 6px, transparent 6px 12px);
+}
+#titleText .t-word.hidden.current-hint .w-text {
+  color: #111721 !important;
+  background: linear-gradient(135deg, #ffd166, var(--accent)) !important;
+  border: 1px solid rgba(255,255,255,0.22) !important;
+  border-radius: var(--radius);
+  box-shadow: 0 0 16px rgba(255,129,38,0.28) !important;
+  text-align: center;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+#titleText .t-word .finder-pfp {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  border: 2px solid var(--gold);
+  box-shadow: none;
+}
+#titleText .t-word .finder-pfp.fallback {
+  background: var(--bg-deep); color: var(--text);
+  font-family: var(--ui-font); font-weight: 900; font-size: 10px;
+}
+#titleText .t-word .w-text,
+.re-word {
+  font-family: var(--head-font) !important;
+}
+
+/* ── Scoreboard / podium ──────────────────────────────────── */
+.scoreboard {
+  padding: 10px 4px;
+  gap: 10px;
+}
+.tp-card {
+  padding: 8px 4px 6px;
+  background: var(--bg-panel);
+  border: 4px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 4px 4px 0 rgba(0,0,0,0.35);
+}
+.tp-card.gold { border-color: var(--gold); }
+.tp-card.silver { border-color: #cbd5e1; }
+.tp-card.bronze { border-color: #fdba74; }
+/* Keep the circular podium avatars and medal-specific name/score colors so
+   cosmetics (profile_glow, name_color, fan-club badge) keep working. */
+.tp-card.gold .tp-pfp { border-color: #fff4c2; }
+.tp-card.silver .tp-pfp { border-color: #fbfcfe; }
+.tp-card.bronze .tp-pfp { border-color: #fddfbc; }
+
+/* ── Word announce banner ─────────────────────────────────── */
+.word-announce {
+  height: 56px;
+  padding: 8px 12px;
+  background: var(--bg-panel);
+  border: 4px solid var(--gold);
+  border-radius: var(--radius);
+  box-shadow: 5px 5px 0 rgba(180,83,9,0.55);
+  overflow: visible;
+}
+.top-row > .word-announce {
+  grid-column: 1 / -1;
+  width: 100%;
+}
+.wa-avatar {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  border: 2px solid var(--gold);
+  font-weight: 900;
+  overflow: hidden;
+}
+.wa-info {
+  display: grid;
+  grid-template-columns: minmax(0, 330px) minmax(120px, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  height: 100%;
+}
+.wa-top {
+  display: grid;
+  grid-template-columns: minmax(0, 140px) auto;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  overflow: hidden;
+  line-height: 1.1;
+}
+.wa-name {
+  min-width: 0;
+  font-size: 16px;
+  font-weight: 900;
+  color: var(--soft);
+}
+.wa-total {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--muted);
+}
+.wa-bottom {
+  justify-content: center;
+  min-width: 0;
+}
+.wa-word {
+  font-family: var(--head-font);
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 1.4px;
+  text-align: center;
+  color: var(--cyan);
+}
+.wa-earned {
+  margin-left: 0;
+  justify-self: end;
+  font-family: var(--head-font);
+  font-size: 22px;
+  font-weight: 900;
+  line-height: 1;
+  color: var(--gold);
+}
+.wa-rarity {
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-size: 10px; font-weight: 900; letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.wa-rarity.common { background: var(--panel-lift); color: #cbd5e1; border: 2px solid #475569; }
+.wa-rarity.uncommon { background: rgba(56,189,248,0.16); color: var(--cyan); border: 2px solid var(--cyan-side); }
+.wa-rarity.rare { background: rgba(250,204,21,0.16); color: var(--gold); border: 2px solid var(--gold-side); }
+
+/* ── Rank cards (right column) ────────────────────────────── */
+.right-col {
+  --rank-card-min-height: 64px;
+  --rank-card-gap: 8px;
+  display: grid;
+  grid-template-rows: repeat(6, minmax(var(--rank-card-min-height), auto));
+  gap: var(--rank-card-gap);
+  align-content: start;
+}
+.right-col .card {
+  height: auto;
+  min-height: var(--rank-card-min-height);
+}
+.cards-empty {
+  font-weight: 800; font-style: normal;
+  color: var(--muted);
+}
+.card {
+  border-radius: var(--radius);
+  background: var(--bg-panel);
+  border: 4px solid hsl(var(--rank-hue, 142), 72%, 55%);
+  box-shadow: 3px 3px 0 hsla(var(--rank-hue, 142), 70%, 30%, 0.45);
+  min-height: var(--rank-card-min-height);
+  min-width: 0;
+  overflow: visible;
+}
+.card.top { outline: none; border-color: hsl(var(--rank-hue, 142), 72%, 55%); box-shadow: 3px 3px 0 hsla(var(--rank-hue, 142), 70%, 30%, 0.45); }
+.card.exact {
+  border-color: var(--mint);
+  box-shadow: 0 0 0 2px rgba(74, 222, 128, 0.2), 0 0 22px rgba(74, 222, 128, 0.12), 3px 3px 0 var(--mint-side);
+}
+html[data-brand="wikicontexto"] .card.exact .rank {
+  background: var(--mint) !important;
+  color: #052e16 !important;
+  border-color: var(--mint-side) !important;
+}
+.card.placeholder {
+  background: transparent;
+  border: 3px dashed var(--border);
+  box-shadow: none;
+}
+/* Big, fixed-height rank cards with the original proximity gradient fill bar
+   behind the content. The rank badge and word are sized to fill the row. */
+html[data-brand="wikicontexto"] .rank-word {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  height: 52px;
+}
+html[data-brand="wikicontexto"] .card .rank {
+  font-family: var(--head-font);
+  font-size: 26px;
+  font-weight: 700;
+  padding: 0 14px;
+  min-width: 96px;
+  height: 52px;
+  border-radius: var(--radius);
+}
+html[data-brand="wikicontexto"] .card .card-clip {
+  border-radius: calc(var(--radius) - 4px) !important;
+}
+html[data-brand="wikicontexto"] .card .fill {
+  display: block !important;
+  opacity: 0.92;
+  border-radius: calc(var(--radius) - 4px) 0 0 calc(var(--radius) - 4px);
+}
+html[data-brand="wikicontexto"] .card-inner.base {
+  position: relative;
+  inset: auto;
+  min-width: 0;
+  padding: 0 12px;
+}
+html[data-brand="wikicontexto"] .card-inner.overlay {
+  display: none !important;
+}
+.card .word-lbl {
+  font-family: var(--head-font);
+  font-size: clamp(20px, calc(240px / var(--word-len, 1)), 40px);
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-transform: none;
+  padding: 0 8px;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+html[data-brand="wikicontexto"] .rank-word {
+  max-width: calc(100% - 70px);
+}
+.card .who {
+  gap: 10px;
+  min-width: 0;
+}
+.card .avatar-fb,
+.card .avatar {
+  width: 40px;
+  height: 40px;
+}
+.card .avatar-fb {
+  border: 2px solid var(--gold);
+  box-shadow: inset 0 0 0 2px rgba(0,0,0,0.18);
+}
+.card .gname { font-weight: 900; color: var(--soft); font-size: 13px; }
+.card .cosmetic-title { color: var(--muted); }
+
+/* ── Ticker ───────────────────────────────────────────────── */
+.ticker-wrap {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+.ticker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+  margin-top: 0;
+  height: 42px;
+  overflow: hidden;
+}
+.chip {
+  padding: 5px 12px;
+  font-weight: 900; font-size: 13px;
+  border-radius: var(--radius);
+  border: 3px solid;
+}
+.chip.hit { background: var(--mint); color: #052e16; border-color: var(--mint-side); box-shadow: 3px 3px 0 var(--mint-side); }
+.chip.close { background: var(--orange); color: #431407; border-color: var(--orange-side); box-shadow: 3px 3px 0 var(--orange-side); }
+.chip.miss { background: var(--rose); color: #4c0519; border-color: var(--rose-side); box-shadow: 3px 3px 0 var(--rose-side); }
+
+/* ── Article body ─────────────────────────────────────────── */
+.article-body-panel {
+  padding: 12px;
+  background: var(--bg-panel);
+  border: 4px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 3px 3px 0 rgba(0,0,0,0.32);
+}
+#body {
+  line-height: 1.7;
+  font-size: 16px;
+  color: var(--soft);
+  max-width: none !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+#body p { margin: 0 0 12px; }
+#body p:last-child { margin-bottom: 0; }
+.word.revealed { color: var(--mint); font-weight: 900; }
+.word.redacted {
+  background: var(--redact);
+  border: 3px dashed rgba(255,255,255,0.16);
+  border-radius: var(--radius);
+  padding: 0 4px;
+}
+.word.redacted.is-number {
+  background: var(--orange);
+  color: #431407;
+  border: 3px solid var(--orange-side);
+  border-radius: var(--radius);
+  font-weight: 900;
+}
+.word.redacted.target-slot.confirmed {
+  background: var(--mint);
+  border-color: var(--mint-side);
+}
+
+/* ── Guess bar overrides ──────────────────────────────────── */
+#wwgb-root { font-family: var(--ui-font); }
+#wwgb-bar { padding: 10px 12px; }
+#wwgb-inner {
+  max-width: 680px;
+  padding: 10px;
+  background: var(--bg-panel);
+  border: 4px solid var(--gold);
+  border-radius: var(--radius);
+  box-shadow: 6px 6px 0 rgba(180,83,9,0.55), 0 10px 30px rgba(0,0,0,0.45);
+  backdrop-filter: none; -webkit-backdrop-filter: none;
+}
+#wwgb-nick {
+  width: 74px;
+  padding: 10px 8px;
+  background: var(--panel-lift);
+  color: var(--gold);
+  border: 3px solid var(--gold-side);
+  border-radius: var(--radius);
+  font-weight: 900;
+  box-shadow: 3px 3px 0 rgba(180,83,9,0.35);
+}
+#wwgb-nick::placeholder { color: rgba(250,204,21,0.5); }
+#wwgb-input-wrap {
+  background: var(--bg-deep);
+  border: 3px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0 12px 0 0;
+}
+#wwgb-input {
+  color: var(--text);
+  font-size: 16px;
+  font-weight: 800;
+}
+#wwgb-input::placeholder { color: var(--muted); }
+#wwgb-btn {
+  padding: 12px 18px;
+  background: var(--gold);
+  color: #422006;
+  border: 3px solid #713f12;
+  border-radius: var(--radius);
+  font-family: var(--head-font);
+  font-weight: 900;
+  letter-spacing: 1px;
+  box-shadow: 4px 4px 0 #713f12;
+  transition: transform .06s, box-shadow .06s;
+}
+#wwgb-btn:hover { transform: translate(-1px,-1px); box-shadow: 5px 5px 0 #713f12; }
+#wwgb-btn:active { transform: translate(2px,2px); box-shadow: 2px 2px 0 #713f12; }
+#wwgb-kb-toggle {
+  width: 40px; height: 40px;
+  background: var(--panel-lift);
+  border: 3px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--gold);
+  box-shadow: 3px 3px 0 rgba(0,0,0,0.35);
+}
+#wwgb-kb-toggle.active { background: var(--gold); color: #422006; border-color: #713f12; }
+#wwgb-kb-shell {
+  background: var(--bg-panel);
+  border-top: 4px solid var(--border);
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+.wwgb-kb-key {
+  background: var(--panel-lift);
+  color: var(--text);
+  border-radius: var(--radius);
+  font-family: var(--ui-font);
+  font-weight: 900;
+  box-shadow: 0 4px 0 rgba(0,0,0,0.35);
+}
+.wwgb-kb-key:hover { background: #334155; }
+.wwgb-kb-key:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(0,0,0,0.35); }
+
+/* ── Footer ───────────────────────────────────────────────── */
+.wt-legal-footer {
+  color: var(--muted);
+  font-family: var(--ui-font);
+}
+.wt-legal-footer a:hover { color: var(--gold); }
+
+/* ── Stats drawer ─────────────────────────────────────────── */
+.stats-drawer {
+  background: var(--bg-panel);
+  border: 4px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 8px 8px 0 rgba(0,0,0,0.35);
+}
+html.theme-light .stats-drawer { box-shadow: 8px 8px 0 rgba(0,0,0,0.12); }
+.stats-drawer-head { border-bottom: 3px solid var(--border); }
+.stats-drawer-title { font-family: var(--head-font); color: var(--gold); }
+.stats-drawer-close {
+  color: var(--muted);
+  border-radius: var(--radius);
+}
+.stats-drawer-close:hover { background: var(--panel-lift); color: var(--text); }
+.stats-drawer-tabs { border-bottom: 3px solid var(--border); }
+.stats-drawer-tab {
+  color: var(--muted);
+  font-weight: 900;
+}
+.stats-drawer-tab.active {
+  color: var(--cyan);
+  border-bottom-color: var(--cyan);
+}
+.stats-drawer-body { color: var(--soft); }
+
+/* ── Login screen ─────────────────────────────────────────── */
+.mp-login-screen {
+  background: rgba(15,23,42,0.92);
+}
+.mp-login-card {
+  background: var(--bg-panel);
+  border: 4px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 8px 8px 0 rgba(0,0,0,0.45);
+}
+.mp-login-card h1 { font-family: var(--head-font); color: var(--gold); }
+.mp-guest-row {
+  background: var(--panel-lift);
+  border: 3px solid var(--border);
+  border-radius: var(--radius);
+}
+.mp-guest-btn,
+.mp-discord-btn,
+.mp-github-btn {
+  border-radius: var(--radius);
+  font-family: var(--ui-font);
+  font-weight: 900;
+  box-shadow: 4px 4px 0 rgba(0,0,0,0.35);
+}
+.mp-guest-btn { background: var(--cyan); color: #082f49; border: 3px solid var(--cyan-side); }
+.mp-discord-btn { background: #5865f2; color: #fff; border: 3px solid #2f3ab7; }
+.mp-github-btn { background: var(--soft); color: #0f172a; border: 3px solid #475569; }
+
+/* ── Idle / how to play ───────────────────────────────────── */
+.idle-hero h1 { font-family: var(--head-font); color: var(--gold); }
+.idle-hero .tagline { color: var(--muted); }
+.htp-card {
+  background: var(--bg-panel);
+  border: 4px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 5px 5px 0 rgba(0,0,0,0.35);
+}
+.htp-card h2 { font-family: var(--head-font); color: var(--cyan); }
+.step-num {
+  background: var(--gold);
+  color: #422006;
+  border-radius: var(--radius);
+  font-weight: 900;
+}
+
+/* ── Utility tweaks ───────────────────────────────────────── */
+.hidden, .is-hidden { display: none !important; }

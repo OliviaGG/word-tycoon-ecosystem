@@ -1,0 +1,43 @@
+# Dependencies
+node_modules/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# SQLite — created on first run; never commit
+data/wikirectangled.db
+data/wikirectangled.db-journal
+data/*.db
+data/*.db-journal
+data/*.db.bak
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Build output / temp
+tmp/
+dist/
+build/
+*.tmp
+
+# PM2 runtime
+.pm2/
+
+# Local / emergency backup artifacts
+.codex-backups/
+*.bak
+*.bak-*
+*.bak-pre-*
+
+# Note: data/dictionary.json + data/frequency.json ARE committed so the local
+# wordlist fallback works on machines without Chat Relay. Don't .gitignore them.

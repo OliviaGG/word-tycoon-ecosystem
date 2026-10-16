@@ -1,0 +1,1618 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WikiSearchle — OBS Overlay</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Roboto+Mono:wght@400;500&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* Overlay-specific: fixed 1080x1920 portrait canvas for OBS. The page
+   background is always transparent so the stream shows through around the
+   game panels. Panels keep their own backgrounds. */
+/* zoom: 2 doubles every px in the layout so the 1080x1920 portrait design
+   renders natively at 2160x3840 (4K). Set the OBS browser source to
+   2160x3840 to capture at full 4K resolution. */
+html, body { width: 1080px; height: 1920px; overflow: hidden; background: transparent !important; zoom: 2; }
+body:not(.game-active) .page-wrap { display: none !important; }
+/* Content centered at ~720px — the "just before mobile breakpoint" sweet spot
+   the user liked on the game page. Default styling handles everything at this
+   width; no further per-element overrides. */
+.page-wrap { max-width: 720px !important; margin: 0 auto; padding: 0 20px 20px; }
+/* Overlay-specific: title/stats/scoreboard pack tight at the top; the
+   PULSES banner uses margin-top: auto so its bottom aligns with the bottom
+   of the 5th ranked card. */
+.left-col { justify-content: flex-start !important; gap: 4px !important; }
+.left-col .word-announce { margin-top: auto; }
+.title-block { margin-bottom: 0; min-width: 0; }
+.title-sub { margin-bottom: 2px; }
+.stats-bar { gap: 2px !important; }
+.stats-bar .stat { padding: 0; }
+.stat-label { font-size: 9px; letter-spacing: 2px; }
+.stat-val { font-size: 13px; }
+/* Overlay-only: solid dark bubble behind the logo with squared edges,
+   since the page bg is transparent. Logo sits flush against the game
+   area — zero gap, no overlap. */
+.site-header {
+  padding: 0;
+  margin: 0;
+}
+.site-header .brand-bubble {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(to bottom, rgba(15,17,23,0.5) 0%, rgba(15,17,23,1) 100%);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-bottom: none;
+  border-radius: 16px 16px 0 0;
+  padding: 5px 16px 0;
+  margin-bottom: 0;
+}
+.brand-img { max-height: 58px !important; }
+/* Readable body + title at OBS scale */
+#body { font-size: 18px; line-height: 1.7; max-height: none; }
+#titleText { font-size: 24px; }
+.card .word-lbl { font-size: 20px; }
+
+/* Equalize left-col height with right-col (5 cards). Tighten gaps and fix
+   scoreboard / announce heights so the two columns line up top + bottom.
+   padding-bottom 0 pulls the ticker right up under the scoreboard + cards. */
+/* "TITLE" label hugs the border with zero top gap, and the 5 rank cards
+   grow (flex 1) to fill whatever vertical space the left column doesn't
+   use — so a 3-word title doesn't crowd the scoreboard into the podium
+   and the cards visually span the same height as the left column. */
+.top-row { padding: 0 12px 0; }
+.left-col { gap: 4px !important; justify-content: flex-start !important; }
+.left-col .word-announce { margin-top: auto; }
+.title-block { margin: 0; padding: 0; }
+.title-sub { margin: 0 0 0 0 !important; font-size: 9px !important; line-height: 1; padding-top: 2px; }
+#titleText { gap: 6px; margin-top: 2px; }
+.right-col {
+  --rank-card-gap: 6px;
+  --rank-card-min-height: 54px;
+}
+.stats-bar { gap: 16px; padding: 0; }
+.stat-label { font-size: 9px; letter-spacing: 2px; }
+.stat-val { font-size: 14px; }
+.scoreboard { padding: 8px 4px; min-height: 100px; flex: 1 1 0; }
+.tp-card.gold   { width: 82px; height: 94px; }
+.tp-card.silver { width: 70px; height: 80px; }
+.tp-card.bronze { width: 60px; height: 68px; }
+.word-announce { padding: 6px 10px; height: 48px; }
+.wa-avatar { width: 32px; height: 32px; }
+.wa-word { font-size: 14px; }
+.wa-top { font-size: 10px; }
+.wa-earned { font-size: 11px; }
+/* OBS: win display as a compact floating card instead of full-screen blocker */
+.round-end-overlay { inset: auto; top: 28%; left: 50%; transform: translate(-50%, -50%); background: transparent; backdrop-filter: none; }
+.round-end-card { background: rgba(20, 22, 31, 0.94); padding: 28px 36px; box-shadow: 0 12px 40px rgba(0,0,0,0.5), 0 0 40px rgba(255,102,0,0.12); }
+</style>
+<style>
+/* ── Reset & vars ──────────────────────────────────────────── */
+:root {
+  --bg: #0f1117;
+  --bg-card: #1a1d27;
+  --bg-panel: #14161f;
+  --border: rgba(255,255,255,0.07);
+  --text: #e2e8f0;
+  --muted: #64748b;
+  --accent: #ff6600;
+  --accent-glow: rgba(255,102,0,0.25);
+  --green: #4ade80;
+  --green-mid: #16a34a;
+  --green-dark: #166534;
+  --yellow: #fde047;
+  --red: #f87171;
+  --rank-bg: #0f1923;
+  --redact: #252836;
+  --body-font: 'Roboto Mono', ui-monospace, monospace;
+  --head-font: 'Orbitron', system-ui, sans-serif;
+  --ui-font: 'Inter', system-ui, sans-serif;
+  --radius: 12px;
+  --title-slot-height: 62px;
+}
+*, *::before, *::after { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--ui-font);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+.page-wrap {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px 80px;
+}
+@media (max-width: 540px) { .page-wrap { padding: 0 12px 60px; } }
+
+/* ── Header ────────────────────────────────────────────────── */
+.site-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0;
+  gap: 16px;
+}
+.brand {
+  font-family: var(--head-font);
+  font-weight: 700;
+  font-size: clamp(28px, 5.2vw, 52px);
+  letter-spacing: 2px;
+  color: var(--accent);
+  line-height: 1;
+}
+.brand span { color: var(--text); opacity: 0.55; }
+/* Logo image variant — black pixels drop out against the dark page bg. */
+.brand-img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  max-height: 96px;
+  mix-blend-mode: screen;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+@media (max-width: 540px) { .brand-img { max-height: 64px; } }
+
+/* ── Stats bar (inline, no card chrome) ───────────────────── */
+.stats-bar {
+  display: flex; gap: 22px; flex-wrap: wrap;
+  padding: 2px 2px;
+}
+.stat {
+  display: flex; align-items: center; gap: 10px;
+}
+.stat-label {
+  font-size: 10px; font-weight: 700; letter-spacing: 2.5px;
+  color: var(--muted); text-transform: uppercase;
+}
+.stat-val {
+  font-family: var(--head-font);
+  font-size: 16px; font-weight: 700; color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Idle / How to Play ────────────────────────────────────── */
+#idleScreen {
+  padding: 48px 20px 40px;
+  display: flex; flex-direction: column; align-items: center;
+  text-align: center; gap: 40px;
+}
+body.game-active #idleScreen { display: none; }
+.idle-hero h1 {
+  font-family: var(--head-font);
+  font-size: clamp(28px, 6vw, 56px);
+  letter-spacing: 3px;
+  color: var(--accent);
+  margin: 0 0 16px;
+}
+.idle-hero .tagline { font-size: clamp(14px, 2vw, 18px); color: var(--muted); margin: 0; line-height: 1.6; }
+.htp-card {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 26px;
+  max-width: 520px; text-align: left;
+}
+.htp-card h2 {
+  font-family: var(--head-font);
+  font-size: 11px; letter-spacing: 3px; color: var(--accent);
+  text-transform: uppercase; margin: 0 0 16px;
+}
+.steps { display: flex; flex-direction: column; gap: 14px; }
+.step { display: flex; gap: 14px; align-items: flex-start; }
+.step-num {
+  flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%;
+  background: var(--accent); color: #111;
+  font-weight: 800; font-size: 13px;
+  display: flex; align-items: center; justify-content: center;
+}
+.step-text { font-size: 14px; line-height: 1.55; color: var(--text); }
+.step-text strong { color: var(--accent); font-weight: 700; }
+
+/* ── Game area layout ──────────────────────────────────────── */
+#gameArea { display: none; flex-direction: column; gap: 14px; }
+body.game-active #gameArea { display: flex; }
+
+.article-panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.panel-header {
+  padding: 10px 18px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-card);
+  font-size: 10px; font-weight: 700; letter-spacing: 3px;
+  color: var(--muted); text-transform: uppercase;
+}
+
+.top-row {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) minmax(360px, 1.6fr);
+  gap: 14px;
+  /* Minimal top padding — TITLE label sits flush with the logo bubble.
+     Bottom 0 so the ticker sits right under the scoreboard / cards. */
+  padding: 2px 16px 0;
+}
+@media (max-width: 760px) { .top-row { grid-template-columns: 1fr; } }
+
+/* Left: title + scoreboard + announce */
+.left-col { display: flex; flex-direction: column; gap: 12px; }
+.title-block { min-width: 0; }
+.title-sub {
+  font-size: 10px; letter-spacing: 3px; color: var(--muted);
+  text-transform: uppercase; margin-bottom: 8px;
+}
+#titleText {
+  font-family: var(--head-font);
+  font-weight: 700;
+  font-size: clamp(16px, 2.1vw, 24px);
+  letter-spacing: 1px;
+  line-height: 1.25;
+  min-height: var(--title-slot-height);
+  max-height: var(--title-slot-height);
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+  align-content: flex-start;
+  min-width: 0;
+  overflow: hidden;
+}
+#titleText .t-word {
+  display: inline-flex; align-items: center; gap: 6px;
+  max-width: 100%;
+}
+#titleText .t-word .w-text { display: inline-block; }
+#titleText .t-word.revealed .w-text { color: var(--accent); }
+#titleText .t-word.hidden .w-text {
+  background: var(--redact);
+  color: var(--accent);
+  border-radius: 5px;
+  padding: 2px 10px;
+  letter-spacing: 3px;
+  font-weight: 700;
+  font-size: 0.82em;
+}
+#titleText .t-word.just-revealed .w-text {
+  animation: titleWordReveal 900ms ease-out forwards;
+}
+@keyframes titleWordReveal {
+  0%   { opacity: 0; transform: scale(0.75); filter: blur(4px); color: var(--redact); letter-spacing: 6px; }
+  40%  { opacity: 0.7; filter: blur(1px); letter-spacing: 3px; }
+  100% { opacity: 1; transform: scale(1); filter: blur(0); color: var(--accent); letter-spacing: 1px; }
+}
+#titleText .t-word .finder-pfp {
+  width: 22px; height: 22px; border-radius: 50%;
+  object-fit: cover; flex: 0 0 auto;
+  border: 2px solid var(--accent);
+  box-shadow: 0 0 0 2px rgba(255,102,0,0.12);
+  opacity: 0; transform: translateX(-6px);
+  animation: finderPfpIn 600ms 400ms ease-out forwards;
+}
+#titleText .t-word .finder-pfp.fallback {
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--redact); color: var(--text);
+  font-size: 10px; font-weight: 700; letter-spacing: 0;
+}
+.title-block.title-compact #titleText {
+  font-size: 21px;
+  gap: 6px;
+  line-height: 1.12;
+}
+.title-block.title-compact #titleText .t-word { gap: 4px; }
+.title-block.title-compact #titleText .t-word.hidden .w-text {
+  padding: 2px 8px;
+  letter-spacing: 2px;
+}
+.title-block.title-compact #titleText .t-word .finder-pfp {
+  width: 19px;
+  height: 19px;
+}
+.title-block.title-tight #titleText {
+  font-size: 18px;
+  gap: 4px;
+  line-height: 1.04;
+}
+.title-block.title-tight #titleText .t-word { gap: 3px; }
+.title-block.title-tight #titleText .t-word.hidden .w-text {
+  padding: 1px 6px;
+  letter-spacing: 1.5px;
+  font-size: 0.78em;
+}
+.title-block.title-tight #titleText .t-word .finder-pfp {
+  width: 17px;
+  height: 17px;
+  border-width: 1px;
+  box-shadow: none;
+}
+.title-block.title-clipped #titleText {
+  -webkit-mask-image: linear-gradient(180deg, #000 78%, transparent);
+  mask-image: linear-gradient(180deg, #000 78%, transparent);
+}
+@keyframes finderPfpIn {
+  from { opacity: 0; transform: translateX(-6px) scale(0.8); }
+  to   { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+/* ── Scoreboard (RecTangled-style podium, adapted) ──────────── */
+/* Scoreboard flexes to fill free vertical space in the left column;
+   podium cards scale up so they visually occupy the enlarged slot. */
+.scoreboard {
+  display: flex; align-items: flex-end; justify-content: center; gap: 10px;
+  padding: 8px 4px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  flex: 1 1 0;
+  min-height: 120px;
+  overflow: visible;
+}
+.tp-card {
+  position: relative;
+  display: flex; flex-direction: column; align-items: center;
+  padding: 4px 4px 4px;
+  overflow: hidden;
+  flex-shrink: 0;
+  isolation: isolate;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+/* Top specular highlight (soft sheen along the upper edge) */
+.tp-card::after {
+  content: "";
+  position: absolute;
+  top: 0; left: 6%; right: 6%; height: 42%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0) 100%);
+  border-radius: 50% 50% 40% 40% / 80% 80% 20% 20%;
+  pointer-events: none;
+  z-index: 0;
+  filter: blur(1px);
+}
+.tp-card > * { position: relative; z-index: 1; }
+.tp-card.gold {
+  width: 92px; height: 104px; border-radius: 14px;
+  background:
+    radial-gradient(ellipse 70% 50% at 30% 18%, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0) 60%),
+    linear-gradient(160deg, #fce78a 0%, #f4c730 32%, #c98e08 68%, #855c04 100%);
+  border: 1px solid rgba(255, 232, 140, 0.9);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 230, 0.75),
+    inset 0 -10px 16px rgba(90, 55, 0, 0.38),
+    0 8px 16px rgba(180, 130, 0, 0.38),
+    0 0 0 1px rgba(110, 75, 0, 0.35);
+}
+.tp-card.gold:hover { transform: translateY(-2px) rotate(-1deg); box-shadow: inset 0 1px 0 rgba(255,255,230,0.8), inset 0 -10px 16px rgba(90,55,0,0.38), 0 12px 22px rgba(180,130,0,0.5), 0 0 0 1px rgba(110,75,0,0.35); }
+
+.tp-card.silver {
+  width: 78px; height: 88px; border-radius: 12px;
+  background:
+    radial-gradient(ellipse 70% 50% at 30% 20%, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 60%),
+    linear-gradient(160deg, #f4f6fa 0%, #c8cdd6 32%, #8c93a1 72%, #565c68 100%);
+  border: 1px solid rgba(245, 248, 252, 0.85);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.75),
+    inset 0 -8px 14px rgba(40, 45, 55, 0.35),
+    0 6px 13px rgba(60, 65, 75, 0.38),
+    0 0 0 1px rgba(60, 65, 75, 0.32);
+}
+.tp-card.bronze {
+  width: 66px; height: 76px; border-radius: 11px;
+  background:
+    radial-gradient(ellipse 70% 50% at 30% 20%, rgba(255,235,210,0.55) 0%, rgba(255,235,210,0) 60%),
+    linear-gradient(160deg, #f3c79a 0%, #d0874a 32%, #9b561d 72%, #5f310e 100%);
+  border: 1px solid rgba(250, 215, 180, 0.85);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 230, 205, 0.7),
+    inset 0 -7px 12px rgba(60, 28, 5, 0.38),
+    0 5px 11px rgba(120, 70, 25, 0.4),
+    0 0 0 1px rgba(70, 35, 8, 0.35);
+}
+.tp-card.empty { opacity: 0.25; filter: grayscale(0.8); }
+/* Round-end pulse — applied to all 3 podium cards while the round is over
+   so viewers' eyes land on the winners during the 30s post-win hold. */
+@keyframes tp-round-end-pulse {
+  0%, 100% { transform: scale(1); filter: brightness(1); }
+  50%      { transform: scale(1.04); filter: brightness(1.18); }
+}
+.scoreboard.round-ended .tp-card:not(.empty) {
+  animation: tp-round-end-pulse 1.4s ease-in-out infinite;
+}
+.tp-card.empty::before, .tp-card.empty::after { display: none; }
+.tp-card:not(.empty) { cursor: pointer; }
+
+.tp-pfp {
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-weight: 800; overflow: hidden;
+  flex-shrink: 0;
+  box-shadow: inset 0 0 0 2px rgba(0,0,0,0.18), 0 2px 4px rgba(0,0,0,0.25);
+}
+.tp-card.gold .tp-pfp   { width: 68px; height: 68px; font-size: 26px; background: linear-gradient(160deg, #fff1a8 0%, #d39906 100%); border: 2px solid #fff4c2; }
+.tp-card.silver .tp-pfp { width: 52px; height: 52px; font-size: 20px; background: linear-gradient(160deg, #f6f8fc 0%, #6d7381 100%); border: 2px solid #fbfcfe; }
+.tp-card.bronze .tp-pfp { width: 34px; height: 34px; font-size: 13px; background: linear-gradient(160deg, #f4cda0 0%, #7a451a 100%); border: 2px solid #fddfbc; }
+.tp-pfp img { width: 100%; height: 100%; object-fit: cover; }
+.tp-name {
+  font-weight: 800; max-width: 100%;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  text-align: center;
+  letter-spacing: 0.2px;
+  line-height: 13px;
+  height: 13px;
+  margin-top: auto;
+}
+.tp-card.gold .tp-name   { font-size: 11px; color: #3a2500; text-shadow: 0 1px 0 rgba(255, 240, 180, 0.6); }
+.tp-card.silver .tp-name { font-size: 10px; color: #1f242d; text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6); }
+.tp-card.bronze .tp-name { font-size: 9px;  color: #2a1505; text-shadow: 0 1px 0 rgba(255, 225, 195, 0.55); }
+.tp-score {
+  font-weight: 800; font-variant-numeric: tabular-nums;
+  text-align: center; margin-top: 1px;
+  padding: 0 5px;
+  border-radius: 999px;
+  letter-spacing: 0.2px;
+  line-height: 13px;
+  height: 13px;
+}
+.tp-card.gold .tp-score   { font-size: 10px; color: #fff4c2; background: rgba(60, 36, 0, 0.55); box-shadow: inset 0 1px 0 rgba(0,0,0,0.3); }
+.tp-card.silver .tp-score { font-size: 9px;  color: #f4f6fa; background: rgba(30, 34, 42, 0.5);  box-shadow: inset 0 1px 0 rgba(0,0,0,0.3); }
+.tp-card.bronze .tp-score { font-size: 8px;  color: #ffe0c2; background: rgba(40, 18, 4, 0.55);  box-shadow: inset 0 1px 0 rgba(0,0,0,0.3); }
+
+/* ── Word-announce banner (RecTangled-style) ───────────────── */
+/* Fixed-height banner so long names/words/totals can't push the
+   scoreboard up; every internal text field truncates with ellipsis. */
+.word-announce {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(30,40,80,0.9), rgba(20,30,60,0.88));
+  border: 1px solid rgba(255,255,255,0.12);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.35);
+  height: 56px;
+  flex-shrink: 0;
+  overflow: hidden;
+  min-width: 0;
+}
+.word-announce.hidden { visibility: hidden; }
+.wa-avatar {
+  width: 38px; height: 38px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-weight: 800; font-size: 13px;
+  border: 2px solid rgba(255,255,255,0.25);
+  flex-shrink: 0; overflow: hidden;
+  background: #555;
+}
+.wa-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.wa-info { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 2px; overflow: hidden; }
+.wa-top {
+  display: flex; align-items: baseline; gap: 8px;
+  font-size: 11px; color: rgba(255,255,255,0.75);
+  min-width: 0; overflow: hidden;
+}
+.wa-name {
+  font-weight: 700;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  min-width: 0; flex: 1 1 auto;
+}
+.wa-total { font-weight: 700; color: rgba(255,255,255,0.9); font-variant-numeric: tabular-nums; flex-shrink: 0; white-space: nowrap; }
+.wa-earned { margin-left: auto; font-weight: 800; color: var(--green); font-size: 12px; font-variant-numeric: tabular-nums; flex-shrink: 0; white-space: nowrap; }
+.wa-bottom { display: flex; align-items: center; gap: 6px; min-width: 0; overflow: hidden; }
+.wa-word {
+  font-family: var(--head-font);
+  font-size: 16px; font-weight: 700;
+  color: #ff6bd6;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  min-width: 0; flex: 1 1 auto;
+}
+.wa-rarity {
+  display: none !important;
+  font-size: 9px; font-weight: 800; letter-spacing: 0.08em;
+  padding: 2px 6px; border-radius: 3px; text-transform: uppercase;
+  flex-shrink: 0; white-space: nowrap;
+}
+.wa-rarity.rare    { color: #fde047; background: rgba(253,224,71,0.14); border: 1px solid rgba(253,224,71,0.4); }
+.wa-rarity.uncommon{ color: #22d3ee; background: rgba(34,211,238,0.12); border: 1px solid rgba(34,211,238,0.35); }
+.wa-rarity.common  { color: #94a3b8; background: rgba(148,163,184,0.12); border: 1px solid rgba(148,163,184,0.3); }
+
+/* ── Right column: guess cards ─────────────────────────────── */
+.right-col {
+  display: grid;
+  grid-template-rows: repeat(5, minmax(var(--rank-card-min-height, 46px), 1fr));
+  gap: var(--rank-card-gap, 8px);
+  min-height: calc((var(--rank-card-min-height, 46px) * 5) + (var(--rank-card-gap, 8px) * 4));
+  align-content: stretch;
+  min-width: 0;
+}
+.cards-empty {
+  grid-row: 1 / -1;
+  align-self: center;
+  padding: 22px 0 6px; font-size: 13px; color: var(--muted);
+  font-style: italic; text-align: center;
+}
+.card {
+  padding: 0;
+  border-radius: 999px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  animation: cardIn 240ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  min-height: 46px;
+  position: relative;
+  overflow: hidden;
+  height: 100%;
+}
+/* Proximity fill bar: width & color reflect the guess's semantic closeness
+   to the target. Rank 1 → 100% wide pure green (only the target word gets
+   there). Far ranks → short red sliver. Floored at 5% so every card shows
+   at least a nub. */
+.card .fill {
+  position: absolute;
+  top: 0; bottom: 0; left: 0;
+  width: var(--fill-pct, 0%);
+  background: var(--fill-color, transparent);
+  transition: width 400ms ease, background 400ms ease;
+  z-index: 0;
+  border-radius: 999px 0 0 999px;
+}
+/* Two identical content layers: the base holds white text everywhere; the
+   overlay holds black text but is clip-path'd to the fill bar's region, so
+   letters get pixel-sliced at the exact fill edge — half a letter can be
+   black (over the fill) and half white (over the dark panel bg). */
+.card-inner {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 14px;
+  min-height: 46px;
+  width: 100%;
+  box-sizing: border-box;
+}
+/* Both layers absolute so they share the card's exact box — prevents a
+   height mismatch (base sizing to content vs overlay sizing to card)
+   that would offset the overlay's black text slightly from the base's
+   white text. */
+.card-inner.base { position: absolute; inset: 0; z-index: 1; }
+.card-inner.overlay {
+  position: absolute; inset: 0; z-index: 2;
+  pointer-events: none;
+  clip-path: inset(0 calc(100% - var(--fill-pct, 0%)) 0 0);
+  transition: clip-path 400ms ease;
+}
+.card-inner.overlay > *:not(.rank-word) { visibility: hidden; }
+.card-inner.base .word-lbl { color: #fff; }
+.card-inner.overlay .word-lbl { color: #fff; }
+.card-inner.overlay .rank { background: transparent; border-color: transparent; }
+.card.top { outline: 2px solid #86efac; outline-offset: -1px; }
+.card.placeholder {
+  background: transparent;
+  border: 1px dashed rgba(255,255,255,0.12);
+  animation: none;
+  opacity: 0.55;
+}
+.card.lg-word .word-lbl { font-size: 14px; letter-spacing: 0.5px; }
+.card.xl-word .word-lbl { font-size: 12px; letter-spacing: 0.3px; }
+.card.placeholder .card-inner { padding: 9px 14px; justify-content: flex-start; }
+.card.placeholder .word-lbl:empty { display: none; }
+.card.placeholder .rank {
+  background: transparent;
+  border: 1px dashed rgba(255,255,255,0.2);
+  border-radius: 999px;
+  color: rgba(255,255,255,0.45);
+  font-weight: 700;
+}
+@keyframes cardIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+.rank-word {
+  display: flex; align-items: center;
+  flex: 0 0 auto; min-width: 0;
+  /* flex-shrink: 0 — the word area never gets compressed by flex layout.
+     .who shrinks first (down to just the avatar) before fitWordLabel
+     kicks in to shrink the word's font as a last resort. */
+}
+.card .rank {
+  flex-shrink: 0; min-width: 64px; height: 32px;
+  border-radius: 999px 0 0 999px;
+  background: var(--rank-bg);
+  border: 1.5px solid hsl(var(--rank-hue, 142), 72%, 55%);
+  border-right: none;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 13px; color: #fff;
+  font-variant-numeric: tabular-nums; padding: 0 10px;
+}
+.card .word-lbl {
+  font-weight: 800; font-size: 18px;
+  letter-spacing: 1px; text-transform: uppercase;
+  flex: 1 1 auto;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  min-width: 0;
+  border-radius: 0 999px 999px 0;
+  background: var(--rank-bg);
+  border: 1.5px solid hsl(var(--rank-hue, 142), 72%, 55%);
+  border-left: none;
+  height: 32px;
+  padding: 0 12px;
+  display: flex; align-items: center;
+}
+.card .who {
+  display: flex; align-items: center; gap: 8px;
+  flex: 0 1 auto; min-width: 38px; overflow: hidden;
+  margin-left: auto;
+}
+.card .avatar {
+  width: 38px; height: 38px; border-radius: 50%; object-fit: cover;
+  border: 1.5px solid rgba(255,255,255,0.45);
+}
+.card .avatar-fb {
+  width: 38px; height: 38px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 700; color: #fff; background: #555;
+  flex-shrink: 0;
+}
+/* Raw <img> from avatarHtml has no sizing — without this it renders at
+   natural resolution (often 128px from Discord CDN) and gets clipped by
+   the avatar-fb container, showing just the top-left of the picture. */
+.card .avatar-fb img {
+  width: 100%; height: 100%; object-fit: cover; border-radius: 50%;
+  display: block;
+}
+.card .who-text {
+  display: flex; flex-direction: column; align-items: flex-start;
+  min-width: 0; overflow: hidden;
+}
+.card .gname {
+  color: #fff; font-weight: 600; font-size: 14px;
+  max-width: 120px; min-width: 0; flex: 0 0 auto;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.card .cosmetic-title {
+  font-size: 10px; font-weight: 700; opacity: 0.85;
+  letter-spacing: 0.4px; text-transform: uppercase;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  max-width: 120px; min-width: 0;
+  margin-top: 1px;
+}
+.tp-card .cosmetic-title {
+  font-size: 8px; font-weight: 700; opacity: 0.85;
+  letter-spacing: 0.3px; text-transform: uppercase;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  max-width: 100%;
+  margin-top: 1px;
+}
+
+/* ── Ticker (right-to-left sliding chips) ──────────────────── */
+.ticker-wrap {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 2px 0 0;
+  margin: 0 -8px;
+  overflow: hidden;
+  position: relative;
+}
+.ticker {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 3px;
+  height: 36px;
+  overflow: hidden;
+  position: relative;
+}
+
+.chip {
+  flex-shrink: 0;
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-family: var(--ui-font);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.4px;
+  text-transform: lowercase;
+  white-space: nowrap;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  /* Chips spawn with their right edge just inside the ticker's right fade
+     gradient (fully visible, never offscreen) and slide left to their
+     natural flex slot. --slide-dist is set per-chip by JS after layout. */
+  --slide-dist: 0px;
+  animation: chipSlideIn 500ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.chip.hit   { background: linear-gradient(90deg, #4ade80 0%, #16a34a 100%); color: #ffffff; border: 1px solid #86efac; box-shadow: 0 0 10px rgba(74,222,128,0.35); }
+.chip.dup   { background: rgba(253,224,71,0.14);  color: #fde047; border: 1px solid rgba(253,224,71,0.5); }
+.chip.miss  { background: rgba(248,113,113,0.14); color: #fca5a5; border: 1px solid rgba(248,113,113,0.5); }
+.chip .chip-avatar {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1.5px solid rgba(255,255,255,0.35);
+  flex-shrink: 0;
+}
+.chip .tick { font-size: 11px; }
+.chip.exit  { animation: chipSlideOut 420ms ease-in forwards; pointer-events: none; }
+@keyframes chipSlideIn {
+  from { transform: translateX(var(--slide-dist)); opacity: 0.4; }
+  to   { transform: translateX(0); opacity: 1; }
+}
+@keyframes chipSlideOut {
+  from { transform: translateX(0); opacity: 1; max-width: 200px; padding-left: 10px; padding-right: 10px; }
+  to   { transform: translateX(-60px); opacity: 0; max-width: 0; padding-left: 0; padding-right: 0; }
+}
+
+/* ── Article body ──────────────────────────────────────────── */
+.article-body-panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+#body {
+  padding: 2px 22px 8px;
+  font-family: var(--body-font);
+  font-size: clamp(14px, 2vw, 17px);
+  line-height: 1.75;
+  max-height: 62vh; overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.1) transparent;
+}
+#body::-webkit-scrollbar { width: 6px; }
+#body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+#body p { margin: 0 0 14px; }
+#body p:last-child { margin-bottom: 0; }
+.word {
+  display: inline-block;
+  vertical-align: baseline;
+  transition: color 400ms ease;
+}
+.word.redacted {
+  background: var(--redact); color: transparent;
+  border-radius: 3px; padding: 0 4px; line-height: 1.3;
+  user-select: none;
+}
+/* Numeric tokens get an orange redaction box so numbers are visually
+   distinct from regular hidden words. The box shows "N DIGIT(S)" in black
+   on top of the orange — tells players the length of the hidden number
+   without revealing its value. Revealed numbers use the default text
+   color — this only styles the redacted state. */
+.word.redacted.is-number {
+  background: var(--accent);
+  color: #000;
+  font-weight: 800;
+  font-size: 0.72em;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  user-select: none;
+}
+.word.revealed { color: var(--text); }
+/* Every word flashes green on reveal and fades back to normal text color
+   over 5 seconds. animation-delay is set inline per span to a negative
+   elapsed-ms so the fade phase stays consistent across re-renders. */
+.word.fresh-reveal {
+  border-radius: 3px;
+  animation: freshRevealFade 5000ms ease-out forwards;
+}
+@keyframes freshRevealFade {
+  0%   { color: #86efac; background: rgba(74,222,128,0.28); text-shadow: 0 0 10px rgba(74,222,128,0.7); }
+  100% { color: var(--text); background: transparent; text-shadow: none; }
+}
+
+/* ── Round-end modal ───────────────────────────────────────── */
+.round-end-overlay {
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(10,11,16,0.88);
+  display: flex; align-items: center; justify-content: center;
+  backdrop-filter: blur(8px);
+}
+.round-end-overlay.hidden { display: none !important; }
+.round-end-card {
+  background: var(--bg-panel);
+  border: 1px solid rgba(255,102,0,0.25);
+  border-radius: 20px;
+  padding: 40px 48px;
+  text-align: center; max-width: 480px; width: 90%;
+  box-shadow: 0 0 60px rgba(255,102,0,0.12);
+}
+.re-label { font-size: 10px; letter-spacing: 4px; color: var(--accent); text-transform: uppercase; margin-bottom: 16px; }
+.re-word { font-family: var(--head-font); font-size: clamp(24px, 5vw, 40px); color: #fff; margin-bottom: 12px; text-transform: uppercase; word-break: break-all; }
+.re-winner { color: var(--green); font-weight: 600; margin-bottom: 8px; }
+.re-stats { font-size: 13px; color: var(--muted); }
+.re-dismiss {
+  margin-top: 24px;
+  background: transparent; border: 1px solid var(--border);
+  color: var(--muted); font-size: 12px; letter-spacing: 2px;
+  text-transform: uppercase; border-radius: 999px;
+  padding: 7px 20px; cursor: pointer;
+}
+.re-dismiss:hover { border-color: var(--muted); color: var(--text); }
+</style>
+</head>
+<body>
+
+<div class="page-wrap">
+
+  <header class="site-header">
+    <div class="brand-bubble">
+      <img src="/searchle/brand.png" alt="WikiSearchle" class="brand-img"
+           onerror="this.outerHTML='&lt;div class=&quot;brand&quot;&gt;Wiki&lt;span&gt;Searchle&lt;/span&gt;&lt;/div&gt;';">
+    </div>
+  </header>
+
+  <!-- Game area (OBS: no idle screen; whole body goes transparent when idle) -->
+  <main id="gameArea">
+    <!-- Article panel: 2-col top + ticker + body (no header) -->
+    <section class="article-panel">
+      <div class="top-row">
+        <!-- Left: title + stats + scoreboard + announce -->
+        <aside class="left-col">
+          <div class="title-block">
+            <div class="title-sub">Title</div>
+            <div id="titleText"></div>
+          </div>
+          <div class="stats-bar">
+            <div class="stat"><span class="stat-label">Guesses</span><span class="stat-val" id="guessCount">0</span></div>
+            <div class="stat"><span class="stat-label">Words Revealed</span><span class="stat-val" id="revealProgress">— / —</span></div>
+          </div>
+          <div class="scoreboard" id="scoreboard">
+            <div class="tp-card gold empty"><div class="tp-pfp">1</div><div class="tp-name">—</div><div class="tp-score">0</div></div>
+            <div class="tp-card silver empty"><div class="tp-pfp">2</div><div class="tp-name">—</div><div class="tp-score">0</div></div>
+            <div class="tp-card bronze empty"><div class="tp-pfp">3</div><div class="tp-name">—</div><div class="tp-score">0</div></div>
+          </div>
+          <div class="word-announce hidden" id="announce">
+            <div class="wa-avatar" id="waAvatar">?</div>
+            <div class="wa-info">
+              <div class="wa-top">
+                <span class="wa-name" id="waName">—</span>
+                <span class="wa-total" id="waTotal">0 pts</span>
+                <span class="wa-earned" id="waEarned">+0</span>
+              </div>
+              <div class="wa-bottom">
+                <span class="wa-word" id="waWord">—</span>
+                <span class="wa-rarity common" id="waRarity">COMMON</span>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        <!-- Right: guess cards -->
+        <div class="right-col" id="cards">
+          <div class="cards-empty" id="cardsEmpty">No guesses yet — be the first!</div>
+        </div>
+      </div>
+
+      <!-- Ticker -->
+      <div class="ticker-wrap">
+        <div class="ticker" id="ticker"></div>
+      </div>
+
+      <!-- Article body -->
+      <div class="article-body-panel">
+        <div id="body"></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- Round-end modal -->
+<div class="round-end-overlay hidden" id="roundEndOverlay">
+  <div class="round-end-card">
+    <div class="re-label">Round Complete</div>
+    <div class="re-word" id="reWord"></div>
+    <div class="re-winner" id="reWinner"></div>
+    <div class="re-stats" id="reStats"></div>
+    <button class="re-dismiss" id="reDismiss">Dismiss</button>
+  </div>
+</div>
+
+<script src="/searchle/js/cosmetics-applier.js"></script>
+<script src="/searchle/socket.io/socket.io.js"></script>
+<script>
+(() => {
+  // Streamer-private session OBS overlay: ?session=<handle> in URL means
+  // we landed via /overlay/<handle> redirect. Pass auth.session so the
+  // server scopes broadcasts to the streamer's session room.
+  const _sessionHandle = (() => {
+    try {
+      const h = new URLSearchParams(location.search).get('session');
+      return h && /^[a-z0-9_-]{1,32}$/i.test(h) ? h.toLowerCase() : null;
+    } catch (_) { return null; }
+  })();
+  const _sockOpts = { path: '/searchle/socket.io' };
+  if (_sessionHandle) _sockOpts.auth = { session: _sessionHandle };
+  const socket = io(_sockOpts);
+
+  const cardsEl          = document.getElementById('cards');
+  const cardsEmpty       = document.getElementById('cardsEmpty');
+  const ticker           = document.getElementById('ticker');
+  const titleText        = document.getElementById('titleText');
+  const titleBlock       = titleText ? titleText.closest('.title-block') : null;
+  const bodyEl           = document.getElementById('body');
+  const guessCountEl     = document.getElementById('guessCount');
+  const revealProgressEl = document.getElementById('revealProgress');
+  const scoreboardEl     = document.getElementById('scoreboard');
+  const announceEl       = document.getElementById('announce');
+  const waAvatar         = document.getElementById('waAvatar');
+  const waName           = document.getElementById('waName');
+  const waTotal          = document.getElementById('waTotal');
+  const waEarned         = document.getElementById('waEarned');
+  const waWord           = document.getElementById('waWord');
+  const waRarity         = document.getElementById('waRarity');
+  const roundEndOverlay  = document.getElementById('roundEndOverlay');
+  const reWord           = document.getElementById('reWord');
+  const reWinner         = document.getElementById('reWinner');
+  const reStats          = document.getElementById('reStats');
+  const reDismiss        = document.getElementById('reDismiss');
+
+  let roundEndTimer = null;
+  let localGuessCount = 0;
+
+  function fitTitleSlot() {
+    if (!titleBlock || !titleText) return;
+    titleBlock.classList.remove('title-compact', 'title-tight', 'title-clipped');
+    if (!titleText.textContent.trim()) return;
+
+    for (const cls of ['title-compact', 'title-tight']) {
+      if (titleText.scrollHeight <= titleText.clientHeight + 1) break;
+      titleBlock.classList.add(cls);
+    }
+
+    if (titleText.scrollHeight > titleText.clientHeight + 1) {
+      titleBlock.classList.add('title-clipped');
+    }
+  }
+
+  function setIdle() {
+    document.body.classList.remove('game-active');
+    hideRoundEnd();
+  }
+  function setActive() {
+    document.body.classList.add('game-active');
+    hideRoundEnd();
+  }
+  function hideRoundEnd() {
+    roundEndOverlay.classList.add('hidden');
+    if (roundEndTimer) { clearTimeout(roundEndTimer); roundEndTimer = null; }
+  }
+  function showRoundEnd(word, winner, count) {
+    reWord.textContent = word || '?';
+    reWinner.textContent = winner ? `Won by ${winner}` : '';
+    reStats.textContent = `${(count || 0).toLocaleString()} total guesses`;
+    roundEndOverlay.classList.remove('hidden');
+    if (roundEndTimer) clearTimeout(roundEndTimer);
+    roundEndTimer = setTimeout(() => { hideRoundEnd(); }, 10000);
+  }
+  reDismiss.addEventListener('click', () => { hideRoundEnd(); setIdle(); });
+
+  // ── Helpers ────────────────────────────────────────
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function fmtNum(n) { const v = Number(n); return isFinite(v) ? v.toLocaleString() : '?'; }
+  const PLAT_COLORS = { tiktok:'#69C9D0', youtube:'#FF0000', discord:'#5865F2', web:'#FF6600' };
+  function avatarHtml(user, cls) {
+    if (user && user.profilePic) return `<img src="${esc(user.profilePic)}" alt="" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'${cls}-fb',textContent:(this.alt||'?')[0].toUpperCase()}))">`;
+    const initial = ((user && user.displayName) || '?')[0].toUpperCase();
+    const bg = PLAT_COLORS[(user && user.platform) || ''] || '#555';
+    return `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:${esc(bg)};">${esc(initial)}</div>`;
+  }
+
+  // ── Cards ─────────────────────────────────────────
+  // Each card has a proximity fill bar whose width & colour reflect the
+  // guess's semantic rank vs the target. Log scale so the middle ranks get
+  // visibly distinct treatment. Width floor keeps far cards from vanishing.
+  let totalRankedWordsCache = 339509;
+  const MIN_FILL_PCT = 5;
+  function rankMeter(rank) {
+    const r = Math.max(1, Number(rank) || 0);
+    const max = Math.max(r, totalRankedWordsCache || r);
+    const progress = Math.min(1, Math.log(r) / Math.log(max));
+    const hue = 120 - progress * 120;
+    const fillPct = Math.max(MIN_FILL_PCT, (1 - progress) * 100);
+    return { fillPct, fillColor: `hsl(${hue}, 72%, 50%)`, hue };
+  }
+  // Stable-DOM card render. Keyed by the guess word, so cards that are
+  // still in the top-5 after a refresh keep their existing DOM node —
+  // no animation replay, no flash. Only genuinely new entries animate in.
+  const _cardDomCache = new Map();
+  const _placeholderCache = [];
+  const TOP_N_SLOTS = 5;
+  // Auto-shrink the word label to fit the card width. Reads scrollWidth vs
+  // clientWidth on the .word-lbl after layout — if the word is being clipped
+  // by overflow:hidden+ellipsis, drop the font-size 1px at a time until it
+  // fits or hits minPx. Keeps both .card-inner.base and .card-inner.overlay
+  // in sync (clip-path layer mirrors the base layer's text). Idempotent —
+  // safe to re-call on resize.
+  function fitWordLabel(card, minPx) {
+    const labels = card.querySelectorAll('.word-lbl');
+    if (!labels.length) return;
+    labels.forEach((l) => { l.style.fontSize = ''; l.style.letterSpacing = ''; });
+    // .rank-word is now flex-shrink:0, so word-lbl never gets compressed by
+    // flex layout — its own scrollWidth always equals clientWidth. Detect
+    // overflow at the card-inner level: when total content exceeds the
+    // card width (.who already shrunk to just the avatar), shrink the
+    // word's font as the last-resort fit.
+    const inner = card.querySelector('.card-inner.base') || card;
+    if (inner.scrollWidth <= inner.clientWidth + 1) return;
+    let size = parseFloat(getComputedStyle(labels[0]).fontSize) || 18;
+    while (inner.scrollWidth > inner.clientWidth + 1 && size > minPx) {
+      size -= 1;
+      labels.forEach((l) => { l.style.fontSize = size + 'px'; l.style.letterSpacing = '0.3px'; });
+    }
+  }
+  function renderCards(top) {
+    const newTop = (top || []).slice(0, TOP_N_SLOTS);
+    if (!newTop.length) {
+      for (const [, el] of _cardDomCache) if (el.parentNode) el.remove();
+      _cardDomCache.clear();
+      for (const ph of _placeholderCache) {
+        if (ph && ph.parentNode) ph.remove();
+      }
+      if (!cardsEmpty.parentNode) cardsEl.appendChild(cardsEmpty);
+      return;
+    }
+    if (cardsEmpty.parentNode === cardsEl) cardsEl.removeChild(cardsEmpty);
+    for (const ph of _placeholderCache) {
+      if (ph && ph.parentNode) ph.remove();
+    }
+
+    const keepWords = new Set(newTop.map(g => g.word));
+    for (const [word, el] of [..._cardDomCache.entries()]) {
+      if (!keepWords.has(word)) {
+        if (el.parentNode) el.remove();
+        _cardDomCache.delete(word);
+      }
+    }
+
+    newTop.forEach((g, i) => {
+      const isTopSlot = i === 0;
+      const { fillPct, fillColor, hue } = rankMeter(g.rank);
+      const wlen = (g.word || '').length;
+      const sizeCls = wlen > 13 ? ' xl-word' : wlen > 10 ? ' lg-word' : '';
+      let c = _cardDomCache.get(g.word);
+      if (!c) {
+        c = document.createElement('div');
+        c.dataset.word = g.word;
+        c.className = 'card' + (isTopSlot ? ' top' : '') + sizeCls;
+        // Two identical content layers. The base layer holds white text;
+        // the overlay layer is clip-path'd to the fill bar so the proximity
+        // colour fills the rank-word pill from the left as the rank improves.
+        // Both layers keep white text (no black/white split) — only the pill
+        // background colour changes under the clip mask.
+        const inner = (
+          `<div class="rank-word">` +
+          `<div class="rank">#${fmtNum(g.rank)}</div>` +
+          `<div class="word-lbl">${esc(g.word || '')}</div>` +
+          `</div>` +
+          `<div class="who">` +
+          `<div class="avatar-fb" style="overflow:hidden">${avatarHtml(g.user, 'avatar')}</div>` +
+          `<div class="who-text">` +
+          `<div class="gname">${esc((g.user && g.user.displayName) || 'viewer')}</div>` +
+          `</div>` +
+          `</div>`
+        );
+        c.innerHTML =
+          `<div class="fill"></div>` +
+          `<div class="card-inner base">${inner}</div>` +
+          `<div class="card-inner overlay" aria-hidden="true">${inner}</div>`;
+        _cardDomCache.set(g.word, c);
+      } else {
+        c.className = 'card' + (isTopSlot ? ' top' : '') + sizeCls;
+        // Kill the cardIn keyframe on reused nodes so a reorder can't
+        // replay the pop-in flash.
+        c.style.animation = 'none';
+      }
+      // Update proximity meter every render so totalRankedWords changes
+      // propagate and fill bars animate via their CSS transition.
+      c.style.setProperty('--fill-pct', fillPct.toFixed(2) + '%');
+      c.style.setProperty('--fill-color', fillColor);
+      c.style.setProperty('--rank-hue', hue);
+      // appendChild on an existing node is a move, not a recreate — no flash.
+      cardsEl.appendChild(c);
+      if (window.WikiCosmetics) {
+        window.WikiCosmetics.apply({
+          surfaceEl: c,
+          avatarEl: c.querySelector('.avatar-fb'),
+          nameEl: c.querySelector('.gname'),
+          titleContainer: c.querySelector('.who-text'),
+        }, g.user && g.user.cosmetics);
+      }
+      fitWordLabel(c, 10);
+    });
+
+    for (let i = newTop.length; i < TOP_N_SLOTS; i++) {
+      let ph = _placeholderCache[i];
+      if (!ph) {
+        ph = document.createElement('div');
+        ph.className = 'card placeholder';
+        ph.innerHTML = `<div class="card-inner base"><div class="rank-word"><div class="rank">#${i + 1}</div><div class="word-lbl"></div></div></div>`;
+        _placeholderCache[i] = ph;
+      }
+      cardsEl.appendChild(ph);
+    }
+  }
+
+  // ── Scoreboard ────────────────────────────────────
+  function renderScoreboard(top3) {
+    scoreboardEl.innerHTML = '';
+    const slots = [{cls:'gold', idx:0}, {cls:'silver', idx:1}, {cls:'bronze', idx:2}];
+    for (const s of slots) {
+      const p = (top3 || [])[s.idx];
+      const card = document.createElement('div');
+      card.className = `tp-card ${s.cls}` + (p ? '' : ' empty');
+      if (!p) {
+        card.innerHTML = `<div class="tp-pfp">${s.idx + 1}</div><div class="tp-name">—</div><div class="tp-score">0</div>`;
+      } else {
+        card.innerHTML =
+          `<div class="tp-pfp">${avatarHtml(p.user, 'tp')}</div>` +
+          `<div class="tp-name">${esc(p.nickname)}</div>` +
+          `<div class="tp-score">${fmtNum(p.points)}</div>`;
+      }
+      scoreboardEl.appendChild(card);
+      if (p && window.WikiCosmetics) {
+        window.WikiCosmetics.apply({
+          surfaceEl: card,
+          avatarEl: card.querySelector('.tp-pfp'),
+          nameEl: card.querySelector('.tp-name'),
+          titleContainer: card,
+        }, p.user && p.user.cosmetics);
+      }
+      if (p) {
+        const scoreEl = card.querySelector('.tp-score');
+        if (scoreEl && typeof fitText === 'function') {
+          requestAnimationFrame(() => fitText(scoreEl, 7));
+        }
+      }
+    }
+  }
+
+  // Shrink an element's font-size 1px at a time until its text fits within
+  // its own clientWidth (or hits minPx). Keeps the announce card's word +
+  // name fully visible without ellipsis when they're long.
+  function fitText(el, minPx) {
+    if (!el) return;
+    el.style.fontSize = '';
+    if (el.scrollWidth <= el.clientWidth + 1) return;
+    let size = parseFloat(getComputedStyle(el).fontSize) || 16;
+    while (el.scrollWidth > el.clientWidth + 1 && size > (minPx || 8)) {
+      size -= 1;
+      el.style.fontSize = size + 'px';
+    }
+  }
+  function fitRow(parent, minPx) {
+    if (!parent) return;
+    const kids = Array.from(parent.children).filter((c) => c.offsetParent !== null);
+    if (!kids.length) return;
+    kids.forEach((c) => { c.style.fontSize = ''; });
+    if (parent.scrollWidth <= parent.clientWidth + 1) return;
+    const sizes = kids.map((c) => parseFloat(getComputedStyle(c).fontSize) || 14);
+    const min = minPx || 8;
+    let scale = 1;
+    while (parent.scrollWidth > parent.clientWidth + 1 && scale > 0.4) {
+      scale -= 0.04;
+      kids.forEach((c, i) => {
+        const s = Math.max(min, sizes[i] * scale);
+        c.style.fontSize = s + 'px';
+      });
+      if (sizes.every((s) => s * scale <= min)) break;
+    }
+  }
+  // ── Announce banner ───────────────────────────────
+  function renderAnnounce(a) {
+    if (!a) { announceEl.classList.add('hidden'); return; }
+    announceEl.classList.remove('hidden');
+    waAvatar.innerHTML = avatarHtml(a.user, 'wa-avatar');
+    waName.textContent = a.nickname || 'viewer';
+    waTotal.textContent = `${fmtNum(a.totalPoints)} pts`;
+    waEarned.textContent = `+${fmtNum(a.earned)}`;
+    waWord.textContent = (a.word || '').toUpperCase();
+    const tier = (a.rarity || 'common').toLowerCase();
+    waRarity.className = `wa-rarity ${tier}`;
+    waRarity.textContent = tier.toUpperCase();
+    requestAnimationFrame(() => {
+      fitText(waWord, 10);
+      fitRow(waName.parentNode, 10);
+    });
+  }
+
+  // ── Ticker chips ──────────────────────────────────
+  // Flex fills left-to-right; each new chip slides in from the right edge of
+  // the ticker to its natural slot. Chips accumulate until the row is full,
+  // then the oldest (leftmost) slides off to make room.
+  const TICKER_GAP = 3;
+  const TICKER_FADE_INSET = 24; // matches .ticker::after gradient width
+  function pushChip(chip) {
+    const el = document.createElement('div');
+    el.className = `chip ${chip.status}`;
+    const icon = chip.status === 'miss' ? '✕' : '✓';
+    // If the server attached a profilePic for the guesser, render it on the
+    // left of the word. Falls back silently if the image fails to load.
+    const avatarHtml = chip.profilePic
+      ? `<img class="chip-avatar" src="${esc(chip.profilePic)}" alt="" onerror="this.remove();">`
+      : '';
+    el.innerHTML = `${avatarHtml}<span>${esc(chip.word)}</span><span class="tick">${icon}</span>`;
+    ticker.appendChild(el);
+    // After layout, compute slide distance so the chip starts with its
+    // right edge just inside the ticker's fade gradient (always fully
+    // visible) and animates to its natural flex slot. If the chip's
+    // natural position is already inside that zone, slideDist = 0 and the
+    // chip just fades in place.
+    requestAnimationFrame(() => {
+      const chipRightAtEnd = el.offsetLeft + el.offsetWidth;
+      const chipRightAtStart = ticker.clientWidth - TICKER_FADE_INSET;
+      const slideDist = Math.max(0, chipRightAtStart - chipRightAtEnd);
+      el.style.setProperty('--slide-dist', `${slideDist}px`);
+      // Restart the animation so the newly-set variable is applied.
+      el.style.animation = 'none'; void el.offsetWidth;
+      el.style.animation = '';
+
+      // Eviction: when the row overflows, fade out the oldest chip.
+      let total = 0;
+      for (const c of ticker.children) {
+        if (c.classList.contains('exit')) continue;
+        total += c.offsetWidth + TICKER_GAP;
+      }
+      total -= TICKER_GAP;
+      if (total > ticker.clientWidth) {
+        for (const c of ticker.children) {
+          if (c === el) break;
+          if (c.classList.contains('exit')) continue;
+          c.classList.add('exit');
+          c.addEventListener('animationend', () => { if (c.parentNode) c.remove(); }, { once: true });
+          break;
+        }
+      }
+    });
+  }
+
+  // ── Fresh-reveal + sentence pending-hide tracking ─────────
+  // Every revealed word flashes green on reveal and fades back to normal
+  // text color over 5 seconds (freshReveals, populated by wikiword-reveal).
+  // Independently, fully-revealed sentences linger on-screen for 5 seconds
+  // before being removed (pendingHideSentences, populated by state diff).
+  // Both timers share one expiry setTimeout.
+  const FRESH_REVEAL_MS = 5000;
+  const PENDING_HIDE_MS = 5000;
+  let prevArticleState = null;
+  const freshReveals = new Map();          // norm -> revealedAt ms
+  const titleWordFinders = new Map();      // norm -> { nickname, profilePic, platform }
+  const titleJustRevealedNorms = new Set();
+  const pendingHideSentences = new Map();  // "pi:sid" -> { completeAt }
+  let expiryTimer = null;
+
+  function buildSentenceMap(state) {
+    const out = new Map();
+    if (!state) return out;
+    for (let pi = 0; pi < state.paragraphs.length; pi++) {
+      for (const t of state.paragraphs[pi]) {
+        if (t.type !== 'word') continue;
+        const sid = t.sentenceId || 0;
+        const key = `${pi}:${sid}`;
+        if (!out.has(key)) out.set(key, { words: [], allRevealed: true });
+        const rec = out.get(key);
+        rec.words.push(t);
+        if (!t.revealed) rec.allRevealed = false;
+      }
+    }
+    return out;
+  }
+
+  function diffPendingHide(prev, next) {
+    if (!next) return;
+    const prevMap = buildSentenceMap(prev);
+    const nextMap = buildSentenceMap(next);
+    const now = Date.now();
+    for (const [key, rec] of nextMap) {
+      if (!rec.allRevealed) continue;
+      const pr = prevMap.get(key);
+      if (pr && pr.allRevealed) continue;
+      if (pendingHideSentences.has(key)) continue;
+      pendingHideSentences.set(key, { completeAt: now });
+    }
+  }
+
+  function markFreshReveals(words) {
+    if (!words || !words.length) return;
+    const now = Date.now();
+    for (const w of words) {
+      const n = String(w).toLowerCase().replace(/[^a-z0-9]/g, '');
+      if (n) freshReveals.set(n, now);
+    }
+  }
+
+  function applyFreshRevealToDom() {
+    const now = Date.now();
+    document.querySelectorAll('#body .word.revealed').forEach(el => {
+      const n = el.dataset.norm || el.textContent.toLowerCase().replace(/[^a-z0-9]/g, '');
+      const ts = freshReveals.get(n);
+      if (typeof ts !== 'number') return;
+      const elapsed = now - ts;
+      if (elapsed < 0 || elapsed >= FRESH_REVEAL_MS) return;
+      el.classList.remove('fresh-reveal');
+      void el.offsetWidth;
+      el.classList.add('fresh-reveal');
+      el.style.animationDelay = `-${elapsed}ms`;
+    });
+  }
+
+  function scheduleExpiryRerender() {
+    if (expiryTimer) return;
+    let soonest = Infinity;
+    for (const ts of freshReveals.values()) soonest = Math.min(soonest, ts + FRESH_REVEAL_MS);
+    for (const r of pendingHideSentences.values()) soonest = Math.min(soonest, r.completeAt + PENDING_HIDE_MS);
+    if (soonest === Infinity) return;
+    const delay = Math.max(0, soonest - Date.now());
+    expiryTimer = setTimeout(() => {
+      expiryTimer = null;
+      const now = Date.now();
+      for (const [n, ts] of freshReveals) if (now - ts >= FRESH_REVEAL_MS) freshReveals.delete(n);
+      for (const [k, r] of pendingHideSentences) if (now - r.completeAt >= PENDING_HIDE_MS) pendingHideSentences.delete(k);
+      if (prevArticleState) renderArticle(prevArticleState);
+      scheduleExpiryRerender();
+    }, delay + 20);
+  }
+
+  // ── Article ───────────────────────────────────────
+  function renderArticle(state) {
+    if (!state) {
+      titleText.innerHTML = '';
+      bodyEl.innerHTML = '';
+      revealProgressEl.textContent = '— / —';
+      fitTitleSlot();
+      return;
+    }
+    let total = 0, revealed = 0;
+    for (const para of state.paragraphs) for (const t of para) if (t.type === 'word') { total++; if (t.text) revealed++; }
+    revealProgressEl.textContent = `${fmtNum(revealed)} / ${fmtNum(total)}`;
+
+    titleText.innerHTML = '';
+    // Always render per-word. Revealed words show the text (orange) with
+    // a small finder PFP badge; unrevealed words show a HIDDEN redaction
+    // box. Flex gap handles spacing so punctuation tokens are skipped.
+    for (const t of state.titleTokens) {
+      if (t.type !== 'word') continue;
+      const wrap = document.createElement('span');
+      const norm = (t.text ? t.text : '').toLowerCase().replace(/[^\p{L}\p{N}]/gu, '') || (t.norm || '');
+      const wText = document.createElement('span');
+      wText.className = 'w-text';
+      if (t.revealed && t.text) {
+        wrap.className = 't-word revealed';
+        wText.textContent = t.text;
+        wrap.dataset.norm = norm;
+        if (titleJustRevealedNorms.has(norm)) wrap.classList.add('just-revealed');
+        wrap.appendChild(wText);
+        const finder = titleWordFinders.get(norm);
+        if (finder) {
+          const pfp = document.createElement(finder.profilePic ? 'img' : 'span');
+          pfp.className = 'finder-pfp';
+          if (finder.profilePic) {
+            pfp.src = finder.profilePic;
+            pfp.alt = '';
+            pfp.onerror = () => {
+              const fb = document.createElement('span');
+              fb.className = 'finder-pfp fallback';
+              fb.textContent = (finder.nickname || '?').charAt(0).toUpperCase();
+              pfp.replaceWith(fb);
+            };
+          } else {
+            pfp.classList.add('fallback');
+            pfp.textContent = (finder.nickname || '?').charAt(0).toUpperCase();
+          }
+          wrap.appendChild(pfp);
+        }
+      } else {
+        wrap.className = 't-word hidden';
+        wText.textContent = 'HIDDEN';
+        wrap.appendChild(wText);
+      }
+      titleText.appendChild(wrap);
+    }
+    fitTitleSlot();
+    if (titleJustRevealedNorms.size > 0) {
+      setTimeout(() => titleJustRevealedNorms.clear(), 1000);
+    }
+
+    // Sentence-skip: once the title is revealed, hide the contiguous prefix
+    // of already-fully-revealed sentences so the next partially-redacted
+    // sentence moves to the top. A sentence in pendingHideSentences is fully
+    // revealed but still within its 5s victory window — render it with green
+    // highlights on the words that just completed it, and stop the prefix
+    // walk there so later sentences render normally.
+    // Only skip fully-revealed sentences mid-game, never on round-end —
+    // otherwise the 25s post-win reveal hides the whole article.
+    const skipKeys = new Set();
+    if (state.titleRevealed && !state.won) {
+      let stop = false;
+      for (let pi = 0; pi < state.paragraphs.length && !stop; pi++) {
+        const buckets = new Map();
+        for (const t of state.paragraphs[pi]) {
+          if (t.type !== 'word') continue;
+          const sid = t.sentenceId || 0;
+          if (!buckets.has(sid)) buckets.set(sid, []);
+          buckets.get(sid).push(t);
+        }
+        const sids = [...buckets.keys()].sort((a, b) => a - b);
+        for (const sid of sids) {
+          const key = `${pi}:${sid}`;
+          if (buckets.get(sid).every(w => w.revealed)) {
+            if (pendingHideSentences.has(key)) { stop = true; break; }
+            skipKeys.add(key);
+          } else { stop = true; break; }
+        }
+      }
+    }
+
+    bodyEl.innerHTML = '';
+    for (let pi = 0; pi < state.paragraphs.length; pi++) {
+      const para = state.paragraphs[pi];
+      const p = document.createElement('p');
+      for (const t of para) {
+        const sid = t.sentenceId || 0;
+        const key = `${pi}:${sid}`;
+        if (skipKeys.has(key)) continue;
+        if (t.type === 'space') { p.appendChild(document.createTextNode(t.text)); continue; }
+        const s = document.createElement('span');
+        s.className = 'word';
+        s.dataset.len = t.len;
+        if (t.isNumber) s.classList.add('is-number');
+        if (t.text) {
+          s.textContent = t.text;
+          s.classList.add('revealed');
+          s.dataset.norm = t.text.toLowerCase().replace(/[^a-z0-9]/g, '');
+          const ts = freshReveals.get(s.dataset.norm);
+          if (typeof ts === 'number') {
+            const elapsed = Date.now() - ts;
+            if (elapsed < FRESH_REVEAL_MS) {
+              s.classList.add('fresh-reveal');
+              s.style.animationDelay = `-${elapsed}ms`;
+            }
+          }
+        } else {
+          s.classList.add('redacted');
+          if (t.isNumber) {
+            // Show "N DIGIT(S)" label inside the orange box so players know
+            // the length of the hidden number without seeing its value.
+            // Prefer digitCount (digits only, ignores trailing letters like
+            // "1920s") and fall back to total token length if unset.
+            const digits = (typeof t.digitCount === 'number' && t.digitCount > 0) ? t.digitCount : t.len;
+            s.textContent = digits + ' DIGIT' + (digits === 1 ? '' : 'S');
+          } else {
+            s.style.minWidth = `calc(${t.len}ch + 8px)`;
+            s.textContent = '\u00a0'.repeat(t.len);
+          }
+        }
+        p.appendChild(s);
+      }
+      if (p.childNodes.length > 0) bodyEl.appendChild(p);
+    }
+  }
+
+  function setGuessCount(n) { localGuessCount = n; guessCountEl.textContent = fmtNum(n); fitStats(); }
+  function fitStats() {
+    document.querySelectorAll('.stats-bar .stat').forEach((stat) => {
+      const val = stat.querySelector('.stat-val');
+      if (!val) return;
+      val.style.fontSize = '';
+      let size = parseFloat(getComputedStyle(val).fontSize);
+      let tries = 0;
+      while (stat.scrollWidth > stat.clientWidth && size > 12 && tries < 30) {
+        size -= 1;
+        val.style.fontSize = size + 'px';
+        tries++;
+      }
+    });
+  }
+  window.addEventListener('resize', () => {
+    try { fitStats(); } catch (e) {}
+    try { _cardDomCache.forEach((c) => fitWordLabel(c, 10)); } catch (e) {}
+  });
+
+  // ── Socket events ─────────────────────────────────
+  socket.on('wikisearchle-state', s => {
+    if (!s || !s.targetWord) { setIdle(); renderScoreboard([]); renderAnnounce(null); return; }
+    if (s.totalRankedWords) totalRankedWordsCache = s.totalRankedWords;
+    setActive();
+    renderCards(s.topGuesses || []);
+    renderScoreboard(s.scoreboard || []);
+    renderAnnounce(s.lastAnnounce || null);
+    setGuessCount(s.guessCount || 0);
+    titleWordFinders.clear();
+    if (s.titleWordFinders) {
+      for (const [n, f] of Object.entries(s.titleWordFinders)) titleWordFinders.set(n, f);
+    }
+  });
+  socket.on('wikisearchle-round-start', () => {
+    setActive();
+    renderCards([]);
+    renderScoreboard([]);
+    renderAnnounce(null);
+    ticker.innerHTML = '';
+    setGuessCount(0);
+    titleWordFinders.clear();
+    titleJustRevealedNorms.clear();
+    scoreboardEl.classList.remove('round-ended');
+    prevArticleState = null;
+    freshReveals.clear();
+    pendingHideSentences.clear();
+    if (expiryTimer) { clearTimeout(expiryTimer); expiryTimer = null; }
+    renderArticle(null);
+  });
+  socket.on('wikisearchle-title-word-found', e => {
+    if (!e) return;
+    if (e.finders) {
+      titleWordFinders.clear();
+      for (const [n, f] of Object.entries(e.finders)) titleWordFinders.set(n, f);
+    } else if (Array.isArray(e.wordsRevealed) && e.user) {
+      for (const n of e.wordsRevealed) {
+        titleWordFinders.set(n, {
+          nickname: e.user.displayName || e.by || '',
+          profilePic: e.user.profilePic || null,
+          platform: e.user.platform || 'unknown',
+        });
+      }
+    }
+    for (const n of (e.wordsRevealed || [])) titleJustRevealedNorms.add(n);
+    if (prevArticleState) renderArticle(prevArticleState);
+    if (typeof e.totalRankedWords === 'number') totalRankedWordsCache = e.totalRankedWords;
+  });
+  socket.on('wikisearchle-title-revealed', () => {});
+  socket.on('wikisearchle-round-end', ({ targetWord, winner, finalGuessCount }) => {
+    showRoundEnd(targetWord, winner, finalGuessCount || localGuessCount);
+    // Pulse the top-3 podium cards during the post-win hold so viewers'
+    // attention lands on the winners. Cleared on the next round-start.
+    scoreboardEl.classList.add('round-ended');
+  });
+  socket.on('wikisearchle-new-guess', () => { setGuessCount(localGuessCount + 1); });
+  socket.on('wikisearchle-top', top => { renderCards(top || []); });
+  socket.on('wikisearchle-scoreboard', top3 => { renderScoreboard(top3 || []); });
+  socket.on('wikisearchle-announce', a => { renderAnnounce(a); });
+  socket.on('wikisearchle-chip', chip => { pushChip(chip); });
+
+  socket.on('wikiword-state', s => {
+    if (s) {
+      setActive();
+      diffPendingHide(prevArticleState, s);
+      renderArticle(s);
+      prevArticleState = s;
+      scheduleExpiryRerender();
+    } else {
+      prevArticleState = null;
+      freshReveals.clear();
+      pendingHideSentences.clear();
+      if (expiryTimer) { clearTimeout(expiryTimer); expiryTimer = null; }
+      renderArticle(null);
+    }
+  });
+  socket.on('wikiword-reveal', e => {
+    if (!e || !e.words) return;
+    markFreshReveals(e.words);
+    applyFreshRevealToDom();
+    scheduleExpiryRerender();
+  });
+  socket.on('wikiword-round-end', state => {
+    freshReveals.clear();
+    pendingHideSentences.clear();
+    if (expiryTimer) { clearTimeout(expiryTimer); expiryTimer = null; }
+    prevArticleState = state;
+    renderArticle(state);
+    document.querySelectorAll('#body .word.redacted').forEach(s => { s.classList.remove('redacted'); s.classList.add('revealed'); });
+  });
+  socket.on('wikiword-idle', () => {
+    prevArticleState = null;
+    freshReveals.clear();
+    pendingHideSentences.clear();
+    if (expiryTimer) { clearTimeout(expiryTimer); expiryTimer = null; }
+    renderArticle(null);
+    setIdle();
+  });
+
+  // Prime from REST
+  fetch('/searchle/api/state').then(r => r.json()).then(s => {
+    if (s && s.targetWord) {
+      setActive();
+      renderCards(s.topGuesses || []);
+      renderScoreboard(s.scoreboard || []);
+      renderAnnounce(s.lastAnnounce || null);
+      setGuessCount(s.guessCount || 0);
+    }
+  }).catch(() => {});
+
+  window.addEventListener('resize', fitTitleSlot);
+  window._wsSocket = socket;
+})();
+</script>
+</body>
+</html>

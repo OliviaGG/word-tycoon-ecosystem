@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Word5000 — Guess-In Animation Mockups</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --green: #4ade80;
+  --green-glow: rgba(74, 222, 128, 0.6);
+  --hairline: rgba(255, 255, 255, 0.08);
+}
+html, body {
+  height: 100%;
+  background: #000;
+  color: #fff;
+  font-family: 'Inter', system-ui, sans-serif;
+  user-select: none;
+  overflow-y: auto;
+}
+body { padding: 32px 16px 80px; }
+
+h1 { font-size: 22px; margin-bottom: 6px; text-align: center; }
+.subtitle { text-align: center; color: #888; font-size: 13px; margin-bottom: 24px; }
+
+.replay-bar {
+  position: sticky;
+  top: 8px;
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+.replay-btn {
+  padding: 10px 22px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: linear-gradient(135deg, #5865F2, #a855f7);
+  color: #fff;
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 14px;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+}
+.replay-btn:hover { filter: brightness(1.1); }
+
+.variant {
+  max-width: 600px;
+  margin: 0 auto 28px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid var(--hairline);
+  border-radius: 14px;
+}
+.variant h2 {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #fff;
+  margin-bottom: 4px;
+}
+.variant .desc {
+  font-size: 12px;
+  color: #888;
+  margin-bottom: 14px;
+  line-height: 1.45;
+}
+.stage {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 6px 0;
+}
+
+/* === Liquid-glass pill (matches the real shell) === */
+.guess-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 4px;
+}
+.guess-letters {
+  position: relative;
+  display: inline-flex;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: 18px;
+  clip-path: inset(0 round 18px);
+  padding: 0 28px;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.4),
+    0 8px 24px rgba(0, 0, 0, 0.6),
+    0 2px 6px rgba(0, 0, 0, 0.45);
+}
+.pill-base {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background-image:
+    radial-gradient(ellipse 60% 60% at 22% 28%, rgba(255, 255, 255, 0.7) 0%, transparent 55%),
+    radial-gradient(ellipse 55% 55% at 78% 72%, rgba(0, 0, 0, 0.55) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 90% at 55% 50%, rgba(255, 255, 255, 0.3) 0%, transparent 70%),
+    var(--guess-gradient, linear-gradient(180deg, hsl(90,78%,60%), hsl(90,72%,34%)));
+}
+.pill-glass {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  background: linear-gradient(180deg, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.04) 50%, rgba(0,0,0,0.1) 100%);
+  backdrop-filter: blur(14px) saturate(180%);
+  pointer-events: none;
+}
+.pill-spec {
+  position: absolute;
+  top: 0; left: 6%; right: 6%; height: 55%;
+  z-index: 2;
+  background: linear-gradient(180deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.1) 55%, rgba(255,255,255,0) 100%);
+  border-radius: 50% / 50%;
+  filter: blur(2px);
+  pointer-events: none;
+}
+.letter-tile {
+  position: relative;
+  z-index: 3;
+  width: 42px;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 800;
+  color: #0a0a0a;
+  text-transform: uppercase;
+  text-shadow: 0 0 3px rgba(255,255,255,0.45), 0 1px 0 rgba(255,255,255,0.3);
+}
+.letter-tile:not(:last-child) {
+  border-right: 1px solid rgba(0, 0, 0, 0.32);
+}
+
+/* Triangle just so the layout matches; we don't animate it specifically */
+.guess-counts {
+  margin-left: -22px;
+  position: relative;
+  z-index: 5;
+  width: 56px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.guess-triangle { width: 56px; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.8)); }
+.tri-wedge-correct { fill: var(--green); }
+.tri-wedge-present { fill: #f1c40f; }
+.tri-wedge-absent  { fill: #e74c3c; }
+.tri-outline { fill: none; stroke: rgba(0,0,0,0.6); stroke-width: 1.25; stroke-linejoin: round; }
+.tri-spokes  { fill: none; stroke: rgba(0,0,0,0.45); stroke-width: 1; stroke-linecap: round; }
+
+/* === Variant A — Current (fade + slide down) === */
+.anim-current .guess-row { animation: aCurrent 0.25s ease both; }
+@keyframes aCurrent {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* === Variant B — Wordle-flip (each tile flips, staggered) === */
+.anim-flip .guess-letters { perspective: 600px; }
+.anim-flip .letter-tile {
+  animation: aFlip 0.55s ease-in-out both;
+  animation-delay: calc(var(--i, 0) * 0.12s);
+  transform-style: preserve-3d;
+}
+@keyframes aFlip {
+  0%  { transform: rotateX(0); opacity: 0; }
+  49% { transform: rotateX(-90deg); opacity: 0; }
+  51% { transform: rotateX(-90deg); opacity: 1; }
+  100%{ transform: rotateX(0); opacity: 1; }
+}
+/* hide the pill chrome until the first flip happens to avoid an early reveal */
+.anim-flip .guess-letters { animation: aPillFade 0.2s ease both; }
+@keyframes aPillFade { from { opacity: 0; } to { opacity: 1; } }
+
+/* === Variant C — Spring pop === */
+.anim-pop .guess-row {
+  animation: aPop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@keyframes aPop {
+  0%   { opacity: 0; transform: scale(0.72); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+/* === Variant D — Liquid pour (clip-path sweep) === */
+.anim-pour .guess-row { opacity: 1; }
+.anim-pour .guess-letters {
+  animation: aPour 0.55s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+@keyframes aPour {
+  from { clip-path: inset(0 100% 0 0 round 18px); }
+  to   { clip-path: inset(0 0    0 0 round 18px); }
+}
+.anim-pour .letter-tile {
+  animation: aPourLetter 0.55s cubic-bezier(0.4, 0, 0.2, 1) both;
+  animation-delay: calc(var(--i, 0) * 0.06s);
+  opacity: 0;
+}
+@keyframes aPourLetter {
+  0%, 40% { opacity: 0; }
+  70%, 100% { opacity: 1; }
+}
+
+/* === Variant E — Shimmer sweep === */
+.anim-shimmer .guess-row { animation: aCurrent 0.2s ease both; }
+.anim-shimmer .guess-letters::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 40%;
+  z-index: 4;
+  background: linear-gradient(90deg,
+    rgba(255,255,255,0) 0%,
+    rgba(255,255,255,0.5) 50%,
+    rgba(255,255,255,0) 100%);
+  transform: translateX(-150%);
+  animation: aShimmer 0.9s ease-out 0.15s both;
+  pointer-events: none;
+  mix-blend-mode: overlay;
+}
+@keyframes aShimmer {
+  from { transform: translateX(-150%); }
+  to   { transform: translateX(280%); }
+}
+
+/* === Variant F — Letter stamp (per-letter punch in) === */
+.anim-stamp .guess-letters { animation: aPillFade 0.2s ease both; }
+.anim-stamp .letter-tile {
+  animation: aStamp 0.42s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation-delay: calc(var(--i, 0) * 0.07s);
+}
+@keyframes aStamp {
+  0%   { opacity: 0; transform: scale(0); }
+  60%  { opacity: 1; transform: scale(1.18); }
+  100% { transform: scale(1); }
+}
+
+/* === Variant G — Drop from above with squash === */
+.anim-drop .guess-row { animation: aDrop 0.55s cubic-bezier(0.34, 1.4, 0.64, 1) both; }
+@keyframes aDrop {
+  0%   { opacity: 0; transform: translateY(-60px); }
+  70%  { opacity: 1; transform: translateY(4px) scaleY(0.9) scaleX(1.04); }
+  85%  { transform: translateY(0) scaleY(1.04) scaleX(0.98); }
+  100% { transform: translateY(0) scaleY(1) scaleX(1); }
+}
+</style>
+</head>
+<body>
+
+<h1>Guess-In Animation Mockups</h1>
+<p class="subtitle">Click "Replay all" to retrigger every animation simultaneously.</p>
+
+<div class="replay-bar"><button class="replay-btn" id="replay">▶ Replay all</button></div>
+
+<div class="variant">
+  <h2>A · Current — fade + slide down (0.25s)</h2>
+  <div class="desc">What's live now. Subtle, fast, doesn't draw attention to itself.</div>
+  <div class="stage anim-current" data-variant="current"></div>
+</div>
+
+<div class="variant">
+  <h2>B · Wordle flip — each tile flips, staggered</h2>
+  <div class="desc">Classic Wordle reveal. Letter flips around its X axis, 120ms stagger across the word. Pill fades in immediately so the chrome doesn't pop.</div>
+  <div class="stage anim-flip" data-variant="flip"></div>
+</div>
+
+<div class="variant">
+  <h2>C · Spring pop — scale-up with overshoot</h2>
+  <div class="desc">Pill pops in with a slight bounce. Snappy, draws attention. Good for high-stakes games / win celebrations.</div>
+  <div class="stage anim-pop" data-variant="pop"></div>
+</div>
+
+<div class="variant">
+  <h2>D · Liquid pour — gradient sweeps in from the left</h2>
+  <div class="desc">Pill is masked from the left until fully revealed; letters fade in as the pour passes their position. Most "liquid glass" feeling.</div>
+  <div class="stage anim-pour" data-variant="pour"></div>
+</div>
+
+<div class="variant">
+  <h2>E · Shimmer sweep — sheen passes over after fade-in</h2>
+  <div class="desc">Subtle fade-in (~0.2s), then a bright sheen sweeps across the pill. Calls attention without being noisy. Reads as "fresh" / "live".</div>
+  <div class="stage anim-shimmer" data-variant="shimmer"></div>
+</div>
+
+<div class="variant">
+  <h2>F · Letter stamp — per-letter punch with spring</h2>
+  <div class="desc">Pill fades in first, then each letter punches in with a scale-up overshoot, 70ms stagger. Playful, tactile.</div>
+  <div class="stage anim-stamp" data-variant="stamp"></div>
+</div>
+
+<div class="variant">
+  <h2>G · Drop + squash — pill falls into its slot</h2>
+  <div class="desc">Pill drops 60px from above, lands with a small squash on impact, then settles. Most physical / "weighty".</div>
+  <div class="stage anim-drop" data-variant="drop"></div>
+</div>
+
+<script>
+const SVG_NS = 'http://www.w3.org/2000/svg';
+function buildTriangle(c, p, a) {
+  const svg = document.createElementNS(SVG_NS, 'svg');
+  svg.setAttribute('class', 'guess-triangle');
+  svg.setAttribute('viewBox', '0 0 64 56');
+  const wedges = [
+    { cls: 'tri-wedge-correct', points: '32,2 17,28 32,37 47,28' },
+    { cls: 'tri-wedge-present', points: '2,54 32,54 32,37 17,28' },
+    { cls: 'tri-wedge-absent',  points: '62,54 47,28 32,37 32,54' },
+  ];
+  wedges.forEach(w => {
+    const p = document.createElementNS(SVG_NS, 'polygon');
+    p.setAttribute('class', w.cls);
+    p.setAttribute('points', w.points);
+    svg.appendChild(p);
+  });
+  const spokes = document.createElementNS(SVG_NS, 'path');
+  spokes.setAttribute('class', 'tri-spokes');
+  spokes.setAttribute('d', 'M32,37 L17,28 M32,37 L32,54 M32,37 L47,28');
+  svg.appendChild(spokes);
+  const outline = document.createElementNS(SVG_NS, 'polygon');
+  outline.setAttribute('class', 'tri-outline');
+  outline.setAttribute('points', '32,2 2,54 62,54');
+  svg.appendChild(outline);
+  return svg;
+}
+
+function rightnessGradient(ratio) {
+  const hue = ratio * 120;
+  return `linear-gradient(180deg, hsl(${hue}, 78%, 60%) 0%, hsl(${hue}, 75%, 46%) 50%, hsl(${hue}, 72%, 34%) 100%)`;
+}
+
+// Sample committed guesses for the demo stages
+const samples = [
+  { word: 'CRATE', correct: 4, present: 0, absent: 1 },   // ratio = 0.80 (mostly green)
+  { word: 'RACES', correct: 1, present: 3, absent: 1 },   // ratio = 0.50 (yellow)
+  { word: 'PLUMB', correct: 0, present: 0, absent: 5 },   // ratio = 0.00 (red)
+];
+
+function buildRow(g) {
+  const wordLen = g.word.length;
+  const row = document.createElement('div');
+  row.className = 'guess-row';
+
+  const letters = document.createElement('div');
+  letters.className = 'guess-letters';
+  const ratio = Math.max(0, Math.min(1, (g.correct + 0.5 * g.present) / wordLen));
+  letters.style.setProperty('--guess-gradient', rightnessGradient(ratio));
+
+  for (const k of ['pill-base', 'pill-glass', 'pill-spec']) {
+    const d = document.createElement('div'); d.className = k; letters.appendChild(d);
+  }
+  g.word.split('').forEach((ch, i) => {
+    const t = document.createElement('div');
+    t.className = 'letter-tile';
+    t.textContent = ch;
+    t.style.setProperty('--i', i);
+    letters.appendChild(t);
+  });
+  row.appendChild(letters);
+
+  const counts = document.createElement('div');
+  counts.className = 'guess-counts';
+  counts.appendChild(buildTriangle(g.correct, g.present, g.absent));
+  row.appendChild(counts);
+
+  return row;
+}
+
+function populate() {
+  document.querySelectorAll('.stage').forEach(stage => {
+    stage.innerHTML = '';
+    samples.forEach(s => stage.appendChild(buildRow(s)));
+  });
+}
+
+function replayAll() {
+  // Force re-flow so the CSS animations restart
+  document.querySelectorAll('.stage').forEach(stage => {
+    stage.style.animation = 'none';
+    // Clone-and-replace to reset all child animations
+    const clone = stage.cloneNode(true);
+    stage.parentNode.replaceChild(clone, stage);
+  });
+}
+
+document.getElementById('replay').addEventListener('click', () => {
+  populate();
+});
+
+populate();
+</script>
+
+</body>
+</html>

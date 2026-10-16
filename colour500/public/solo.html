@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Color500 Solo">
+<title>Color 500 Solo — crack the daily code</title>
+<meta name="description" content="A new colour code every day. Ten guesses. Classic Mastermind, solo.">
+<!-- Relative paths + ?v= cache-buster are both mandatory — see AGENTS.md. -->
+<link rel="stylesheet" href="app.css?v=14">
+<script src="https://wordtycoon.live/login-prompt.js" defer></script>
+</head>
+<body>
+
+<header class="top-chrome">
+  <div class="top-left">
+    <div class="title">COLOR<span class="title-500">500</span><span class="title-sub" id="mode-sub">DAILY</span></div>
+  </div>
+  <div class="top-right">
+    <div class="chrome-pill guesses-pill" id="guesses-pill">
+      <span class="jackpot-label">LEFT</span> <span id="guesses-left">—</span>
+    </div>
+    <a class="chrome-pill mode-link" id="online-link" href="./">Online</a>
+    <button class="icon-pill" id="help-btn" type="button" aria-label="How to play" title="How to play">?</button>
+    <button class="user-pill" id="user-pill" type="button">
+      <img class="user-pill-avatar" id="user-pill-avatar" alt="" style="display:none">
+      <span class="user-pill-name" id="user-pill-name">Sign in</span>
+    </button>
+  </div>
+</header>
+
+<div id="guesses" aria-live="polite"></div>
+
+<div id="palette" role="group" aria-label="Color palette"></div>
+
+<!-- Round-over card: LOSS only now. Wins go to the shared Word Tycoon
+     WinCard (win-card.js below). -->
+<div id="overlay" role="dialog" aria-modal="true">
+  <div class="card">
+    <h2 id="overlay-title">Cracked it!</h2>
+    <div class="code-row" id="overlay-code"></div>
+    <div class="detail" id="overlay-detail"></div>
+    <div class="detail detail-next" id="overlay-reward"></div>
+    <div class="overlay-actions">
+      <button type="button" class="btn-primary" id="play-again">Practice again</button>
+      <a class="btn-ghost" href="./">Play online</a>
+    </div>
+  </div>
+</div>
+
+<div id="help-overlay" role="dialog" aria-modal="true">
+  <div class="card help-card">
+    <button class="help-close" id="help-close" type="button" aria-label="Close">&times;</button>
+    <h2>How to play</h2>
+    <p>A secret code of four colours. Colours <strong>can repeat</strong>.
+       You get <strong>ten guesses</strong>.</p>
+
+    <h3>Reading the triangle</h3>
+    <div class="help-tri" id="help-triangle"></div>
+    <ul class="tri-legend">
+      <li><i class="sw-correct"></i> right color, <strong>right</strong> slot</li>
+      <li><i class="sw-present"></i> right color, <strong>wrong</strong> slot</li>
+      <li><i class="sw-absent"></i> not in the code at all</li>
+    </ul>
+    <p class="muted">It never tells you <em>which</em> slot — that's the whole
+       game.</p>
+
+    <h3>Daily vs practice</h3>
+    <p>Everyone gets the <strong>same daily code</strong>, once a day. Solve it
+       while signed in and it counts toward your streak and pays coins.
+       Practice rounds are unlimited and pay nothing.</p>
+    <ul class="legend" id="letterLegend"></ul>
+  </div>
+</div>
+
+<footer class="legal">
+  <a href="https://wordtycoon.live/privacy" target="_blank" rel="noopener">Privacy</a> ·
+  <a href="https://wordtycoon.live/terms" target="_blank" rel="noopener">Terms</a> ·
+  <a href="https://discord.gg/C8Nm2jEZFC" target="_blank" rel="noopener">Discord</a> ·
+  <a href="https://www.jorry.live" target="_blank" rel="noopener">jorry.live</a> ·
+  <span>&copy; 2026 Word Tycoon</span>
+</footer>
+
+  <link rel="stylesheet" href="https://wordtycoon.live/portal/assets/badges/perk-badges.css?b3">
+  <script src="https://wordtycoon.live/portal/assets/badges/perk-badges.js?b3"></script>
+<script src="https://wordtycoon.live/js/win-card.js"></script>
+<script src="ui.js?v=15-perks"></script>
+<script src="solo.js?v=durable-solo-20261003-1"></script>
+</body>
+</html>

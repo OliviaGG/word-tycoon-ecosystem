@@ -1,0 +1,47 @@
+{
+  "name": "searchle-mobile",
+  "version": "3.0.0",
+  "description": "Searchle Mobile — Three.js stream overlay with 3D visuals",
+  "main": "server/server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server/server.js",
+    "dev:server": "node --watch server/server.js",
+    "dev:client": "npx vite --config vite.config.js",
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "build": "npx vite build --config vite.config.js && node -e \"require('fs').cpSync('client/v', 'dist/v', {recursive:true, force:true})\"",
+    "build:models": "node tools/build-model.js",
+    "ptbr:models": "node tools/ptbr-model-lab.js list",
+    "download:ptbr": "node tools/ptbr-model-lab.js download all",
+    "build:ptbr": "node tools/ptbr-model-lab.js build fasttext-cc-pt && node tools/ptbr-model-lab.js build numberbatch-pt && node tools/ptbr-model-lab.js build nilc-glove-300d",
+    "gate:ptbr": "node tools/ptbr-word-gate.js build fasttext-cc-pt --output=fasttext-cc-pt-gated --max-words=180000 --min-zipf=2.5 && node tools/ptbr-word-gate.js build numberbatch-pt --output=numberbatch-pt-gated --max-words=180000 --min-zipf=2.5 && node tools/ptbr-word-gate.js build nilc-glove-300d --output=nilc-glove-300d-gated --max-words=180000 --min-zipf=2.5",
+    "targets:ptbr": "node tools/ptbr-target-lab.js generate fasttext-cc-pt-gated",
+    "targets:ptbr:safe": "node tools/ptbr-target-lab.js evaluate fasttext-cc-pt-gated data/pt-br/targets/safe-target-words.json --top=4",
+    "targets:ptbr:expand": "node tools/ptbr-target-lab.js expand-nouns fasttext-cc-pt-gated data/pt-br/targets/safe-target-words.json --count=2500 --easy-min-zipf=4.0 --easy-min-score=0.35",
+    "targets:ptbr:difficulty": "node tools/ptbr-target-lab.js split-difficulty fasttext-cc-pt-gated data/pt-br/targets/expanded-target-words.json --easy-min-zipf=4.0 --easy-min-score=0.4 --target-report=data/pt-br/targets/expanded-target-report.json",
+    "eval:ptbr": "node tools/ptbr-rank-eval.js run --rrf-k=200",
+    "download:glove": "node tools/download-glove.js",
+    "download:fasttext": "node tools/download-fasttext.js",
+    "download:word2vec": "node tools/download-word2vec.js",
+    "download:all": "npm run download:glove && npm run download:fasttext && npm run download:word2vec"
+  },
+  "keywords": [
+    "searchle",
+    "word-game",
+    "three.js",
+    "stream-overlay"
+  ],
+  "license": "ISC",
+  "dependencies": {
+    "compression": "^1.8.1",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "socket.io": "^4.8.3",
+    "socket.io-client": "^4.8.3"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0",
+    "three": "^0.172.0",
+    "vite": "^6.4.1"
+  }
+}

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Wordfall">
+  <defs><linearGradient id="face" x2="1" y2="1"><stop stop-color="#ffe2a4"/><stop offset="1" stop-color="#e99b69"/></linearGradient></defs>
+  <rect width="128" height="128" rx="27" fill="#1c294a"/>
+  <path d="M24 37 64 18l41 19v56l-41 20-40-20Z" fill="#7769c3"/>
+  <path d="m24 37 40 18 41-18-41-19Z" fill="#b0a0f8"/>
+  <path d="M24 37 64 55v58L24 93Z" fill="#6155a8"/>
+  <path d="M64 55 105 37v56l-41 20Z" fill="url(#face)"/>
+  <text x="84" y="88" fill="#3a2b50" font-size="43" font-family="Arial,sans-serif" font-weight="900" text-anchor="middle">W</text>
+</svg>
