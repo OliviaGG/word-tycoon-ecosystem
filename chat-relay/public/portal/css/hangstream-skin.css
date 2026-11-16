@@ -76,6 +76,95 @@ body {
   font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
 }
 
+/* ─── DECLUTTER ──────────────────────────────────────────────────────
+   HangStream has no Toon Tower scenery — strip the elevator rail,
+   stars, blimp, neighbors, walkers, clouds, ticker, butlers, cats,
+   doors transition and landing floor-plates so pages read as clean
+   HangStream cards. */
+.elevator,
+.landing,
+.floor-plate,
+.neighbor,
+.stars,
+#lobbyStars,
+.blimp,
+.walkers,
+.walker,
+.cloud-layer,
+.ticker-wrap,
+.butler,
+.cat,
+.doors,
+.doors-floorcard,
+.lobby-sky {
+  display: none !important;
+}
+
+/* ─── FLATTEN TOON PRIMITIVES → HangStream cards ─────────────────────
+   The toon look is 2.5px ink outlines + hard offset shadows. HangStream
+   uses 1px subtle borders, 12–20px radii and soft shadows. */
+.toon,
+.stat,
+.plate,
+.chip,
+.btn,
+.dir-btn,
+.dir-here-tag,
+.marquee,
+.chart-card,
+.panel,
+.card,
+.toast,
+.modal-card,
+.keycard {
+  border-width: 1px !important;
+  border-color: var(--card-border) !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.16) !important;
+}
+
+.toon,
+.stat,
+.plate,
+.marquee,
+.chart-card,
+.panel,
+.card {
+  border-radius: 16px !important;
+}
+
+.btn {
+  border-radius: 12px !important;
+}
+
+.chip {
+  border-radius: 999px;
+}
+
+/* Kill the glossy two-tone 45% fills — HangStream uses flat accents */
+.btn-hero,
+.btn-blue,
+.btn-purp,
+.btn-green,
+.btn-red {
+  background: var(--accent) !important;
+  color: #fff !important;
+  text-shadow: none !important;
+}
+
+.btn-ghost {
+  background: var(--card) !important;
+  color: var(--text) !important;
+}
+
+/* Pages relied on the elevator for section nav — give the topbar a
+   plain link row instead of a dead gap. */
+.topbar nav {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
 /* HangStream-flavored focus rings & selection */
 :focus-visible {
   outline: 2px solid var(--accent);
