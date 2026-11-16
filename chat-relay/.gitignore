@@ -1,5 +1,7 @@
 node_modules/
 .env
+.env.*
+!.env.example
 *.log
 *.db
 *.db-journal
@@ -46,3 +48,10 @@ data/service-keys.json.*
 # Private persistent device-session revocations
 data/remember-revocations.json
 data/remember-revocations.json.*
+
+# Runtime streamer state (per-deployment)
+data/streamer-rules.json
+data/streamer-setups.json
+data/streamer-tts.json
+data/streamer-win-tallies.json
+data/win-overlay-settings.json

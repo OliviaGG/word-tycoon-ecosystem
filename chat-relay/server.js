@@ -219,7 +219,9 @@ const io = new Server(server, {
   cors: {
     origin: [
       'http://localhost:3000', 'http://127.0.0.1:3000',
-      'https://wordtycoon.live', 'https://www.wordtycoon.live'
+      'https://wordtycoon.live', 'https://www.wordtycoon.live',
+      'https://hangstream.me', 'https://www.hangstream.me',
+      'https://play.hangstream.me'
     ],
     credentials: true
   }
@@ -1385,6 +1387,7 @@ const CR_ALLOWED_ORIGINS = [
   'http://localhost:3000', 'http://127.0.0.1:3000',
   'https://wordtycoon.live', 'https://www.wordtycoon.live',
   'https://voice.wordtycoon.live',
+  'https://hangstream.me', 'https://www.hangstream.me', 'https://play.hangstream.me',
   ...TRUSTED_GAME_DOMAINS.map((h) => 'https://' + h),
   'http://localhost:3033',
   'http://localhost:3010', 'http://localhost:3011', 'http://localhost:3012',
@@ -1433,9 +1436,22 @@ app.use((req, res, next) => {
 });
 
 // ─── Security Headers ─────────────────────────────────────────────────
+// Hosts in EMBED_FRAME_ANCESTORS may be iframed by the listed parents
+// (e.g. play.hangstream.me inside hangstream.me). XFO can't express a
+// whitelist, so those hosts get CSP frame-ancestors instead.
+const EMBED_FRAME_ANCESTORS = new Set(
+  (process.env.EMBED_FRAME_ANCESTORS || 'play.hangstream.me')
+    .split(',').map(h => h.trim().toLowerCase()).filter(Boolean)
+);
 app.use((req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  const host = (req.hostname || '').toLowerCase();
+  if (EMBED_FRAME_ANCESTORS.has(host)) {
+    res.setHeader('Content-Security-Policy',
+      "frame-ancestors 'self' https://hangstream.me https://www.hangstream.me");
+  } else {
+    res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  }
   res.setHeader('X-XSS-Protection', '0'); // Disabled per OWASP (legacy browser XSS auditors can cause issues)
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   const allowCamera = req.path.startsWith('/streamer/');
@@ -1851,6 +1867,7 @@ function extractSameOriginPath(urlString, reqHostname) {
 // but not to RECEIVE one, silently dropping returnTo.
 const TRUSTED_RETURN_HOSTS = new Set([
   'wordtycoon.live', 'www.wordtycoon.live', 'voice.wordtycoon.live',
+  'hangstream.me', 'www.hangstream.me', 'play.hangstream.me',
   ...TRUSTED_GAME_DOMAINS,
   'localhost', '127.0.0.1'
 ]);
@@ -7878,19 +7895,35 @@ app.get('/admin/dashboard', (req, res) => {
 // Public root (wordtycoon.live only — direct IP access gets admin dashboard):
 // the Toon Tower serves everyone — guest onboarding when logged out, player
 // mode (live Empire, real balances) when the page detects a session client-side.
+// Hosts that get the public portal at /. wordtycoon.live is the canonical
+// deployment; PUBLIC_PORTAL_HOSTS (comma-separated) adds more.
+const PORTAL_HOSTS = new Set(
+  (process.env.PUBLIC_PORTAL_HOSTS || '')
+    .split(',').map(h => h.trim().toLowerCase()).filter(Boolean)
+);
+// Hosts that get the HangStream-branded landing page at / instead of the
+// Word Tycoon portal (the WT portal stays reachable at /home and /hub).
+const HANGSTREAM_LANDING_HOSTS = new Set(
+  (process.env.HANGSTREAM_LANDING_HOSTS || 'play.hangstream.me')
+    .split(',').map(h => h.trim().toLowerCase()).filter(Boolean)
+);
 app.get('/', (req, res) => {
   const host = (req.hostname || '').toLowerCase();
-  if (host === 'wordtycoon.live' || host === 'www.wordtycoon.live') {
-    return res.sendFile(path.join(__dirname, 'public', 'portal', 'home.html'));
+  if (HANGSTREAM_LANDING_HOSTS.has(host)) {
+    return res.sendFile(path.join(__dirname, 'public', 'play.html'));
+  }
+  if (PORTAL_HOSTS.has(host)) {
+    return res.redirect(301, '/play.html');
   }
   // Admin dashboard for direct IP/localhost access — require login
   if (!isAdminRequest(req)) return res.redirect('/admin/login');
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Toon Tower, also at /home and /hub (the old /hub alias used to serve the SPA)
+// The Word Tycoon Toon Tower homepage is retired — /home and /hub now just
+// bounce to /, which serves the HangStream Play landing on this deployment.
 app.get(['/home', '/home/', '/hub', '/hub/'], (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'portal', 'home.html'));
+  res.redirect(301, '/');
 });
 
 // Live Feed — public social feed of wins, dailies, jackpots, businesses, etc.

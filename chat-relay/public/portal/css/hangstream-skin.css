@@ -1,0 +1,86 @@
+/* ═══════════════════════════════════════════════════════════════════
+   HANGSTREAM SKIN — re-tokenizes the Word Tycoon "toon" design system
+   with the HangStream palette (hangstream.me):
+     dark  → #0e0e12 bg, #1a1a22 cards, #ff4d6d / #7c5cff accents
+     light → #f8fafc bg, #ffffff cards, same accents
+   Load AFTER toon.css. Only token + font overrides — every toon
+   component (topbar, elevator, buttons, chips, toasts) picks the
+   new palette up automatically.
+   ═══════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* HangStream accents */
+  --pink: #ff4d6d;
+  --purple: #7c5cff;
+  --accent: #ff4d6d;
+  --accent-2: #ff6b85;
+  --accent-3: #7c5cff;
+
+  /* DAY = HangStream light theme */
+  --ink: #0f1724;
+  --paper: #f8fafc;
+  --paper-2: #eef2f7;
+  --card: #ffffff;
+  --text: #0f1724;
+  --muted: #64748b;
+  --sky-top: #bfdbfe;
+  --sky-mid: #dbeafe;
+  --sky-low: #eff6ff;
+  --bldg: #cbd5e1;
+  --bldg-2: #b6c2d2;
+  --win-off: #e2e8f0;
+  --win-on: #e2e8f0;
+  --win-glow: none;
+  --street: #94a3b8;
+  --sidewalk: #e2e8f0;
+  --lamp-glow: transparent;
+  --star-op: 0;
+  --sunmoon-day: 1;
+  --sunmoon-night: 0;
+  --marquee-bg: #fff1f2;
+  --chart-bg: #f8fafc;
+  --landing-bg: #eef2f7;
+  --tint: transparent;
+}
+
+body.night {
+  /* NIGHT = HangStream dark theme */
+  --ink: #f0ede8;
+  --paper: #0e0e12;
+  --paper-2: #14141c;
+  --card: #1a1a22;
+  --text: #f0ede8;
+  --muted: #92a0af;
+  --sky-top: #0b0b12;
+  --sky-mid: #141422;
+  --sky-low: #1e1e30;
+  --bldg: #1e1e2c;
+  --bldg-2: #181824;
+  --win-off: #26263a;
+  --win-on: #ffd84d;
+  --win-glow: 0 0 8px rgba(255, 216, 77, .8);
+  --street: #101018;
+  --sidewalk: #1c1c28;
+  --lamp-glow: rgba(255, 180, 120, .5);
+  --star-op: 1;
+  --sunmoon-day: 0;
+  --sunmoon-night: 1;
+  --marquee-bg: #17131f;
+  --chart-bg: #12121a;
+  --landing-bg: #14141c;
+  --tint: rgba(0, 0, 0, .25);
+}
+
+/* HangStream typography */
+body {
+  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+}
+
+/* HangStream-flavored focus rings & selection */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+::selection {
+  background: rgba(255, 77, 109, .35);
+}

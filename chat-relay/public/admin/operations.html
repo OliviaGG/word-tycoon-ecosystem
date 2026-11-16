@@ -27,4 +27,5 @@ function render(data){
 }
 let loading=false;async function refresh(){if(loading)return;loading=true;const button=document.getElementById('refresh');button.disabled=true;try{const response=await fetch('/api/admin/operations-health',{cache:'no-store'});if(!response.ok)throw Error();render(await response.json());}catch{document.getElementById('status').textContent='Operations view unavailable. Sign in as admin and retry.';}finally{button.disabled=false;loading=false;}}
 document.getElementById('refresh').addEventListener('click',refresh);refresh();setInterval(()=>{if(!document.hidden)refresh();},60000);
-</script></body></html>
+</script>  <script src="/js/hangstream-brand.js" defer></script>
+</body></html>
